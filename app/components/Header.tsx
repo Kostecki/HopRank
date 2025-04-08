@@ -1,6 +1,8 @@
-import { Avatar, Divider, Group, Menu, Text } from "@mantine/core";
+import { Avatar, Group, Menu, Paper, Text } from "@mantine/core";
 import { IconBeer, IconLogout, IconUsers } from "@tabler/icons-react";
 import type { SessionUser } from "~/auth/auth.server";
+
+import { slateIndigo } from "~/utils/utils";
 
 type InputProps = {
   user: SessionUser;
@@ -38,26 +40,29 @@ export function Header({ user, sessionBeerCount }: InputProps) {
   };
 
   return (
-    <>
+    <Paper shadow="md" h="100%">
       <Group justify="space-between" px="md" pt="sm">
         <Group gap="xs">
+          <Group gap="xs" mr="xs">
+            <Text c={slateIndigo} fw="600" tt="capitalize" fs="italic">
+              clingy-impala
+            </Text>
+          </Group>
           <Group gap="xs">
-            <IconUsers color="white" size={20} />
-            <Text c="white" fw="600">
+            <IconUsers color={slateIndigo} size={20} />
+            <Text c={slateIndigo} fw="600">
               {getSessionUserCount()}
             </Text>
           </Group>
           <Group gap="xs">
-            <IconBeer color="white" size={20} />
-            <Text c="white" fw="600">
+            <IconBeer color={slateIndigo} size={20} />
+            <Text c={slateIndigo} fw="600">
               {`1 / ${sessionBeerCount}`}
             </Text>
           </Group>
         </Group>
         {user && <User user={user} />}
       </Group>
-
-      <Divider mt="sm" opacity={0.5} />
-    </>
+    </Paper>
   );
 }

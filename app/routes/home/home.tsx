@@ -1,26 +1,21 @@
 import { ActionIcon, Divider, Menu } from "@mantine/core";
-import { IconCirclePlus, IconCircleX, IconSettings } from "@tabler/icons-react";
+import { IconSettings } from "@tabler/icons-react";
 import { useFetcher, useLoaderData } from "react-router";
 import { eq } from "drizzle-orm";
 import { useState } from "react";
 import { dataWithToast } from "remix-toast";
 
 import db from "~/database/config.server";
-import {
-  ratingCategoriesTable,
-  sessionBeersTable,
-  sessionsTable,
-} from "~/database/schema.server";
+import { ratingCategoriesTable, sessionsTable } from "~/database/schema.server";
 
 import { CreateSessionAction } from "./actions";
 
 import ActiveSession from "~/components/ActiveSession";
 import NoSession from "~/components/NoSession";
 
-import type { Route } from "./+types/home";
+import { slateIndigo, wait } from "~/utils/utils";
 
-import { wait } from "~/utils/utils";
-import { userSessionGet } from "~/auth/users.server";
+import type { Route } from "./+types/home";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -36,9 +31,7 @@ export async function action({ request }: Route.ActionArgs) {
   }
 }
 
-export async function loader({ request }: Route.LoaderArgs) {
-  const user = await userSessionGet(request);
-
+export async function loader() {
   const ratingCategories = await db.select().from(ratingCategoriesTable);
 
   const activeSessions = await db
@@ -46,18 +39,17 @@ export async function loader({ request }: Route.LoaderArgs) {
     .from(sessionsTable)
     .where(eq(sessionsTable.active, true));
 
-  const sessionBeers = await db
-    .select()
-    .from(sessionBeersTable)
-    .where(eq(sessionBeersTable.sessionId, 1));
-
   const upNext = {};
 
-  return { user, ratingCategories, activeSessions, sessionBeers, upNext };
+  return {
+    ratingCategories,
+    activeSessions,
+    upNext,
+  };
 }
 
 export default function Home() {
-  const { user, activeSessions, ratingCategories, upNext } =
+  const { ratingCategories, activeSessions, upNext } =
     useLoaderData<typeof loader>();
 
   const [selectedBeers, setSelectedBeers] = useState<
@@ -101,7 +93,7 @@ export default function Home() {
         />
       )}
 
-      <Menu shadow="md" width="180">
+      <Menu shadow="md" width="200">
         <Menu.Target>
           <ActionIcon
             size="xl"
@@ -109,19 +101,18 @@ export default function Home() {
             pos="fixed"
             bottom={20}
             right={20}
-            color="teal"
+            color="white"
+            variant="default"
           >
-            <IconSettings size={20} />
+            <IconSettings color={slateIndigo} size={20} />
           </ActionIcon>
         </Menu.Target>
         <Menu.Dropdown>
           <Menu.Label>Smagning</Menu.Label>
           {/* <ModalAddBeer /> */}
-          <Menu.Item leftSection={<IconCircleX size={14} />}>Afslut</Menu.Item>
+          <Menu.Item>Opret ny smagning</Menu.Item>
           <Divider opacity={0.5} />
-          <Menu.Item leftSection={<IconCirclePlus size={14} />}>
-            Opret ny smagning
-          </Menu.Item>
+          <Menu.Item>Afslut smagning</Menu.Item>
         </Menu.Dropdown>
       </Menu>
     </>

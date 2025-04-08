@@ -1,3 +1,5 @@
+const slateIndigo = "#484F65";
+
 const sliderConf = {
   min: 0,
   max: 5,
@@ -11,4 +13,4 @@ const wait = (ms: number): Promise<void> => {
   });
 };
 
-export { sliderConf, wait };
+export { slateIndigo, sliderConf, wait };
