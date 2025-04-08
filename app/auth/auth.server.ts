@@ -2,6 +2,9 @@ import { Authenticator } from "remix-auth";
 import { OAuth2Strategy } from "remix-auth-oauth2";
 import invariant from "tiny-invariant";
 
+import db from "~/database/config.server";
+import { usersTable } from "~/database/schema.server";
+
 export type SessionUser = {
   id: string;
   name: string;
@@ -58,6 +61,16 @@ authenticator.use(
         name: profile.name,
         picture: profile.picture.data,
       };
+
+      // Add user to the database if not already present
+      try {
+        await db
+          .insert(usersTable)
+          .values({ fbId: user.id })
+          .onConflictDoNothing();
+      } catch (error) {
+        console.error("Error inserting user into database:", error);
+      }
 
       return user;
     }
