@@ -1,10 +1,19 @@
 import { eq } from "drizzle-orm";
 import { createNameId } from "mnemonic-id";
+
+import { userSessionGet } from "~/auth/users.server";
 import db from "~/database/config.server";
-import { sessionBeersTable, sessionsTable } from "~/database/schema.server";
+import {
+  sessionBeersTable,
+  sessionsTable,
+  usersTable,
+} from "~/database/schema.server";
+
 import { handleToastResponse } from "~/utils/toasts";
 
 export async function CreateSessionAction(request: Request) {
+  const user = await userSessionGet(request);
+
   const formData = await request.formData();
   const selectedBeers = formData.get("selectedBeerIds");
 
@@ -27,6 +36,16 @@ export async function CreateSessionAction(request: Request) {
       }
 
       const sessionId = result[0].sessionId;
+
+      // Add session id to current users active session
+      try {
+        await db
+          .update(usersTable)
+          .set({ activeSessionId: sessionId })
+          .where(eq(usersTable.fbId, user.id));
+      } catch (error) {
+        console.error("Error updating user active session:", error);
+      }
 
       if (selectedBeers && typeof selectedBeers === "string") {
         const beerIds = JSON.parse(selectedBeers);

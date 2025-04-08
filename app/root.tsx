@@ -10,6 +10,7 @@ import {
   type LoaderFunctionArgs,
 } from "react-router";
 import {
+  AppShell,
   Code,
   ColorSchemeScript,
   Container,
@@ -28,6 +29,8 @@ import { eq } from "drizzle-orm";
 import db from "./database/config.server";
 import { sessionBeersTable } from "./database/schema.server";
 
+import { userSessionGet } from "./auth/users.server";
+
 import {
   showDangerToast,
   showSuccessToast,
@@ -35,7 +38,7 @@ import {
 } from "./utils/toasts";
 import { Header } from "./components/Header";
 
-import { userSessionGet } from "./auth/users.server";
+import { slateIndigo } from "./utils/utils";
 
 import { theme } from "theme";
 import "@mantine/core/styles.css";
@@ -116,12 +119,19 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
         <ColorSchemeScript />
       </head>
-      <body style={{ backgroundColor: "#4a5167", height: "100%", margin: 0 }}>
+      <body style={{ backgroundColor: slateIndigo, height: "100%", margin: 0 }}>
         <MantineProvider theme={theme}>
-          <Header user={user} sessionBeerCount={sessionBeerCount} />
-          <Container size="xs" mt="md">
-            {children}
-          </Container>
+          <AppShell header={{ height: 60 }}>
+            <AppShell.Header>
+              <Header user={user} sessionBeerCount={sessionBeerCount} />
+            </AppShell.Header>
+
+            <AppShell.Main>
+              <Container size="xs" mt="md">
+                {children}
+              </Container>
+            </AppShell.Main>
+          </AppShell>
 
           <Notifications position="top-right" zIndex={1000} />
         </MantineProvider>

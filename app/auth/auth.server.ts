@@ -14,6 +14,7 @@ export type SessionUser = {
     url: string;
     width: number;
   };
+  activeSession?: number;
 };
 
 export const authenticator = new Authenticator<SessionUser>();
