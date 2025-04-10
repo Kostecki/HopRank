@@ -12,6 +12,7 @@ export const userSessionGet = async (
   const session = await getSession(request.headers.get("cookie"));
   const user = session.get("user") as SessionUser;
 
+  // Add users active session id to the user object
   if (user?.id) {
     const userSession = await db
       .select()

@@ -41,6 +41,8 @@ export function Header({ user, sessionBeerCount }: InputProps) {
 
   return (
     <Paper shadow="md" h="100%">
+      {/* TODO: Handle no session */}
+      {/* TODO: Handle no user */}
       <Group justify="space-between" px="md" pt="sm">
         <Group gap="xs">
           <Group gap="xs" mr="xs">
@@ -57,7 +59,7 @@ export function Header({ user, sessionBeerCount }: InputProps) {
           <Group gap="xs">
             <IconBeer color={slateIndigo} size={20} />
             <Text c={slateIndigo} fw="600">
-              {`1 / ${sessionBeerCount}`}
+              {`7 / ${sessionBeerCount + 23}`}
             </Text>
           </Group>
         </Group>

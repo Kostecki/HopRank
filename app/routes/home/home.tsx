@@ -1,12 +1,16 @@
 import { ActionIcon, Divider, Menu } from "@mantine/core";
 import { IconSettings } from "@tabler/icons-react";
 import { useFetcher, useLoaderData } from "react-router";
-import { eq } from "drizzle-orm";
+import { count, eq } from "drizzle-orm";
 import { useState } from "react";
 import { dataWithToast } from "remix-toast";
 
 import db from "~/database/config.server";
-import { ratingCategoriesTable, sessionsTable } from "~/database/schema.server";
+import {
+  ratingCategoriesTable,
+  sessionsTable,
+  usersTable,
+} from "~/database/schema.server";
 
 import { CreateSessionAction } from "./actions";
 
@@ -16,6 +20,8 @@ import NoSession from "~/components/NoSession";
 import { slateIndigo, wait } from "~/utils/utils";
 
 import type { Route } from "./+types/home";
+import { userSessionGet } from "~/auth/users.server";
+import { ActiveSessions } from "~/components/ActiveSessions";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -31,17 +37,29 @@ export async function action({ request }: Route.ActionArgs) {
   }
 }
 
-export async function loader() {
+export async function loader({ request }: Route.LoaderArgs) {
+  const user = await userSessionGet(request);
+
   const ratingCategories = await db.select().from(ratingCategoriesTable);
 
   const activeSessions = await db
-    .select()
+    .select({
+      id: sessionsTable.id,
+      name: sessionsTable.name,
+      active: sessionsTable.active,
+      createdAt: sessionsTable.createdAt,
+      updatedAt: sessionsTable.updatedAt,
+      userCount: count(usersTable.id).as("userCount"),
+    })
     .from(sessionsTable)
-    .where(eq(sessionsTable.active, true));
+    .leftJoin(usersTable, eq(usersTable.activeSessionId, sessionsTable.id))
+    .where(eq(sessionsTable.active, true))
+    .groupBy(sessionsTable.id);
 
   const upNext = {};
 
   return {
+    user,
     ratingCategories,
     activeSessions,
     upNext,
@@ -49,7 +67,7 @@ export async function loader() {
 }
 
 export default function Home() {
-  const { ratingCategories, activeSessions, upNext } =
+  const { user, ratingCategories, activeSessions, upNext } =
     useLoaderData<typeof loader>();
 
   const [selectedBeers, setSelectedBeers] = useState<
@@ -82,15 +100,18 @@ export default function Home() {
 
   return (
     <>
-      {activeSessions.length > 0 ? (
+      {user.activeSession ? (
         <ActiveSession ratingCategories={ratingCategories} upNext={upNext} />
       ) : (
-        <NoSession
-          selectedBeers={selectedBeers}
-          setSelectedBeers={setSelectedBeers}
-          handleSubmit={handleSubmit}
-          loading={loading}
-        />
+        <>
+          <ActiveSessions user={user} activeSessions={activeSessions} />
+          <NoSession
+            selectedBeers={selectedBeers}
+            setSelectedBeers={setSelectedBeers}
+            handleSubmit={handleSubmit}
+            loading={loading}
+          />
+        </>
       )}
 
       <Menu shadow="md" width="200">
