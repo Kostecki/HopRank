@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm";
 
 import { getSession } from "./session.server";
 import type { SessionUser } from "./auth.server";
-import db from "~/database/config.server";
+import { db } from "~/database/config.server";
 import { usersTable } from "~/database/schema.server";
 
 export const userSessionGet = async (
@@ -17,7 +17,7 @@ export const userSessionGet = async (
     const userSession = await db
       .select()
       .from(usersTable)
-      .where(eq(usersTable.fbId, user.id));
+      .where(eq(usersTable.id, user.id));
 
     user.activeSession = userSession[0]?.activeSessionId ?? undefined;
   }

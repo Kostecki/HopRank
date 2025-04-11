@@ -1,13 +1,31 @@
-import { type RouteConfig, index, route } from "@react-router/dev/routes";
+import {
+  type RouteConfig,
+  index,
+  layout,
+  prefix,
+  route,
+} from "@react-router/dev/routes";
 
 export default [
-  index("routes/home/home.tsx"),
+  layout("routes/layout.tsx", [
+    index("routes/home.tsx"),
 
-  route("auth", "routes/auth/index.ts"),
-  route("auth/login", "routes/auth/login.tsx"),
-  route("auth/facebook", "routes/auth/facebook.ts"),
-  route("auth/callback", "routes/auth/callback.ts"),
-  route("auth/logout", "routes/auth/logout.ts"),
-
-  route("api/beers", "./routes/api/beers.ts"),
+    ...prefix("sessions", [
+      index("routes/sessions/index.tsx"),
+      route("create", "routes/sessions/actions/create.ts"),
+      route(":sessionId", "routes/sessions/$sessionId/index.tsx"),
+      route(":sessionId/join", "routes/sessions/$sessionId/actions/join.ts"),
+      route(":sessionId/vote", "routes/sessions/$sessionId/actions/vote.ts"),
+    ]),
+  ]),
+  layout("routes/auth/layout.tsx", [
+    ...prefix("auth", [
+      index("routes/auth/index.ts"),
+      route("login", "routes/auth/login.tsx"),
+      route("logout", "routes/auth/logout.ts"),
+      route("callback", "routes/auth/actions/callback.ts"),
+      route("facebook", "routes/auth/actions/facebook.ts"),
+    ]),
+  ]),
+  ...prefix("api", [route("beers", "routes/api/beers/index.ts")]),
 ] satisfies RouteConfig;

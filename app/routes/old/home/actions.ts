@@ -2,9 +2,9 @@ import { eq } from "drizzle-orm";
 import { createNameId } from "mnemonic-id";
 
 import { userSessionGet } from "~/auth/users.server";
-import db from "~/database/config.server";
+import { db } from "~/database/config.server";
 import {
-  sessionBeersTable,
+  beersTable,
   sessionsTable,
   usersTable,
 } from "~/database/schema.server";
@@ -42,7 +42,7 @@ export async function CreateSessionAction(request: Request) {
         await db
           .update(usersTable)
           .set({ activeSessionId: sessionId })
-          .where(eq(usersTable.fbId, user.id));
+          .where(eq(usersTable.id, user.id));
       } catch (error) {
         console.error("Error updating user active session:", error);
       }
@@ -51,7 +51,7 @@ export async function CreateSessionAction(request: Request) {
         const beerIds = JSON.parse(selectedBeers);
 
         try {
-          await db.insert(sessionBeersTable).values(
+          await db.insert(beersTable).values(
             beerIds.map((beerId: number) => ({
               sessionId,
               beerId,
@@ -93,8 +93,8 @@ export async function GetSessionBeersAction(request: Request) {
   try {
     const result = await db
       .select()
-      .from(sessionBeersTable)
-      .where(eq(sessionBeersTable.sessionId, 1));
+      .from(beersTable)
+      .where(eq(beersTable.sessionId, 1));
 
     console.log("Session beers result:", result);
   } catch (error) {

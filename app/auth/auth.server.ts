@@ -1,12 +1,14 @@
+import { eq } from "drizzle-orm";
 import { Authenticator } from "remix-auth";
 import { OAuth2Strategy } from "remix-auth-oauth2";
 import invariant from "tiny-invariant";
 
-import db from "~/database/config.server";
+import { db } from "~/database/config.server";
 import { usersTable } from "~/database/schema.server";
 
 export type SessionUser = {
-  id: string;
+  id: number;
+  fbId: string;
   name: string;
   picture: {
     height: number;
@@ -58,19 +60,26 @@ authenticator.use(
       const profile = await response.json();
 
       const user: SessionUser = {
-        id: profile.id,
+        id: -1,
+        fbId: profile.id,
         name: profile.name,
         picture: profile.picture.data,
       };
 
-      // Add user to the database if not already present
-      try {
-        await db
+      const existingUser = await db
+        .select()
+        .from(usersTable)
+        .where(eq(usersTable.fbId, user.fbId));
+
+      if (!existingUser) {
+        const insertedUser = await db
           .insert(usersTable)
-          .values({ fbId: user.id })
-          .onConflictDoNothing();
-      } catch (error) {
-        console.error("Error inserting user into database:", error);
+          .values({ fbId: user.fbId })
+          .returning();
+
+        user.id = insertedUser[0].id;
+      } else {
+        user.id = existingUser[0].id;
       }
 
       return user;
