@@ -5,9 +5,9 @@ import { count, eq } from "drizzle-orm";
 import { useState } from "react";
 import { dataWithToast } from "remix-toast";
 
-import db from "~/database/config.server";
+import { db } from "~/database/config.server";
 import {
-  ratingCategoriesTable,
+  ratingsTable,
   sessionsTable,
   usersTable,
 } from "~/database/schema.server";
@@ -40,7 +40,7 @@ export async function action({ request }: Route.ActionArgs) {
 export async function loader({ request }: Route.LoaderArgs) {
   const user = await userSessionGet(request);
 
-  const ratingCategories = await db.select().from(ratingCategoriesTable);
+  const ratingCategories = await db.select().from(ratingsTable);
 
   const activeSessions = await db
     .select({

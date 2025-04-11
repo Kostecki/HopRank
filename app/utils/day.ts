@@ -1,23 +1,16 @@
 // utils/dayjs.js
 import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
-import weekOfYear from "dayjs/plugin/weekOfYear";
-import weekday from "dayjs/plugin/weekday";
-import IsBetween from "dayjs/plugin/isBetween";
-import customParseFormat from "dayjs/plugin/customParseFormat";
+import LocalizedFormat from "dayjs/plugin/localizedFormat";
+import isYesterday from "dayjs/plugin/isYesterday";
+import isToday from "dayjs/plugin/isToday";
 import "dayjs/locale/da";
 
-// Initialize Day.js and extend with necessary plugins
-const dayjsExt = dayjs;
-
 // Extend Day.js with the plugins
-dayjs.extend(utc);
 dayjs.extend(timezone);
-dayjs.extend(weekOfYear);
-dayjs.extend(weekday);
-dayjs.extend(IsBetween);
-dayjs.extend(customParseFormat);
+dayjs.extend(LocalizedFormat);
+dayjs.extend(isYesterday);
+dayjs.extend(isToday);
 
 // Set the locale globally
 dayjs.locale("da");
@@ -27,4 +20,4 @@ dayjs.locale("da");
 let TZ = "Europe/Copenhagen";
 dayjs.tz.setDefault(TZ);
 
-export { dayjsExt };
+export default dayjs;

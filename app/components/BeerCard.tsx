@@ -1,5 +1,6 @@
 import {
   Card,
+  Divider,
   Flex,
   Grid,
   Image,
@@ -8,36 +9,38 @@ import {
   Text,
   Title,
 } from "@mantine/core";
+import type { SelectVote } from "~/database/schema.types";
+
+import calculateTotalScore from "~/utils/score";
+
+type InputProps = {
+  beer: any;
+  votes: SelectVote[];
+  title?: string;
+  index?: number;
+};
 
 const gold = "#ffd700";
 const silver = "#c0c0c0";
 const bronze = "#8c6239";
 
-// TODO: Type
-export function BeerCard({ beer, index }: { beer: any; index?: number }) {
-  const { url, label, name, brewery, style, scores } = beer;
+const getMedalColor = (index?: number) => {
+  if (index === undefined || index > 2) return "transparent";
 
-  const getMedalColor = (index?: number) => {
-    if (index === undefined || index > 2) return "transparent";
+  return [gold, silver, bronze][index];
+};
 
-    return [gold, silver, bronze][index];
-  };
+const calculateVoteProgress = () => {
+  // Calculate the progress of the votes
+  const totalVotes = 5;
+  const votes = 2;
+  const progress = (votes / totalVotes) * 100;
 
-  const calculateScore = (scores: number[]) => {
-    // Sum array with scores and return the sum
-    const avgScore =
-      scores.reduce((sum, value) => sum + value, 0) / scores.length;
-    return avgScore.toFixed(1);
-  };
+  return { labelText: `${votes}/${totalVotes}`, value: progress };
+};
 
-  const calculateVoteProgress = () => {
-    // Calculate the progress of the votes
-    const totalVotes = 5;
-    const votes = 2;
-    const progress = (votes / totalVotes) * 100;
-
-    return { labelText: `${votes}/${totalVotes}`, value: progress };
-  };
+export function BeerCard({ beer, votes, title, index }: InputProps) {
+  const { label, name, breweryName, style } = beer;
 
   const RenderProgress = () => {
     const progress = calculateVoteProgress();
@@ -66,11 +69,13 @@ export function BeerCard({ beer, index }: { beer: any; index?: number }) {
       />
     );
   };
+
   return (
     <Card
       shadow="sm"
       p="xs"
       style={{ borderLeft: `8px solid ${getMedalColor(index)}` }}
+      withBorder
     >
       <Grid justify="space-between" align="center">
         <Grid.Col span={2}>
@@ -82,7 +87,7 @@ export function BeerCard({ beer, index }: { beer: any; index?: number }) {
               {name}
             </Text>
             <Text size="sm" ta="center" fs="italic" lineClamp={1}>
-              {brewery}
+              {breweryName}
             </Text>
             <Text size="sm" ta="center" lineClamp={1}>
               {style}
@@ -91,9 +96,9 @@ export function BeerCard({ beer, index }: { beer: any; index?: number }) {
         </Grid.Col>
         <Grid.Col span={3}>
           <Flex justify="center">
-            {scores.length ? (
-              <Title size="45" fw="600" lineClamp={1} ta="center">
-                {calculateScore(scores)}
+            {beer.score ? (
+              <Title size={45} fw={600} lineClamp={1} ta="center">
+                {calculateTotalScore(votes).toFixed(2)}
               </Title>
             ) : (
               <RenderProgress />

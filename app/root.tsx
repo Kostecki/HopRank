@@ -10,7 +10,6 @@ import {
   type LoaderFunctionArgs,
 } from "react-router";
 import {
-  AppShell,
   Code,
   ColorSchemeScript,
   Container,
@@ -26,8 +25,8 @@ import { Notifications } from "@mantine/notifications";
 import { useEffect } from "react";
 import { eq } from "drizzle-orm";
 
-import db from "./database/config.server";
-import { sessionBeersTable } from "./database/schema.server";
+import { db } from "./database/config.server";
+import { beersTable } from "./database/schema.server";
 
 import { userSessionGet } from "./auth/users.server";
 
@@ -36,9 +35,6 @@ import {
   showSuccessToast,
   showWarningToast,
 } from "./utils/toasts";
-import { Header } from "./components/Header";
-
-import { slateIndigo } from "./utils/utils";
 
 import { theme } from "theme";
 import "@mantine/core/styles.css";
@@ -67,15 +63,15 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const sessionBeers = await db
     .select()
-    .from(sessionBeersTable)
-    .where(eq(sessionBeersTable.sessionId, 1));
+    .from(beersTable)
+    .where(eq(beersTable.sessionId, 1));
   const sessionBeerCount = sessionBeers.length;
 
   return data({ toast, user, sessionBeerCount }, { headers });
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  const { toast, user, sessionBeerCount } = useLoaderData<typeof loader>();
+  const { toast } = useLoaderData<typeof loader>();
 
   useEffect(() => {
     if (toast) {
@@ -119,21 +115,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
         <ColorSchemeScript />
       </head>
-      <body style={{ backgroundColor: slateIndigo, height: "100%", margin: 0 }}>
+      {/* <body style={{ backgroundColor: "#F8F9FA", height: "100%", margin: 0 }}> */}
+      <body style={{ backgroundColor: "#FBFBFB" }}>
         <MantineProvider theme={theme}>
-          <AppShell header={{ height: 60 }}>
-            <AppShell.Header>
-              <Header user={user} sessionBeerCount={sessionBeerCount} />
-            </AppShell.Header>
+          {children}
 
-            <AppShell.Main>
-              <Container size="xs" mt="md">
-                {children}
-              </Container>
-            </AppShell.Main>
-          </AppShell>
-
-          <Notifications position="top-right" zIndex={1000} />
+          <Notifications zIndex={1000} />
         </MantineProvider>
         <ScrollRestoration />
         <Scripts />

@@ -7,10 +7,14 @@ const sliderConf = {
   defaultValue: 2.5,
 };
 
+const setPageTitle = (pageTitle: string) => {
+  return `${pageTitle} - HopRank`;
+};
+
 const wait = (ms: number): Promise<void> => {
   return new Promise((resolve) => {
     setTimeout(resolve, ms);
   });
 };
 
-export { slateIndigo, sliderConf, wait };
+export { slateIndigo, sliderConf, setPageTitle, wait };

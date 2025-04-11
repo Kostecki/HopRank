@@ -6,6 +6,8 @@ export async function loader({ request }: { request: Request }) {
 
   const results = await findBeers(search);
 
+  return results;
+
   return new Response(JSON.stringify(results), {
     headers: {
       "Content-Type": "application/json",

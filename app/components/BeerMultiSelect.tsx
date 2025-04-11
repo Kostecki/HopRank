@@ -48,7 +48,7 @@ export default function BeerMultiSelect({
     setLoading(true);
 
     try {
-      const results = await fetch(`/api/beers?search=${search}`);
+      const results = await fetch(`/api/beers?q=${search}`);
       const data = await results.json();
 
       setOptions(

@@ -39,9 +39,9 @@ export const ActiveSessions = ({ user, activeSessions }: InputProps) => {
   ));
 
   return (
-    <Box mt="50">
+    <Box mt={50}>
       <Paper p="md" radius="md">
-        <Text fw="500">Deltag i en eksisterende smagning</Text>
+        <Text fw={500}>Deltag i en eksisterende smagning</Text>
 
         <Divider opacity={0.75} my="sm" />
 
