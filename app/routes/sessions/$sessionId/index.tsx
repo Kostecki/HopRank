@@ -14,14 +14,14 @@ import { BeerCard } from "~/components/BeerCard";
 import { BeerCardDetails } from "~/components/BeerCardDetails";
 import UpNext from "~/components/UpNext";
 
-import { setPageTitle } from "~/utils/utils";
+import { getPageTitle } from "~/utils/utils";
 import smartShuffle from "~/utils/shuffle";
 import calculateTotalScore from "~/utils/score";
 
 import type { Route } from "./+types";
 
 export function meta({}: Route.MetaArgs) {
-  return [{ title: setPageTitle("Smagning") }];
+  return [{ title: getPageTitle("Smagning") }];
 }
 
 export async function loader({ request, params }: Route.LoaderArgs) {

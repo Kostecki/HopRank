@@ -5,12 +5,12 @@ import { getActiveSessions } from "~/database/helpers";
 
 import SessionsTable from "~/components/SessionsTable";
 
-import { setPageTitle } from "~/utils/utils";
+import { getPageTitle } from "~/utils/utils";
 
 import type { Route } from "./+types";
 
 export function meta({}: Route.MetaArgs) {
-  return [{ title: setPageTitle("Smagninger") }];
+  return [{ title: getPageTitle("Smagninger") }];
 }
 
 export async function loader({ request }: Route.LoaderArgs) {

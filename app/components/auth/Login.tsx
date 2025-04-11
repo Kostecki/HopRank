@@ -38,7 +38,7 @@ export default function LoginForm() {
       <Button
         component={Link}
         to="/auth/facebook"
-        color="#2463ff"
+        color="#2463FF"
         fullWidth
         leftSection={<IconBrandFacebook size={18} />}
         mt="xs"

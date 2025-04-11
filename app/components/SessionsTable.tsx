@@ -69,7 +69,7 @@ export default function SessionsTable({
       <Paper p="md" radius="md" withBorder>
         <Text fw="bold">Aktive smagninger</Text>
         <Text c="dimmed" size="sm" fs="italic">
-          Vælg en aktiv smagning for at starte
+          Vælg en aktiv smagning for at deltage
         </Text>
 
         <Table mt="lg">
