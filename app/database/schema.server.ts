@@ -1,15 +1,10 @@
 import { type InferInsertModel, type InferSelectModel, sql } from "drizzle-orm";
-import { int, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { int, real, sqliteTable, text, unique } from "drizzle-orm/sqlite-core";
 
 type Vote = {
-  sessionId: number;
-  beerId: number;
-  userId: number;
-  ratings: {
-    name: string;
-    rating: number;
-    weight: number;
-  }[];
+  name: string;
+  rating: number;
+  weight: number;
 };
 
 export const ratingsTable = sqliteTable("ratings", {
@@ -24,8 +19,8 @@ export const ratingsTable = sqliteTable("ratings", {
     .default(sql`(CURRENT_TIMESTAMP)`)
     .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
 });
-export type SelectRatingCategory = InferSelectModel<typeof ratingsTable>;
-export type InsertRatingCategory = InferInsertModel<typeof ratingsTable>;
+export type SelectRating = InferSelectModel<typeof ratingsTable>;
+export type InsertRating = InferInsertModel<typeof ratingsTable>;
 
 export const sessionsTable = sqliteTable("sessions", {
   id: int().primaryKey({ autoIncrement: true }),
@@ -44,7 +39,16 @@ export type InsertSession = InferInsertModel<typeof sessionsTable>;
 
 export const votesTable = sqliteTable("votes", {
   id: int().primaryKey({ autoIncrement: true }),
-  vote: text("vote", { mode: "json" }).$type<Vote>().notNull(),
+  sessionId: int("session_id")
+    .notNull()
+    .references(() => sessionsTable.id),
+  userId: int("user_id")
+    .notNull()
+    .references(() => usersTable.id),
+  beerId: int("beer_id")
+    .notNull()
+    .references(() => beersTable.beerId),
+  vote: text("vote", { mode: "json" }).$type<Vote[]>().notNull(),
   createdAt: text("created_at")
     .notNull()
     .default(sql`CURRENT_TIMESTAMP`),
@@ -64,7 +68,7 @@ export const beersTable = sqliteTable("beers", {
   sessionId: int("session_id")
     .notNull()
     .references(() => sessionsTable.id),
-  beerId: int("beer_id").notNull(),
+  beerId: int("beer_id").notNull().unique(),
   name: text("name").notNull(),
   style: text("style").notNull(),
   breweryName: text("brewery_name").notNull(),

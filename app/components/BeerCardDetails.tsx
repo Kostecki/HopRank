@@ -1,10 +1,11 @@
 import { Button, Divider, Flex, Rating, Text } from "@mantine/core";
+import type { SelectRating } from "~/database/schema.types";
 
 import { createLink } from "~/utils/untappd";
 
 type InputProps = {
   beer: any;
-  ratingCategories: any;
+  ratings: SelectRating[];
 };
 
 const ScoreItem = ({
@@ -23,7 +24,7 @@ const ScoreItem = ({
 );
 
 // TODO: Type
-export function BeerCardDetails({ beer, ratingCategories }: InputProps) {
+export function BeerCardDetails({ beer, ratings }: InputProps) {
   const { beerId, scores } = beer;
 
   return (

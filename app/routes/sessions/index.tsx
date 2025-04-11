@@ -1,9 +1,7 @@
-import { useLoaderData } from "react-router";
-import { count, desc, eq } from "drizzle-orm";
+import { redirect, useLoaderData } from "react-router";
 
 import { userSessionGet } from "~/auth/users.server";
-import { db } from "~/database/config.server";
-import { sessionsTable, usersTable } from "~/database/schema.server";
+import { getActiveSessions } from "~/database/helpers";
 
 import SessionsTable from "~/components/SessionsTable";
 
@@ -18,20 +16,11 @@ export function meta({}: Route.MetaArgs) {
 export async function loader({ request }: Route.LoaderArgs) {
   const user = await userSessionGet(request);
 
-  const activeSessions = await db
-    .select({
-      id: sessionsTable.id,
-      name: sessionsTable.name,
-      active: sessionsTable.active,
-      createdAt: sessionsTable.createdAt,
-      updatedAt: sessionsTable.updatedAt,
-      userCount: count(usersTable.id).as("userCount"),
-    })
-    .from(sessionsTable)
-    .leftJoin(usersTable, eq(usersTable.activeSessionId, sessionsTable.id))
-    .where(eq(sessionsTable.active, true))
-    .groupBy(sessionsTable.id)
-    .orderBy(desc(sessionsTable.createdAt));
+  if (user.activeSession) {
+    return redirect("/sessions/" + user.activeSession);
+  }
+
+  const activeSessions = await getActiveSessions();
 
   return { user, activeSessions };
 }

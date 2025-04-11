@@ -1,56 +1,96 @@
 import type { SelectSessionBeer } from "~/database/schema.types";
 
-// Simple shuffle function (Fisher-Yates algorithm)
-const shuffleArray = (array: SelectSessionBeer[]): SelectSessionBeer[] => {
-  const result = [...array];
-  for (let i = result.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [result[i], result[j]] = [result[j], result[i]];
+/* Shout-out to my man GPT 4o 🤖  */
+
+/**
+ * Generates a deterministic pseudo-random number generator (PRNG)
+ * based on a string seed.
+ *
+ * The same input seed will always generate the same sequence of numbers.
+ */
+const createSeededRandom = (seed: string) => {
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) {
+    hash = (hash << 5) - hash + seed.charCodeAt(i);
+    hash |= 0;
   }
-  return result;
+
+  return function () {
+    // Mulberry32 PRNG algorithm
+    let t = (hash += 0x6d2b79f5);
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
 };
 
-/*
-  This function takes an array of beers and shuffles them in a way that ensures 
-  that beers from the same brewery are not adjacent to each other.
-  
-  It also tries to minimize beers from the same owner being adjacent, but this
-  rule can be relaxed when necessary, especially when there are many beers
-  from the same owner.
-*/
-const smartShuffle = (beers: SelectSessionBeer[]): SelectSessionBeer[] => {
-  // Shuffle all beers first
-  const shuffledBeers = shuffleArray(beers);
+/**
+ * Uses the provided seeded PRNG to shuffle the list of beers.
+ * This is a standard Fisher-Yates shuffle algorithm.
+ *
+ * Note: It does NOT mutate the original array — it returns a new one.
+ */
+const shuffleBeers = (beers: SelectSessionBeer[], random: () => number) => {
+  const arr = beers.map((b) => b); // shallow copy
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(random() * (i + 1));
+    const temp = arr[i];
+    arr[i] = arr[j];
+    arr[j] = temp;
+  }
+  return arr;
+};
 
-  const result: SelectSessionBeer[] = [];
+/**
+ * Scores a shuffled beer list.
+ * Penalizes adjacent beers from the same brewery or same addedBy user.
+ *
+ * Rules:
+ * - Adjacent same brewery → +3 penalty
+ * - Adjacent same addedBy  → +2 penalty
+ */
+const scoreBeers = (beers: SelectSessionBeer[]) => {
+  let score = 0;
+  for (let i = 1; i < beers.length; i++) {
+    if (beers[i].breweryName === beers[i - 1].breweryName) score += 3;
+    if (beers[i].addedBy === beers[i - 1].addedBy) score += 2;
+  }
+  return score;
+};
 
-  // This will keep track of the last brewery and owner we've added
-  let lastBrewery: string | null = null;
-  let lastOwner: number | null = null;
+/**
+ * Main smart shuffler.
+ *
+ * Shuffles the beers deterministically based on the given seed,
+ * and attempts 750 variations to find the best-scoring layout
+ * (fewest adjacent same-brewery or same-user beers).
+ *
+ * If a perfect arrangement (score === 0) is found early, it returns that immediately.
+ */
+const smartShuffle = (beers: SelectSessionBeer[], seed: string) => {
+  let bestScore = Infinity;
+  let bestList = beers;
 
-  // Distribute the shuffled beers into the result array
-  shuffledBeers.forEach((beer) => {
-    // Try to avoid placing beers from the same brewery or owner next to each other
-    if (
-      (lastBrewery && lastBrewery === beer.breweryName) ||
-      (lastOwner && lastOwner === beer.addedBy)
-    ) {
-      // If we find a beer that violates the adjacency rule, push it later
-      result.unshift(beer); // Put it back at the start of the array for re-shuffling
-    } else {
-      result.push(beer); // Otherwise, add it to the result array
-      lastBrewery = beer.breweryName;
-      lastOwner = beer.addedBy;
+  for (let i = 0; i < 750; i++) {
+    // Make each trial unique but still deterministic by varying the seed slightly
+    const trialSeed = `${seed}-${i}`;
+    const random = createSeededRandom(trialSeed);
+
+    // Try a new shuffle
+    const shuffled = shuffleBeers(beers, random);
+
+    // Score the new arrangement
+    const score = scoreBeers(shuffled);
+
+    // Keep the best-scoring one
+    if (score < bestScore) {
+      bestScore = score;
+      bestList = shuffled;
+      if (score === 0) break; // Stop early if perfect
     }
-  });
-
-  // After trying to shuffle directly, we might need to shuffle again if adjacency rules are violated
-  // Retry shuffling if we added beers that were out of order
-  if (result.length !== shuffledBeers.length) {
-    return smartShuffle(result); // Recurse if the result array is incomplete
   }
 
-  return result;
+  return bestList;
 };
 
 export default smartShuffle;

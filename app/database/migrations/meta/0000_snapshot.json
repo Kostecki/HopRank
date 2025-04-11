@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "fe1a1104-f37a-4b48-90c1-186b77176c81",
+  "id": "bb814c8e-41bd-4fea-87dc-c25881915a28",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "beers": {
@@ -80,7 +80,15 @@
           "default": "(CURRENT_TIMESTAMP)"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "beers_beer_id_unique": {
+          "name": "beers_beer_id_unique",
+          "columns": [
+            "beer_id"
+          ],
+          "isUnique": true
+        }
+      },
       "foreignKeys": {
         "beers_added_by_users_id_fk": {
           "name": "beers_added_by_users_id_fk",
@@ -296,6 +304,27 @@
           "notNull": true,
           "autoincrement": true
         },
+        "session_id": {
+          "name": "session_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "beer_id": {
+          "name": "beer_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
         "vote": {
           "name": "vote",
           "type": "text",
@@ -321,7 +350,47 @@
         }
       },
       "indexes": {},
-      "foreignKeys": {},
+      "foreignKeys": {
+        "votes_session_id_sessions_id_fk": {
+          "name": "votes_session_id_sessions_id_fk",
+          "tableFrom": "votes",
+          "tableTo": "sessions",
+          "columnsFrom": [
+            "session_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "votes_user_id_users_id_fk": {
+          "name": "votes_user_id_users_id_fk",
+          "tableFrom": "votes",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "votes_beer_id_beers_beer_id_fk": {
+          "name": "votes_beer_id_beers_beer_id_fk",
+          "tableFrom": "votes",
+          "tableTo": "beers",
+          "columnsFrom": [
+            "beer_id"
+          ],
+          "columnsTo": [
+            "beer_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {}

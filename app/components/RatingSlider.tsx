@@ -11,8 +11,8 @@ type InputProps = {
 export default function RatingSlider({ form, name, label }: InputProps) {
   const { min, max, stepSize } = sliderConf;
 
-  const marks = Array.from({ length: 21 }, (_, i) => ({
-    value: i * 0.25,
+  const marks = Array.from({ length: max / stepSize }, (_, i) => ({
+    value: (i + 1) * stepSize,
   }));
 
   const value = form.values[name];

@@ -1,6 +1,5 @@
 import {
   Card,
-  Divider,
   Flex,
   Grid,
   Image,
@@ -8,6 +7,7 @@ import {
   Stack,
   Text,
   Title,
+  useMantineTheme,
 } from "@mantine/core";
 import type { SelectVote } from "~/database/schema.types";
 
@@ -16,7 +16,6 @@ import calculateTotalScore from "~/utils/score";
 type InputProps = {
   beer: any;
   votes: SelectVote[];
-  title?: string;
   index?: number;
 };
 
@@ -25,7 +24,7 @@ const silver = "#c0c0c0";
 const bronze = "#8c6239";
 
 const getMedalColor = (index?: number) => {
-  if (index === undefined || index > 2) return "transparent";
+  if (index === undefined || index > 2) return null;
 
   return [gold, silver, bronze][index];
 };
@@ -39,8 +38,10 @@ const calculateVoteProgress = () => {
   return { labelText: `${votes}/${totalVotes}`, value: progress };
 };
 
-export function BeerCard({ beer, votes, title, index }: InputProps) {
+export function BeerCard({ beer, votes, index }: InputProps) {
   const { label, name, breweryName, style } = beer;
+
+  const theme = useMantineTheme();
 
   const RenderProgress = () => {
     const progress = calculateVoteProgress();
@@ -74,7 +75,9 @@ export function BeerCard({ beer, votes, title, index }: InputProps) {
     <Card
       shadow="sm"
       p="xs"
-      style={{ borderLeft: `8px solid ${getMedalColor(index)}` }}
+      style={{
+        borderLeft: `8px solid ${getMedalColor(index)}`,
+      }}
       withBorder
     >
       <Grid justify="space-between" align="center">

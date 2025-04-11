@@ -11,17 +11,17 @@ import {
   sessionsTable,
   usersTable,
 } from "~/database/schema.server";
+import { userSessionGet } from "~/auth/users.server";
 
 import { CreateSessionAction } from "./actions";
 
 import ActiveSession from "~/components/ActiveSession";
 import NoSession from "~/components/NoSession";
+import { ActiveSessions } from "~/components/ActiveSessions";
 
 import { slateIndigo, wait } from "~/utils/utils";
 
 import type { Route } from "./+types/home";
-import { userSessionGet } from "~/auth/users.server";
-import { ActiveSessions } from "~/components/ActiveSessions";
 
 export function meta({}: Route.MetaArgs) {
   return [

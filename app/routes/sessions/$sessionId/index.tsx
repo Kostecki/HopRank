@@ -1,50 +1,55 @@
 import { redirect, useLoaderData } from "react-router";
-import { eq, sql } from "drizzle-orm";
-import { Accordion, Paper } from "@mantine/core";
 
-import { db } from "~/database/config.server";
-import { ratingsTable, beersTable, votesTable } from "~/database/schema.server";
+import { Accordion, Paper } from "@mantine/core";
+import type { SelectVote } from "~/database/schema.types";
+import { userSessionGet } from "~/auth/users.server";
+import {
+  getRatings,
+  getSessionBeers,
+  getSessionDetails,
+  getSessionVotes,
+} from "~/database/helpers";
 
 import { BeerCard } from "~/components/BeerCard";
 import { BeerCardDetails } from "~/components/BeerCardDetails";
+import UpNext from "~/components/UpNext";
 
 import { setPageTitle } from "~/utils/utils";
 import smartShuffle from "~/utils/shuffle";
-
-import type { Route } from "../+types";
-import type { SelectVote } from "~/database/schema.types";
 import calculateTotalScore from "~/utils/score";
-import UpNext from "~/components/UpNext";
+
+import type { Route } from "./+types";
 
 export function meta({}: Route.MetaArgs) {
   return [{ title: setPageTitle("Smagning") }];
 }
 
-export async function loader({ params }: Route.LoaderArgs) {
+export async function loader({ request, params }: Route.LoaderArgs) {
   const { sessionId } = params;
+  const sessionIdNumber = Number(sessionId);
+
+  const user = await userSessionGet(request);
 
   if (!sessionId) {
     console.warn("Session ID is missing");
     redirect("/sessions");
   }
 
-  const ratingCategories = await db.select().from(ratingsTable);
+  // Database data fetching
+  const ratings = await getRatings();
+  const sessionDetails = await getSessionDetails(sessionIdNumber);
+  const sessionBeers = await getSessionBeers(sessionIdNumber);
+  const sessionVotes = await getSessionVotes(sessionIdNumber);
 
-  const sessionIdNumber = Number(sessionId);
-  const sessionBeers = await db
-    .select()
-    .from(beersTable)
-    .where(eq(beersTable.sessionId, sessionIdNumber));
-
-  const sessionVotes = await db
-    .select()
-    .from(votesTable)
-    .where(sql`json_extract(vote, '$.sessionId') = ${sessionIdNumber}`);
-
-  const ratedIds = new Set(sessionVotes.map((v) => v.vote.beerId));
+  // Split beers into rated and not rated
+  const ratedIds = new Set(sessionVotes.map((v) => v.beerId));
   const [ratedBeers, notRatedBeers] = sessionBeers.reduce(
     ([voted, notVoted], beer) => {
-      if (ratedIds.has(beer.beerId)) {
+      const votesForBeer = getVotesForBeer(sessionVotes, beer.beerId);
+      if (
+        ratedIds.has(beer.beerId) &&
+        sessionDetails.userCount === votesForBeer.length
+      ) {
         voted.push(beer);
       } else {
         notVoted.push(beer);
@@ -68,11 +73,14 @@ export async function loader({ params }: Route.LoaderArgs) {
     .sort((a, b) => b.score - a.score);
 
   // Random shuffle of the not rated beers
-  const notRatedBeersShuffled = smartShuffle(notRatedBeers);
+  const notRatedBeersShuffled = smartShuffle(
+    notRatedBeers,
+    sessionDetails.name
+  );
 
   return {
-    ratingCategories,
-    sessionIdNumber,
+    user,
+    ratings,
     sessionVotes,
     ratedBeersWithScore,
     notRatedBeersShuffled,
@@ -80,12 +88,13 @@ export async function loader({ params }: Route.LoaderArgs) {
 }
 
 const getVotesForBeer = (votes: SelectVote[], beerId: number) => {
-  return votes.filter((vote) => vote.vote.beerId === beerId);
+  return votes.filter((vote) => vote.beerId === beerId);
 };
 
 export default function SessionDetails() {
   const {
-    ratingCategories,
+    user,
+    ratings,
     sessionVotes,
     ratedBeersWithScore,
     notRatedBeersShuffled,
@@ -95,11 +104,15 @@ export default function SessionDetails() {
 
   return (
     <>
-      <UpNext
-        beer={upNextBeer}
-        votes={getVotesForBeer(sessionVotes, upNextBeer.beerId)}
-        mt={50}
-      />
+      {upNextBeer && (
+        <UpNext
+          beer={upNextBeer}
+          votes={getVotesForBeer(sessionVotes, upNextBeer.beerId)}
+          ratings={ratings}
+          user={user}
+          mt={50}
+        />
+      )}
 
       <Accordion unstyled chevron={false}>
         {ratedBeersWithScore.map((beer, index) => {
@@ -140,10 +153,7 @@ export default function SessionDetails() {
                     borderBottomRightRadius: "4px",
                   }}
                 >
-                  <BeerCardDetails
-                    ratingCategories={ratingCategories}
-                    beer={beer}
-                  />
+                  <BeerCardDetails ratings={ratings} beer={beer} />
                 </Paper>
               </Accordion.Panel>
             </Accordion.Item>

@@ -2,7 +2,7 @@ import type { SelectVote } from "~/database/schema.server";
 
 // Calculate average score for a single vote
 const calculateAverageScore = (vote: SelectVote): number => {
-  const { ratings } = vote.vote;
+  const { vote: ratings } = vote;
 
   // Handle case with no ratings or weights
   if (!ratings || ratings.length === 0) return 0;

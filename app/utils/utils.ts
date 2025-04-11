@@ -1,9 +1,9 @@
 const slateIndigo = "#484F65";
 
 const sliderConf = {
-  min: 0,
+  min: 0.25,
   max: 5,
-  stepSize: 0.1,
+  stepSize: 0.25,
   defaultValue: 2.5,
 };
 

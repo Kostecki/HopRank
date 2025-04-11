@@ -1,8 +1,11 @@
 import { Text } from "@mantine/core";
-import { redirect, type LoaderFunction } from "react-router";
+import { redirect } from "react-router";
+
 import { userSessionGet } from "~/auth/users.server";
 
-export async function loader({ request }: { request: Request }) {
+import type { Route } from "../+types/root";
+
+export async function loader({ request }: Route.LoaderArgs) {
   const user = await userSessionGet(request);
 
   if (user) {

@@ -7,8 +7,8 @@ import type {
   votesTable,
 } from "./schema.server";
 
-export type SelectRatingCategory = InferSelectModel<typeof ratingsTable>;
-export type InsertRatingCategory = InferInsertModel<typeof ratingsTable>;
+export type SelectRating = InferSelectModel<typeof ratingsTable>;
+export type InsertRating = InferInsertModel<typeof ratingsTable>;
 
 export type SelectSession = InferSelectModel<typeof sessionsTable>;
 export type InsertSession = InferInsertModel<typeof sessionsTable>;

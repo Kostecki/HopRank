@@ -47,7 +47,7 @@ const seedSessions = async () => {
 const seedUsers = async () => {
   const users = [
     { fbId: "10164421742167293", activeSessionId: 1 },
-    { fbId: "10164421742167294", activeSessionId: 2 },
+    { fbId: "10164421742167294", activeSessionId: 1 },
   ];
 
   const [existingUsers] = await db.select({ count: count() }).from(usersTable);
@@ -126,7 +126,7 @@ const seedVotes = async () => {
       userId: 1,
       sessionId: 1,
       beerId: 3279756,
-      ratings: [
+      vote: [
         {
           name: "Krit 1",
           rating: 4.5,
@@ -158,7 +158,7 @@ const seedVotes = async () => {
       userId: 1,
       sessionId: 1,
       beerId: 4081135,
-      ratings: [
+      vote: [
         {
           name: "Krit 1",
           rating: 1.5,
@@ -190,7 +190,7 @@ const seedVotes = async () => {
       userId: 1,
       sessionId: 1,
       beerId: 5751668,
-      ratings: [
+      vote: [
         {
           name: "Krit 1",
           rating: 5,
@@ -222,7 +222,7 @@ const seedVotes = async () => {
       userId: 1,
       sessionId: 1,
       beerId: 3279756,
-      ratings: [
+      vote: [
         {
           name: "Krit 1",
           rating: 4.5,
@@ -254,7 +254,7 @@ const seedVotes = async () => {
       userId: 2,
       sessionId: 2,
       beerId: 3279756,
-      ratings: [
+      vote: [
         {
           name: "Krit 1",
           rating: 4.5,
@@ -288,7 +288,7 @@ const seedVotes = async () => {
 
   if (existingVotes.count === 0) {
     console.log("Seeding Votes");
-    await db.insert(votesTable).values(votes.map((vote) => ({ vote })));
+    await db.insert(votesTable).values(votes.map((vote) => vote));
   }
 };
 
