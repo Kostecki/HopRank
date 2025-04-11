@@ -49,6 +49,7 @@ authenticator.use(
       authorizationEndpoint: FB_OAUTH_AUTH_ENDPOINT,
       tokenEndpoint: FB_OAUTH_TOKEN_ENDPOINT,
       redirectURI: `${BASE_URL}/auth/callback`,
+      scopes: ["public_profile"],
     },
     async ({ tokens }) => {
       const url = `${FB_OAUTH_USERINFO_ENDPOINT}?fields=id,name,picture`;

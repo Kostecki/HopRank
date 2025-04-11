@@ -13,6 +13,6 @@ export const loader: LoaderFunction = async ({ request }) => {
       headers: { "Set-Cookie": await commitSession(session) },
     });
   } catch (error) {
-    return redirect("auth/login");
+    return redirect("/auth/login");
   }
 };
