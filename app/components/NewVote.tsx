@@ -20,7 +20,7 @@ type InputProps = {
   votes: SelectVote[];
 };
 
-export default function NewRating({ user, ratings, beer, votes }: InputProps) {
+export default function NewVote({ user, ratings, beer, votes }: InputProps) {
   const fetcher = useFetcher();
   const { sessionId } = useParams();
 

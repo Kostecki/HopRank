@@ -8,7 +8,7 @@ import type {
 } from "~/database/schema.types";
 
 import { BeerCard } from "./BeerCard";
-import NewRating from "./NewRating";
+import NewVote from "./NewVote";
 
 import { createLink } from "~/utils/untappd";
 import type { SessionUser } from "~/auth/auth.server";
@@ -39,7 +39,7 @@ export default function UpNext({
         <BeerCard beer={beer} votes={votes} sessionDetails={sessionDetails} />
       </Anchor>
 
-      <NewRating ratings={ratings} beer={beer} user={user} votes={votes} />
+      <NewVote ratings={ratings} beer={beer} user={user} votes={votes} />
 
       <Divider my="lg" opacity={0.3} />
     </Box>
