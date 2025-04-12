@@ -8,6 +8,7 @@ import {
   votesTable,
 } from "./schema.server";
 import { redirect } from "react-router";
+import { createNameId } from "mnemonic-id";
 
 const getRatings = async () => {
   return await db.select().from(ratingsTable);
@@ -78,6 +79,27 @@ const leaveSession = async (userId: number) => {
   return redirect("/home");
 };
 
+const MAX_ATTEMPTS = 5;
+const generateUniqueSessionName = async () => {
+  for (let i = 0; i < MAX_ATTEMPTS; i++) {
+    const name = createNameId();
+
+    const existing = await db
+      .select()
+      .from(sessionsTable)
+      .where(eq(sessionsTable.name, name))
+      .limit(1);
+
+    if (existing.length === 0) {
+      return name;
+    }
+  }
+
+  throw new Error(
+    "Failed to generate a unique session name after several attempts"
+  );
+};
+
 export {
   getRatings,
   getActiveSessions,
@@ -85,4 +107,5 @@ export {
   getSessionBeers,
   getSessionVotes,
   leaveSession,
+  generateUniqueSessionName,
 };

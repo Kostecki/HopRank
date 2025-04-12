@@ -1,5 +1,6 @@
 import { redirect, useLoaderData } from "react-router";
 import { count, eq } from "drizzle-orm";
+import { Box, Divider, Paper, Text } from "@mantine/core";
 
 import { userSessionGet } from "~/auth/users.server";
 import { db } from "~/database/config.server";
@@ -7,6 +8,7 @@ import { beersTable } from "~/database/schema.server";
 import { getActiveSessions } from "~/database/helpers";
 
 import SessionsTable from "~/components/SessionsTable";
+import NewSession from "~/components/NewSession";
 
 import { getPageTitle } from "~/utils/utils";
 
@@ -44,5 +46,20 @@ export async function loader({ request }: Route.LoaderArgs) {
 export default function Sessions() {
   const { user, activeSessions } = useLoaderData<typeof loader>();
 
-  return <SessionsTable mt={64} user={user} sessions={activeSessions} />;
+  return (
+    <Box mt={64}>
+      <Paper p="md" radius="md" withBorder>
+        <Text fw="bold">Aktive smagninger</Text>
+        <Text c="dimmed" size="sm" fs="italic">
+          Vælg en aktiv smagning for at deltage
+        </Text>
+
+        <SessionsTable user={user} sessions={activeSessions} />
+
+        <Divider opacity={0.4} my="lg" />
+
+        <NewSession />
+      </Paper>
+    </Box>
+  );
 }

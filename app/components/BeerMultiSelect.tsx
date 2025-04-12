@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { useRef } from "react";
+import { useFetcher } from "react-router";
 import {
   CheckIcon,
   Combobox,
@@ -14,11 +16,59 @@ import {
 } from "@mantine/core";
 import { useDebouncedValue } from "@mantine/hooks";
 
+type BeerOption = {
+  beerId: string;
+  name: string;
+  style: string;
+  breweryName: string;
+  label: string;
+};
+
 type InputProps = {
-  selectedBeers: { value: string; label: string; brewery: string }[];
-  setSelectedBeers: (
-    value: { value: string; label: string; brewery: string }[]
-  ) => void;
+  selectedBeers: BeerOption[];
+  setSelectedBeers: (value: BeerOption[]) => void;
+};
+
+const getSelectedPills = (
+  selectedBeers: BeerOption[],
+  onRemove: (val: string) => void
+) => {
+  return selectedBeers.map((beer) => (
+    <Pill
+      key={beer.beerId}
+      withRemoveButton
+      onRemove={() => onRemove(beer.beerId)}
+    >
+      {beer.name}
+    </Pill>
+  ));
+};
+
+const getComboboxOptions = (
+  options: BeerOption[],
+  selectedBeers: BeerOption[]
+) => {
+  return options.map((option) => {
+    const isSelected = selectedBeers.some((b) => b.beerId === option.beerId);
+
+    return (
+      <Combobox.Option
+        key={option.beerId}
+        value={option.beerId}
+        active={isSelected}
+      >
+        <Group gap="sm">
+          {isSelected && <CheckIcon size={12} />}
+          <Box>
+            <Text size="sm">{option.name}</Text>
+            <Text size="xs" c="gray" mt="3">
+              {option.breweryName}
+            </Text>
+          </Box>
+        </Group>
+      </Combobox.Option>
+    );
+  });
 };
 
 export default function BeerMultiSelect({
@@ -31,51 +81,13 @@ export default function BeerMultiSelect({
   });
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [options, setOptions] = useState<
-    { value: string; label: string; brewery: string }[]
-  >([]);
-  const [loading, setLoading] = useState(false);
-
-  // Use the debounced search term
-  const [debouncedSearchTerm] = useDebouncedValue(searchTerm, 300);
-
-  const fetchBeers = async (search: string) => {
-    if (!search.trim()) {
-      setOptions([]);
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      const results = await fetch(`/api/beers?q=${search}`);
-      const data = await results.json();
-
-      setOptions(
-        data.map((beer: any) => ({
-          value: beer.id,
-          label: beer.name,
-          brewery: beer.brewery,
-        }))
-      );
-    } catch (error) {
-      console.error("Error fetching beers:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (debouncedSearchTerm) {
-      fetchBeers(debouncedSearchTerm);
-    }
-  }, [debouncedSearchTerm]);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const fetcher = useFetcher<BeerOption[]>();
 
   const handleValueSelect = (val: string) => {
-    const selectedBeer = options.find((beer) => beer.value === val);
-
+    const selectedBeer = options.find((beer) => beer.beerId === val);
     const isBeerAlreadySelected = selectedBeers.some(
-      (beer) => beer.value === val
+      (beer) => beer.beerId === val
     );
 
     if (isBeerAlreadySelected) {
@@ -83,41 +95,30 @@ export default function BeerMultiSelect({
     } else if (selectedBeer) {
       setSelectedBeers([...selectedBeers, selectedBeer]);
     }
+
+    setSearchTerm("");
+    combobox.closeDropdown();
+    inputRef.current?.blur();
   };
 
   const handleValueRemove = (val: string) => {
-    setSelectedBeers(selectedBeers.filter((beer) => beer.value !== val));
+    setSelectedBeers(selectedBeers.filter((beer) => beer.beerId !== val));
   };
 
-  const values = selectedBeers.map((beer) => (
-    <Pill
-      key={beer.value}
-      withRemoveButton
-      onRemove={() => handleValueRemove(beer.value)}
-    >
-      {beer.label}
-    </Pill>
-  ));
+  // Use the debounced search term
+  const [debouncedSearchTerm] = useDebouncedValue(searchTerm, 500);
 
-  const optionsList = options.map((option) => (
-    <Combobox.Option
-      key={option.value}
-      value={option.value}
-      active={selectedBeers.some((beer) => beer.value === option.value)}
-    >
-      <Group gap="sm">
-        {selectedBeers.some((beer) => beer.value === option.value) && (
-          <CheckIcon size={12} />
-        )}
-        <Box>
-          <Text size="sm">{option.label}</Text>
-          <Text size="xs" c="gray" mt="3">
-            {option.brewery}
-          </Text>
-        </Box>
-      </Group>
-    </Combobox.Option>
-  ));
+  useEffect(() => {
+    if (debouncedSearchTerm.trim()) {
+      fetcher.load(`/api/beers?q=${debouncedSearchTerm}`);
+    }
+  }, [debouncedSearchTerm]);
+
+  const options = fetcher.data || [];
+  const isLoading = fetcher.state === "loading";
+
+  const values = getSelectedPills(selectedBeers, handleValueRemove);
+  const optionsList = getComboboxOptions(options, selectedBeers);
 
   return (
     <>
@@ -139,9 +140,10 @@ export default function BeerMultiSelect({
                   setSearchTerm(event.currentTarget.value);
                 }}
                 w="100%"
+                ref={inputRef}
               />
             </Combobox.EventsTarget>
-            {loading && (
+            {isLoading && (
               <Loader
                 size={16}
                 style={{
@@ -152,14 +154,13 @@ export default function BeerMultiSelect({
                 }}
               />
             )}
-            {!loading && searchTerm.length > 0 && optionsList.length > 0 && (
+            {!isLoading && searchTerm.length > 0 && optionsList.length > 0 && (
               <CloseButton
                 size="sm"
                 onMouseDown={(event) => event.preventDefault()}
                 onClick={() => {
                   combobox.closeDropdown();
                   setSearchTerm("");
-                  setOptions([]);
                 }}
                 pos="absolute"
                 right={10}
@@ -171,22 +172,26 @@ export default function BeerMultiSelect({
         <Combobox.Dropdown>
           <Combobox.Options>
             <ScrollArea.Autosize mah={400} type="scroll">
-              {optionsList.length > 0 ? (
-                optionsList
+              {searchTerm.trim() === "" ? (
+                <Combobox.Empty>
+                  Start med at skrive for at søge efter øl
+                </Combobox.Empty>
+              ) : options.length === 0 ? (
+                <Combobox.Empty>Ingen matchende øl fundet</Combobox.Empty>
               ) : (
-                <Combobox.Empty>Ingen matchende øl fundet...</Combobox.Empty>
+                optionsList
               )}
             </ScrollArea.Autosize>
           </Combobox.Options>
         </Combobox.Dropdown>
       </Combobox>
       {values.length > 0 && (
-        <>
-          <Text size="sm" mt="md" c="dimmed">
+        <Box mb="sm">
+          <Text size="sm" c="dimmed" mb={8}>
             Valgte øl:
           </Text>
           <Pill.Group>{values}</Pill.Group>
-        </>
+        </Box>
       )}
     </>
   );
