@@ -79,13 +79,17 @@ export function Header({
               <Group gap="xs" mr="xs">
                 <Menu shadow="md" withArrow width={175}>
                   <Menu.Target>
-                    <Button c="slateIndigo" variant="light">
-                      {sessionDetails.name}
+                    <Button
+                      c="slateIndigo"
+                      color="slateIndigo"
+                      variant="outline"
+                    >
+                      Smagning
                     </Button>
                   </Menu.Target>
 
                   <Menu.Dropdown>
-                    <Menu.Label>Aktive smagning</Menu.Label>
+                    <Menu.Label>{sessionDetails.name}</Menu.Label>
                     <Menu.Item leftSection={<IconPlus size={14} />}>
                       Tilføj øl
                     </Menu.Item>
