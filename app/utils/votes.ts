@@ -6,6 +6,8 @@ import type {
 import { calculateTotalScore } from "./score";
 
 const getVotesForBeer = (votes: SelectVote[], id: number) => {
+  if (!id) return [];
+
   const beerVotes = votes.filter((vote) => vote.beerId === id);
   return beerVotes;
 };
@@ -15,7 +17,7 @@ const getRatedAndNotRatedBeers = (
   sessionVotes: SelectVote[],
   sessionDetails: SelectSession
 ) => {
-  const ratedIds = new Set(sessionVotes.map((v) => v.id));
+  const ratedIds = new Set(sessionVotes.map((v) => v.beerId));
 
   const [ratedBeers, notRatedBeers] = sessionBeers.reduce(
     ([voted, notVoted], beer) => {
@@ -63,7 +65,7 @@ const getBeersOrderedByScore = (
 ) => {
   const beersWithScore = beers
     .map((beer) => {
-      const votesForBeer = getVotesForBeer(sessionVotes, beer.beerId);
+      const votesForBeer = getVotesForBeer(sessionVotes, beer.id);
       const score = calculateTotalScore(votesForBeer);
 
       return {

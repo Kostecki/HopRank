@@ -80,7 +80,7 @@ export default function SessionDetails() {
   } = useLoaderData<typeof loader>();
 
   const upNextBeer = notRatedBeersShuffled[0];
-  const votesNextBeer = getVotesForBeer(sessionVotes, upNextBeer.id);
+  const votesNextBeer = getVotesForBeer(sessionVotes, upNextBeer?.id);
 
   return (
     <>
