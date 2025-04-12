@@ -1,0 +1,1 @@
+ALTER TABLE `beers` RENAME COLUMN "beer_id" TO "untappd_beer_id";

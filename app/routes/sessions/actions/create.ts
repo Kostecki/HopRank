@@ -57,7 +57,7 @@ export async function action({ request }: Route.ActionArgs) {
           beers.map((beer) => ({
             addedBy: user.id,
             sessionId,
-            beerId: Number(beer.beerId),
+            untappdBeerId: Number(beer.untappdBeerId),
             name: beer.name,
             style: beer.style,
             breweryName: beer.breweryName,

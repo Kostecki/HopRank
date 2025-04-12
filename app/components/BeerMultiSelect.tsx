@@ -13,6 +13,7 @@ import {
   ScrollArea,
   Box,
   CloseButton,
+  type BoxProps,
 } from "@mantine/core";
 import { useDebouncedValue } from "@mantine/hooks";
 
@@ -21,7 +22,7 @@ import type { BeerOption } from "~/types/misc";
 type InputProps = {
   selectedBeers: BeerOption[];
   setSelectedBeers: (value: BeerOption[]) => void;
-};
+} & BoxProps;
 
 const getSelectedPills = (
   selectedBeers: BeerOption[],
@@ -29,9 +30,9 @@ const getSelectedPills = (
 ) => {
   return selectedBeers.map((beer) => (
     <Pill
-      key={beer.beerId}
+      key={beer.untappdBeerId}
       withRemoveButton
-      onRemove={() => onRemove(beer.beerId)}
+      onRemove={() => onRemove(beer.untappdBeerId)}
     >
       {beer.name}
     </Pill>
@@ -43,12 +44,14 @@ const getComboboxOptions = (
   selectedBeers: BeerOption[]
 ) => {
   return options.map((option) => {
-    const isSelected = selectedBeers.some((b) => b.beerId === option.beerId);
+    const isSelected = selectedBeers.some(
+      (b) => b.untappdBeerId === option.untappdBeerId
+    );
 
     return (
       <Combobox.Option
-        key={option.beerId}
-        value={option.beerId}
+        key={option.untappdBeerId}
+        value={option.untappdBeerId}
         active={isSelected}
       >
         <Group gap="sm">
@@ -68,6 +71,7 @@ const getComboboxOptions = (
 export default function BeerMultiSelect({
   selectedBeers,
   setSelectedBeers,
+  ...props
 }: InputProps) {
   const combobox = useCombobox({
     onDropdownClose: () => combobox.resetSelectedOption(),
@@ -76,12 +80,12 @@ export default function BeerMultiSelect({
 
   const [searchTerm, setSearchTerm] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
-  const fetcher = useFetcher<BeerOption[]>();
+  const searchFetcher = useFetcher<BeerOption[]>();
 
   const handleValueSelect = (val: string) => {
-    const selectedBeer = options.find((beer) => beer.beerId === val);
+    const selectedBeer = options.find((beer) => beer.untappdBeerId === val);
     const isBeerAlreadySelected = selectedBeers.some(
-      (beer) => beer.beerId === val
+      (beer) => beer.untappdBeerId === val
     );
 
     if (isBeerAlreadySelected) {
@@ -96,26 +100,29 @@ export default function BeerMultiSelect({
   };
 
   const handleValueRemove = (val: string) => {
-    setSelectedBeers(selectedBeers.filter((beer) => beer.beerId !== val));
+    setSelectedBeers(
+      selectedBeers.filter((beer) => beer.untappdBeerId !== val)
+    );
   };
 
   // Use the debounced search term
   const [debouncedSearchTerm] = useDebouncedValue(searchTerm, 500);
 
   useEffect(() => {
-    if (debouncedSearchTerm.trim()) {
-      fetcher.load(`/api/beers?q=${debouncedSearchTerm}`);
+    if (debouncedSearchTerm.trim() && combobox.dropdownOpened) {
+      searchFetcher.load(`/api/beers?q=${debouncedSearchTerm}`);
     }
   }, [debouncedSearchTerm]);
 
-  const options = fetcher.data || [];
-  const isLoading = fetcher.state === "loading";
+  const options = searchFetcher.data || [];
+  const isLoading =
+    searchFetcher.state === "loading" && searchTerm.trim().length > 0;
 
   const values = getSelectedPills(selectedBeers, handleValueRemove);
   const optionsList = getComboboxOptions(options, selectedBeers);
 
   return (
-    <>
+    <Box {...props}>
       <Combobox
         store={combobox}
         onOptionSubmit={handleValueSelect}
@@ -180,13 +187,13 @@ export default function BeerMultiSelect({
         </Combobox.Dropdown>
       </Combobox>
       {values.length > 0 && (
-        <Box mb="sm">
+        <Box mb="sm" mt="sm">
           <Text size="sm" c="dimmed" mb={8}>
             Valgte øl:
           </Text>
           <Pill.Group>{values}</Pill.Group>
         </Box>
       )}
-    </>
+    </Box>
   );
 }

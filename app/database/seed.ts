@@ -64,7 +64,7 @@ const seedBeers = async () => {
     {
       sessionId: 1,
       addedBy: 1,
-      beerId: 3279756,
+      untappdBeerId: 3279756,
       name: "Rubus of Gold",
       style: "Wild Ale - Other",
       breweryName: "Baghaven Brewing and Blending",
@@ -74,7 +74,7 @@ const seedBeers = async () => {
     {
       sessionId: 1,
       addedBy: 1,
-      beerId: 4081135,
+      untappdBeerId: 4081135,
       name: "Goofy",
       style: "Brown Ale - English",
       breweryName: "Gamma Brewing Company",
@@ -84,7 +84,7 @@ const seedBeers = async () => {
     {
       sessionId: 1,
       addedBy: 1,
-      beerId: 87308,
+      untappdBeerId: 87308,
       name: "Andechser Hell",
       style: "Lager - Helles",
       breweryName: "Klosterbrauerei Andechs",
@@ -94,7 +94,7 @@ const seedBeers = async () => {
     {
       sessionId: 1,
       addedBy: 2,
-      beerId: 5751668,
+      untappdBeerId: 5751668,
       name: "Delirium Tremens (2024)",
       style: "Belgian Strong Golden Ale",
       breweryName: "Delirium - Huyghe Brewery",
@@ -104,7 +104,7 @@ const seedBeers = async () => {
     {
       sessionId: 2,
       addedBy: 1,
-      beerId: 6797,
+      untappdBeerId: 6797,
       name: "Tuborg Grøn",
       style: "Pilsner - Other",
       breweryName: "Carlsberg Group",
@@ -114,7 +114,7 @@ const seedBeers = async () => {
     {
       sessionId: 2,
       addedBy: 1,
-      beerId: 3279756,
+      untappdBeerId: 3279756,
       name: "Rubus of Gold",
       style: "Wild Ale - Other",
       breweryName: "Baghaven Brewing and Blending",

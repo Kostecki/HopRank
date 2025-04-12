@@ -52,7 +52,7 @@ export default function NewVote({ user, ratings, beer, votes }: InputProps) {
       sessionId: Number(sessionId),
       userId: user.id,
       id: beer.id,
-      beerId: beer.beerId,
+      untappdBeerId: beer.untappdBeerId,
       ratings: Object.entries(values).map(([name, rating]) => ({
         name,
         rating,

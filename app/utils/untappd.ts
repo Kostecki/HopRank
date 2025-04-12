@@ -1,5 +1,5 @@
-const createLink = (beerId: number) => {
-  return `https://untappd.com/beer/${beerId}`;
+const createLink = (untappdBeerId: number) => {
+  return `https://untappd.com/beer/${untappdBeerId}`;
 };
 
 export { createLink };

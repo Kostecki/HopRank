@@ -1,5 +1,5 @@
 export type BeerOption = {
-  beerId: string;
+  untappdBeerId: string;
   name: string;
   style: string;
   breweryName: string;

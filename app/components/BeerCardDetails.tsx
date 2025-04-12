@@ -10,7 +10,7 @@ type InputProps = {
 };
 
 export function BeerCardDetails({ beer, votes }: InputProps) {
-  const { beerId } = beer;
+  const { untappdBeerId } = beer;
 
   const totalScores = calculateSingleTotalScore(votes);
 
@@ -37,7 +37,7 @@ export function BeerCardDetails({ beer, votes }: InputProps) {
       <Button
         variant="light"
         component="a"
-        href={createLink(beerId)}
+        href={createLink(untappdBeerId)}
         target="_blank"
         color="teal"
         fullWidth

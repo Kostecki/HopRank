@@ -30,7 +30,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 
   const jsonData = (await response.json()) as AlgoliaBeerResponse;
   const beers = jsonData.hits.map((beer) => ({
-    beerId: beer.bid.toString(),
+    untappdBeerId: beer.bid.toString(),
     name: beer.beer_name,
     style: beer.type_name,
     breweryName: beer.brewery_name,

@@ -78,7 +78,7 @@ export const beersTable = sqliteTable("beers", {
   sessionId: int("session_id")
     .notNull()
     .references(() => sessionsTable.id),
-  beerId: int("beer_id").notNull(),
+  untappdBeerId: int("untappd_beer_id").notNull(),
   name: text("name").notNull(),
   style: text("style").notNull(),
   breweryName: text("brewery_name").notNull(),

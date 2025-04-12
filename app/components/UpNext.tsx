@@ -35,7 +35,11 @@ export default function UpNext({
         Næste Øl
       </Text>
 
-      <Anchor href={createLink(beer.beerId)} target="_blank" underline="never">
+      <Anchor
+        href={createLink(beer.untappdBeerId)}
+        target="_blank"
+        underline="never"
+      >
         <BeerCard beer={beer} votes={votes} sessionDetails={sessionDetails} />
       </Anchor>
 
