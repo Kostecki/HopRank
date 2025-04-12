@@ -1,7 +1,6 @@
 import { redirect, useLoaderData } from "react-router";
 
 import { Accordion } from "@mantine/core";
-import type { SelectVote } from "~/database/schema.types";
 import { userSessionGet } from "~/auth/users.server";
 import {
   getRatings,
@@ -19,6 +18,7 @@ import smartShuffle from "~/utils/shuffle";
 import {
   getBeersOrderedByScore,
   getRatedAndNotRatedBeers,
+  getVotesForBeer,
 } from "~/utils/votes";
 
 import type { Route } from "./+types";
@@ -69,10 +69,6 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   };
 }
 
-const getVotesForBeer = (votes: SelectVote[], beerId: number) => {
-  return votes.filter((vote) => vote.beerId === beerId);
-};
-
 export default function SessionDetails() {
   const {
     user,
@@ -84,7 +80,7 @@ export default function SessionDetails() {
   } = useLoaderData<typeof loader>();
 
   const upNextBeer = notRatedBeersShuffled[0];
-  const votesNextBeer = getVotesForBeer(sessionVotes, upNextBeer.beerId);
+  const votesNextBeer = getVotesForBeer(sessionVotes, upNextBeer.id);
 
   return (
     <>
@@ -102,7 +98,7 @@ export default function SessionDetails() {
       <Accordion unstyled chevron={false}>
         {ratedBeersWithScore.map((beer, index) => {
           const { id } = beer;
-          const votesForBeer = getVotesForBeer(sessionVotes, beer.beerId);
+          const votesForBeer = getVotesForBeer(sessionVotes, beer.id);
 
           return (
             <Accordion.Item

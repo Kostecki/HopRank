@@ -31,7 +31,7 @@ export default function NewVote({ user, ratings, beer, votes }: InputProps) {
 
     const vote = votes.find(
       (v) =>
-        v.beerId === beer.beerId &&
+        v.beerId === beer.id &&
         v.sessionId === Number(sessionId) &&
         v.userId === user.id
     );
@@ -51,6 +51,7 @@ export default function NewVote({ user, ratings, beer, votes }: InputProps) {
     const vote = {
       sessionId: Number(sessionId),
       userId: user.id,
+      id: beer.id,
       beerId: beer.beerId,
       ratings: Object.entries(values).map(([name, rating]) => ({
         name,
@@ -64,7 +65,7 @@ export default function NewVote({ user, ratings, beer, votes }: InputProps) {
 
     await fetcher.submit(formData, {
       method: "POST",
-      action: `/sessions/vote`,
+      action: "/sessions/vote",
     });
   };
 

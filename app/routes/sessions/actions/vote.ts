@@ -25,7 +25,7 @@ export async function action({ request }: Route.ActionArgs) {
       .values({
         sessionId: vote.sessionId,
         userId: vote.userId,
-        beerId: vote.beerId,
+        beerId: vote.id,
         vote: vote.ratings,
       })
       .onConflictDoUpdate({

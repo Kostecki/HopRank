@@ -111,6 +111,16 @@ const seedBeers = async () => {
       label:
         "https://assets.untappd.com/site/beer_logos/beer-6797_09553_sm.jpeg",
     },
+    {
+      sessionId: 2,
+      addedBy: 1,
+      beerId: 3279756,
+      name: "Rubus of Gold",
+      style: "Wild Ale - Other",
+      breweryName: "Baghaven Brewing and Blending",
+      label:
+        "https://assets.untappd.com/site/beer_logos/beer-3279756_bb129_sm.jpeg",
+    },
   ];
 
   const [existingBeers] = await db.select({ count: count() }).from(beersTable);
@@ -126,7 +136,7 @@ const seedVotes = async () => {
     {
       userId: 1,
       sessionId: 1,
-      beerId: 3279756,
+      beerId: 1,
       vote: [
         {
           name: "Kriterie 1",
@@ -158,7 +168,7 @@ const seedVotes = async () => {
     {
       userId: 1,
       sessionId: 1,
-      beerId: 4081135,
+      beerId: 2,
       vote: [
         {
           name: "Kriterie 1",
@@ -190,7 +200,7 @@ const seedVotes = async () => {
     {
       userId: 1,
       sessionId: 1,
-      beerId: 5751668,
+      beerId: 4,
       vote: [
         {
           name: "Kriterie 1",
@@ -222,7 +232,7 @@ const seedVotes = async () => {
     {
       userId: 2,
       sessionId: 1,
-      beerId: 3279756,
+      beerId: 1,
       vote: [
         {
           name: "Kriterie 1",
@@ -254,7 +264,7 @@ const seedVotes = async () => {
     {
       userId: 2,
       sessionId: 2,
-      beerId: 3279756,
+      beerId: 6,
       vote: [
         {
           name: "Kriterie 1",

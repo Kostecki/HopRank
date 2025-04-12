@@ -5,8 +5,9 @@ import type {
 } from "~/database/schema.types";
 import { calculateTotalScore } from "./score";
 
-const getVotesForBeer = (votes: SelectVote[], beerId: number) => {
-  return votes.filter((vote) => vote.beerId === beerId);
+const getVotesForBeer = (votes: SelectVote[], id: number) => {
+  const beerVotes = votes.filter((vote) => vote.beerId === id);
+  return beerVotes;
 };
 
 const getRatedAndNotRatedBeers = (
@@ -14,13 +15,13 @@ const getRatedAndNotRatedBeers = (
   sessionVotes: SelectVote[],
   sessionDetails: SelectSession
 ) => {
-  const ratedIds = new Set(sessionVotes.map((v) => v.beerId));
+  const ratedIds = new Set(sessionVotes.map((v) => v.id));
 
   const [ratedBeers, notRatedBeers] = sessionBeers.reduce(
     ([voted, notVoted], beer) => {
-      const votesForBeer = getVotesForBeer(sessionVotes, beer.beerId);
+      const votesForBeer = getVotesForBeer(sessionVotes, beer.id);
       if (
-        ratedIds.has(beer.beerId) &&
+        ratedIds.has(beer.id) &&
         sessionDetails.userCount === votesForBeer.length
       ) {
         voted.push(beer);

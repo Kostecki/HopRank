@@ -49,7 +49,7 @@ export const votesTable = sqliteTable(
       .references(() => usersTable.id),
     beerId: int("beer_id")
       .notNull()
-      .references(() => beersTable.beerId),
+      .references(() => beersTable.id),
     vote: text("vote", { mode: "json" }).$type<Vote[]>().notNull(),
     createdAt: text("created_at")
       .notNull()
@@ -78,7 +78,7 @@ export const beersTable = sqliteTable("beers", {
   sessionId: int("session_id")
     .notNull()
     .references(() => sessionsTable.id),
-  beerId: int("beer_id").notNull().unique(),
+  beerId: int("beer_id").notNull(),
   name: text("name").notNull(),
   style: text("style").notNull(),
   breweryName: text("brewery_name").notNull(),

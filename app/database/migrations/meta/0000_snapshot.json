@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "f59006e2-1daf-48cf-a026-164f1ad2a367",
+  "id": "f323d385-f8a5-4a43-aea8-a1574818a045",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "beers": {
@@ -80,15 +80,7 @@
           "default": "(CURRENT_TIMESTAMP)"
         }
       },
-      "indexes": {
-        "beers_beer_id_unique": {
-          "name": "beers_beer_id_unique",
-          "columns": [
-            "beer_id"
-          ],
-          "isUnique": true
-        }
-      },
+      "indexes": {},
       "foreignKeys": {
         "beers_added_by_users_id_fk": {
           "name": "beers_added_by_users_id_fk",
@@ -387,15 +379,15 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "votes_beer_id_beers_beer_id_fk": {
-          "name": "votes_beer_id_beers_beer_id_fk",
+        "votes_beer_id_beers_id_fk": {
+          "name": "votes_beer_id_beers_id_fk",
           "tableFrom": "votes",
           "tableTo": "beers",
           "columnsFrom": [
             "beer_id"
           ],
           "columnsTo": [
-            "beer_id"
+            "id"
           ],
           "onDelete": "no action",
           "onUpdate": "no action"
