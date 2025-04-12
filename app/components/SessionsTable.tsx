@@ -1,5 +1,6 @@
-import { Button, Table } from "@mantine/core";
+import { useState } from "react";
 import { useFetcher } from "react-router";
+import { Button, Flex, Pagination, Table } from "@mantine/core";
 
 import type { SessionUser } from "~/auth/auth.server";
 import { type SelectSession } from "~/database/schema.types";
@@ -9,8 +10,17 @@ type InputProps = {
   sessions: SelectSession[];
 };
 
+const perPage = 10;
+
 export default function SessionsTable({ user, sessions }: InputProps) {
+  const [page, setPage] = useState(1);
+
   const fetcher = useFetcher();
+
+  const total = sessions.length;
+  const start = (page - 1) * perPage;
+  const end = start + perPage;
+  const paginatedSessions = sessions.slice(start, end);
 
   const handleSubmit = (userId: number, sessionId: number) => {
     const data = {
@@ -24,7 +34,7 @@ export default function SessionsTable({ user, sessions }: InputProps) {
     });
   };
 
-  const rows = sessions.map((session) => (
+  const rows = paginatedSessions.map((session) => (
     <Table.Tr key={session.id}>
       <Table.Td tt="capitalize">{session.name}</Table.Td>
       <Table.Td ta="center">{session.userCount}</Table.Td>
@@ -47,16 +57,30 @@ export default function SessionsTable({ user, sessions }: InputProps) {
   ));
 
   return (
-    <Table mt="lg">
-      <Table.Thead>
-        <Table.Tr>
-          <Table.Th>Smagning</Table.Th>
-          <Table.Th ta="center">Deltagere</Table.Th>
-          <Table.Th ta="center">Øl</Table.Th>
-          <Table.Td ta="center"></Table.Td>
-        </Table.Tr>
-      </Table.Thead>
-      <Table.Tbody>{rows}</Table.Tbody>
-    </Table>
+    <>
+      <Table mt="lg">
+        <Table.Thead>
+          <Table.Tr>
+            <Table.Th>Smagning</Table.Th>
+            <Table.Th ta="center">Deltagere</Table.Th>
+            <Table.Th ta="center">Øl</Table.Th>
+            <Table.Td ta="center"></Table.Td>
+          </Table.Tr>
+        </Table.Thead>
+        <Table.Tbody>{rows}</Table.Tbody>
+      </Table>
+
+      {total > perPage && (
+        <Flex justify="center" mt="lg">
+          <Pagination
+            total={Math.ceil(total / perPage)}
+            value={page}
+            onChange={setPage}
+            radius="md"
+            size="sm"
+          />
+        </Flex>
+      )}
+    </>
   );
 }
