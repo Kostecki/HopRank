@@ -12,6 +12,7 @@ import {
 import { Header } from "~/components/Header";
 
 import type { Route } from "../+types/root";
+import { getBeersVotedByAllUsers } from "~/utils/votes";
 
 export async function loader({ params, request }: Route.LoaderArgs) {
   const user = await userSessionGet(request);
@@ -20,30 +21,24 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 
   let sessionDetails = undefined;
   let sessionBeers = undefined;
-  let ratedBeersCount = undefined;
+  let completedBeersCount = undefined;
 
   if (sessionId) {
     sessionDetails = await getSessionDetails(sessionId);
     sessionBeers = await getSessionBeers(sessionId);
     const sessionVotes = await getSessionVotes(sessionId);
 
-    const ratedIds = new Set(sessionVotes.map((v) => v.beerId));
-    const ratedBeers = sessionBeers.reduce((voted, beer) => {
-      if (ratedIds.has(beer.beerId)) {
-        voted.push(beer);
-      }
-
-      return voted;
-    }, [] as typeof sessionBeers);
-
-    ratedBeersCount = ratedBeers.length;
+    completedBeersCount = getBeersVotedByAllUsers(
+      sessionVotes,
+      sessionDetails.userCount
+    );
   }
 
-  return { user, sessionDetails, sessionBeers, ratedBeersCount };
+  return { user, sessionDetails, sessionBeers, completedBeersCount };
 }
 
 export default function Layout() {
-  const { user, sessionDetails, sessionBeers, ratedBeersCount } =
+  const { user, sessionDetails, sessionBeers, completedBeersCount } =
     useLoaderData<typeof loader>();
 
   return (
@@ -53,7 +48,7 @@ export default function Layout() {
           user={user}
           sessionDetails={sessionDetails}
           sessionBeers={sessionBeers}
-          ratedBeersCount={ratedBeersCount}
+          ratedBeersCount={completedBeersCount}
         />
       </AppShell.Header>
 

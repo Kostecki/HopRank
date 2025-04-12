@@ -16,7 +16,10 @@ import UpNext from "~/components/UpNext";
 
 import { getPageTitle } from "~/utils/utils";
 import smartShuffle from "~/utils/shuffle";
-import { calculateTotalScore } from "~/utils/score";
+import {
+  getBeersOrderedByScore,
+  getRatedAndNotRatedBeers,
+} from "~/utils/votes";
 
 import type { Route } from "./+types";
 
@@ -41,42 +44,20 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   const sessionBeers = await getSessionBeers(sessionIdNumber);
   const sessionVotes = await getSessionVotes(sessionIdNumber);
 
+  const { name: sessionName } = sessionDetails;
+
   // Split beers into rated and not rated
-  const ratedIds = new Set(sessionVotes.map((v) => v.beerId));
-  const [ratedBeers, notRatedBeers] = sessionBeers.reduce(
-    ([voted, notVoted], beer) => {
-      const votesForBeer = getVotesForBeer(sessionVotes, beer.beerId);
-      if (
-        ratedIds.has(beer.beerId) &&
-        sessionDetails.userCount === votesForBeer.length
-      ) {
-        voted.push(beer);
-      } else {
-        notVoted.push(beer);
-      }
-      return [voted, notVoted];
-    },
-    [[], []] as [typeof sessionBeers, typeof sessionBeers]
+  const { ratedBeers, notRatedBeers } = getRatedAndNotRatedBeers(
+    sessionBeers,
+    sessionVotes,
+    sessionDetails
   );
 
-  // Calculate total score for each beer to display beers ordered by score
-  const ratedBeersWithScore = ratedBeers
-    .map((beer) => {
-      const votesForBeer = getVotesForBeer(sessionVotes, beer.beerId);
-      const score = calculateTotalScore(votesForBeer);
+  // Calculate total score for each finifhed beer to display - ordered by score
+  const ratedBeersWithScore = getBeersOrderedByScore(ratedBeers, sessionVotes);
 
-      return {
-        ...beer,
-        score,
-      };
-    })
-    .sort((a, b) => b.score - a.score);
-
-  // Random shuffle of the not rated beers
-  const notRatedBeersShuffled = smartShuffle(
-    notRatedBeers,
-    sessionDetails.name
-  );
+  // Random shuffle of the remaning beers
+  const notRatedBeersShuffled = smartShuffle(notRatedBeers, sessionName);
 
   return {
     user,
