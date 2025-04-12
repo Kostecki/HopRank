@@ -1,6 +1,5 @@
 import { Outlet, useLoaderData } from "react-router";
 import { ActionIcon, AppShell, Container } from "@mantine/core";
-import { IconPlus } from "@tabler/icons-react";
 
 import { userSessionGet } from "~/auth/users.server";
 import {
@@ -55,18 +54,6 @@ export default function Layout() {
       <AppShell.Main>
         <Container size="xs" mt="md">
           <Outlet />
-
-          <ActionIcon
-            size="xl"
-            radius="xl"
-            pos="fixed"
-            bottom={20}
-            right={20}
-            color="white"
-            variant="default"
-          >
-            <IconPlus size={20} />
-          </ActionIcon>
         </Container>
       </AppShell.Main>
     </AppShell>

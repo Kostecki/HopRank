@@ -31,7 +31,7 @@ const User = ({ user }: { user: SessionUser }) => {
   const { name, picture } = user;
 
   return (
-    <Menu width={150}>
+    <Menu shadow="md" width="auto" withArrow>
       <Menu.Target>
         <Avatar src={picture.url} alt={name} style={{ cursor: "pointer" }} />
       </Menu.Target>
@@ -77,7 +77,7 @@ export function Header({
           {sessionDetails && (
             <>
               <Group gap="xs" mr="xs">
-                <Menu shadow="md" withArrow width={175}>
+                <Menu shadow="md" withArrow width="auto">
                   <Menu.Target>
                     <Button
                       c="slateIndigo"
@@ -89,9 +89,11 @@ export function Header({
                   </Menu.Target>
 
                   <Menu.Dropdown>
-                    <Menu.Label>{sessionDetails.name}</Menu.Label>
+                    <Menu.Label tt="capitalize">
+                      {sessionDetails.name}
+                    </Menu.Label>
                     <Menu.Item leftSection={<IconPlus size={14} />}>
-                      Tilføj øl
+                      Tilføj øl til smagning
                     </Menu.Item>
 
                     <Divider opacity={0.5} />

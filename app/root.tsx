@@ -115,7 +115,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
         <ColorSchemeScript />
       </head>
-      {/* <body style={{ backgroundColor: "#F8F9FA", height: "100%", margin: 0 }}> */}
       <body style={{ backgroundColor: "#FBFBFB" }}>
         <MantineProvider theme={theme}>
           {children}
