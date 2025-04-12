@@ -53,3 +53,5 @@ CREATE TABLE `votes` (
 	FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE no action,
 	FOREIGN KEY (`beer_id`) REFERENCES `beers`(`beer_id`) ON UPDATE no action ON DELETE no action
 );
+--> statement-breakpoint
+CREATE UNIQUE INDEX `votes_session_id_user_id_beer_id_unique` ON `votes` (`session_id`,`user_id`,`beer_id`);

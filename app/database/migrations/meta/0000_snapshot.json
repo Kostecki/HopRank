@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "bb814c8e-41bd-4fea-87dc-c25881915a28",
+  "id": "f59006e2-1daf-48cf-a026-164f1ad2a367",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "beers": {
@@ -349,7 +349,17 @@
           "default": "(CURRENT_TIMESTAMP)"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "votes_session_id_user_id_beer_id_unique": {
+          "name": "votes_session_id_user_id_beer_id_unique",
+          "columns": [
+            "session_id",
+            "user_id",
+            "beer_id"
+          ],
+          "isUnique": true
+        }
+      },
       "foreignKeys": {
         "votes_session_id_sessions_id_fk": {
           "name": "votes_session_id_sessions_id_fk",

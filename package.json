@@ -8,7 +8,7 @@
     "start": "react-router-serve ./build/server/index.js",
     "typecheck": "react-router typegen && tsc",
     "generate": "drizzle-kit generate",
-    "migrate": "drizzle-kit push",
+    "migrate": "drizzle-kit migrate",
     "studio": "drizzle-kit studio"
   },
   "dependencies": {
