@@ -27,17 +27,17 @@ const showSuccessToast = (
   title = "Succes!",
   autoClose?: number
 ) => {
-  showToast(title, message, "success");
+  showToast(title, message, "success", false, autoClose);
 };
 const showWarningToast = (message: string, autoClose?: number) => {
-  showToast("Warning", message, "warning");
+  showToast("Warning", message, "warning", false, autoClose);
 };
 const showDangerToast = (
   message: string,
   title = "Noget gik galt!",
   autoClose?: number
 ) => {
-  showToast(title, message, "danger");
+  showToast(title, message, "danger", false, autoClose);
 };
 
 const handleToastResponse = (

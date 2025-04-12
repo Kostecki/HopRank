@@ -1,7 +1,7 @@
 import type { SelectVote } from "~/database/schema.server";
 
 // Calculate average score for a single vote
-const calculateAverageScore = (vote: SelectVote): number => {
+const calculateAverageScore = (vote: SelectVote) => {
   const { vote: ratings } = vote;
 
   // Handle case with no ratings or weights
@@ -21,7 +21,7 @@ const calculateAverageScore = (vote: SelectVote): number => {
 };
 
 // Calculate the total score (average of all votes) for a beer
-const calculateTotalScore = (votes: SelectVote[]): number => {
+const calculateTotalScore = (votes: SelectVote[]) => {
   if (votes.length === 0) return 0;
 
   // Calculate the average score for each vote and then find the overall average
@@ -34,4 +34,23 @@ const calculateTotalScore = (votes: SelectVote[]): number => {
   return averageScore;
 };
 
-export default calculateTotalScore;
+const calculateSingleTotalScore = (votes: SelectVote[]) => {
+  const grouped: Record<string, { total: number; count: number }> = {};
+
+  votes.forEach((entry) => {
+    entry.vote.forEach(({ name, rating }) => {
+      if (!grouped[name]) {
+        grouped[name] = { total: 0, count: 0 };
+      }
+      grouped[name].total += rating;
+      grouped[name].count += 1;
+    });
+  });
+
+  return Object.entries(grouped).map(([name, { total, count }]) => ({
+    name,
+    score: total / count,
+  }));
+};
+
+export { calculateTotalScore, calculateSingleTotalScore };

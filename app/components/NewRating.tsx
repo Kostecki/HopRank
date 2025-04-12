@@ -1,29 +1,48 @@
 import { useFetcher, useParams } from "react-router";
-import { Button, Divider, LoadingOverlay, Paper, Stack } from "@mantine/core";
+import { Button, Divider, Paper, Stack } from "@mantine/core";
 import { useForm } from "@mantine/form";
 
-import type { SelectRating, SelectSessionBeer } from "~/database/schema.types";
+import type {
+  SelectBeer,
+  SelectRating,
+  SelectVote,
+} from "~/database/schema.types";
 
 import RatingSlider from "./RatingSlider";
 
-import { sliderConf, wait } from "~/utils/utils";
+import { sliderConf } from "~/utils/utils";
 import type { SessionUser } from "~/auth/auth.server";
 
 type InputProps = {
   ratings: SelectRating[];
-  beer: SelectSessionBeer;
+  beer: SelectBeer;
   user: SessionUser;
+  votes: SelectVote[];
 };
 
-export default function NewRating({ user, ratings, beer }: InputProps) {
+export default function NewRating({ user, ratings, beer, votes }: InputProps) {
   const fetcher = useFetcher();
   const { sessionId } = useParams();
 
   const { defaultValue } = sliderConf;
 
+  const getValue = (id: number) => {
+    if (!votes.length) return defaultValue;
+
+    const vote = votes.find(
+      (v) =>
+        v.beerId === beer.beerId &&
+        v.sessionId === Number(sessionId) &&
+        v.userId === user.id
+    );
+
+    const value = vote?.vote[id - 1].rating ?? defaultValue;
+    return value;
+  };
+
   const form = useForm({
     initialValues: ratings.reduce((acc, key) => {
-      acc[key.name] = defaultValue;
+      acc[key.name] = getValue(key.id);
       return acc;
     }, {} as Record<string, number>),
   });
@@ -47,12 +66,10 @@ export default function NewRating({ user, ratings, beer }: InputProps) {
       method: "POST",
       action: `/sessions/vote`,
     });
-
-    form.reset();
   };
 
   return (
-    <Paper p="md" radius="md" withBorder mt={-10} pt="lg" pos="relative">
+    <Paper withBorder radius="md" p="md" pt="lg" mt={-10}>
       <form onSubmit={form.onSubmit(handleSubmit)}>
         <Stack>
           {ratings.map((type) => (

@@ -1,45 +1,38 @@
-import { Button, Divider, Flex, Rating, Text } from "@mantine/core";
-import type { SelectRating } from "~/database/schema.types";
+import { Box, Button, Divider, Group, Paper, Stack, Text } from "@mantine/core";
+import type { SelectBeer, SelectVote } from "~/database/schema.types";
 
+import { calculateSingleTotalScore } from "~/utils/score";
 import { createLink } from "~/utils/untappd";
 
 type InputProps = {
-  beer: any;
-  ratings: SelectRating[];
+  beer: SelectBeer;
+  votes: SelectVote[];
 };
 
-const ScoreItem = ({
-  score,
-  categoryName,
-}: {
-  score: number;
-  categoryName: string;
-}) => (
-  <Flex justify="space-between" align="center" mb="3">
-    <Text c="gray.7" fw={600}>
-      {categoryName}
-    </Text>
-    <Rating size="md" color="teal" value={score} />
-  </Flex>
-);
+export function BeerCardDetails({ beer, votes }: InputProps) {
+  const { beerId } = beer;
 
-// TODO: Type
-export function BeerCardDetails({ beer, ratings }: InputProps) {
-  const { beerId, scores } = beer;
+  const totalScores = calculateSingleTotalScore(votes);
 
   return (
-    <>
-      <Flex justify="space-between" direction="column" mt="5">
-        {/* {scores.map((score: number, index: number) => (
-          <ScoreItem
-            key={index}
-            score={score}
-            categoryName={ratingCategories[index].name}
-          />
-        ))} */}
-      </Flex>
+    <Paper withBorder radius="md" p="md" pt="lg" mt={-10}>
+      <Box px="sm">
+        <Group justify="space-between">
+          {totalScores.map(({ name, score }) => (
+            <Stack gap={0} key={name}>
+              <Text ta="center" fw={400}>
+                {name}
+              </Text>
+              <Text ta="center" fw="bold">
+                {score.toFixed(2).replace(".", ",")}
+                {/* local toFixed */}
+              </Text>
+            </Stack>
+          ))}
+        </Group>
+      </Box>
 
-      {/* <Divider opacity={0.3} my="md" /> */}
+      <Divider opacity={0.3} my="md" />
 
       <Button
         variant="light"
@@ -52,6 +45,6 @@ export function BeerCardDetails({ beer, ratings }: InputProps) {
       >
         Åben i Untappd
       </Button>
-    </>
+    </Paper>
   );
 }

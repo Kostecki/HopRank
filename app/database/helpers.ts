@@ -7,6 +7,7 @@ import {
   usersTable,
   votesTable,
 } from "./schema.server";
+import { redirect } from "react-router";
 
 const getRatings = async () => {
   return await db.select().from(ratingsTable);
@@ -68,10 +69,20 @@ const getSessionVotes = async (sessionId: number) => {
   return sessionVotes;
 };
 
+const leaveSession = async (userId: number) => {
+  await db
+    .update(usersTable)
+    .set({ activeSessionId: null })
+    .where(eq(usersTable.id, userId));
+
+  return redirect("/home");
+};
+
 export {
   getRatings,
   getActiveSessions,
   getSessionDetails,
   getSessionBeers,
   getSessionVotes,
+  leaveSession,
 };

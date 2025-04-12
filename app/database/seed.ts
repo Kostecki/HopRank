@@ -11,11 +11,11 @@ import {
 
 const seedCategories = async () => {
   const categories = [
-    { name: "Krit 1", weight: 1.0 },
-    { name: "Krit 2", weight: 1.0 },
-    { name: "Krit 3", weight: 1.0 },
-    { name: "Krit 4", weight: 1.0 },
-    { name: "Krit 5", weight: 1.0 },
+    { name: "Kriterie 1", weight: 1.0 },
+    { name: "Kriterie 2", weight: 1.0 },
+    { name: "Kriterie 3", weight: 1.0 },
+    { name: "Kriterie 4", weight: 1.0 },
+    { name: "Kriterie 5", weight: 1.0 },
   ];
 
   const [existingCategories] = await db
@@ -23,6 +23,7 @@ const seedCategories = async () => {
     .from(ratingsTable);
 
   if (existingCategories.count === 0) {
+    console.log();
     console.log("Seeding Categories");
     await db.insert(ratingsTable).values(categories);
   }
@@ -128,27 +129,27 @@ const seedVotes = async () => {
       beerId: 3279756,
       vote: [
         {
-          name: "Krit 1",
+          name: "Kriterie 1",
           rating: 4.5,
           weight: 1,
         },
         {
-          name: "Krit 2",
+          name: "Kriterie 2",
           rating: 4.5,
           weight: 1,
         },
         {
-          name: "Krit 3",
+          name: "Kriterie 3",
           rating: 2.5,
           weight: 1,
         },
         {
-          name: "Krit 4",
+          name: "Kriterie 4",
           rating: 4.5,
           weight: 1,
         },
         {
-          name: "Krit 5",
+          name: "Kriterie 5",
           rating: 5,
           weight: 1,
         },
@@ -160,27 +161,27 @@ const seedVotes = async () => {
       beerId: 4081135,
       vote: [
         {
-          name: "Krit 1",
+          name: "Kriterie 1",
           rating: 1.5,
           weight: 1,
         },
         {
-          name: "Krit 2",
+          name: "Kriterie 2",
           rating: 2.5,
           weight: 1,
         },
         {
-          name: "Krit 3",
+          name: "Kriterie 3",
           rating: 3.5,
           weight: 1,
         },
         {
-          name: "Krit 4",
+          name: "Kriterie 4",
           rating: 4.5,
           weight: 1,
         },
         {
-          name: "Krit 5",
+          name: "Kriterie 5",
           rating: 5,
           weight: 1,
         },
@@ -192,59 +193,59 @@ const seedVotes = async () => {
       beerId: 5751668,
       vote: [
         {
-          name: "Krit 1",
+          name: "Kriterie 1",
           rating: 5,
           weight: 1,
         },
         {
-          name: "Krit 2",
+          name: "Kriterie 2",
           rating: 4.5,
           weight: 1,
         },
         {
-          name: "Krit 3",
+          name: "Kriterie 3",
           rating: 3.5,
           weight: 1,
         },
         {
-          name: "Krit 4",
+          name: "Kriterie 4",
           rating: 2.5,
           weight: 1,
         },
         {
-          name: "Krit 5",
+          name: "Kriterie 5",
           rating: 4.5,
           weight: 1,
         },
       ],
     },
     {
-      userId: 1,
+      userId: 2,
       sessionId: 1,
       beerId: 3279756,
       vote: [
         {
-          name: "Krit 1",
+          name: "Kriterie 1",
           rating: 4.5,
           weight: 1,
         },
         {
-          name: "Krit 2",
+          name: "Kriterie 2",
           rating: 5,
           weight: 1,
         },
         {
-          name: "Krit 3",
+          name: "Kriterie 3",
           rating: 3.2,
           weight: 1,
         },
         {
-          name: "Krit 4",
+          name: "Kriterie 4",
           rating: 4.5,
           weight: 1,
         },
         {
-          name: "Krit 5",
+          name: "Kriterie 5",
           rating: 2.5,
           weight: 1,
         },
@@ -256,27 +257,27 @@ const seedVotes = async () => {
       beerId: 3279756,
       vote: [
         {
-          name: "Krit 1",
+          name: "Kriterie 1",
           rating: 4.5,
           weight: 1,
         },
         {
-          name: "Krit 2",
+          name: "Kriterie 2",
           rating: 3.5,
           weight: 1,
         },
         {
-          name: "Krit 3",
+          name: "Kriterie 3",
           rating: 2.5,
           weight: 1,
         },
         {
-          name: "Krit 4",
+          name: "Kriterie 4",
           rating: 4.5,
           weight: 1,
         },
         {
-          name: "Krit 5",
+          name: "Kriterie 5",
           rating: 5,
           weight: 1,
         },
@@ -288,6 +289,7 @@ const seedVotes = async () => {
 
   if (existingVotes.count === 0) {
     console.log("Seeding Votes");
+    console.log();
     await db.insert(votesTable).values(votes.map((vote) => vote));
   }
 };

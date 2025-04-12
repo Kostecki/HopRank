@@ -1,6 +1,6 @@
 import { redirect, useLoaderData } from "react-router";
 
-import { Accordion, Paper } from "@mantine/core";
+import { Accordion } from "@mantine/core";
 import type { SelectVote } from "~/database/schema.types";
 import { userSessionGet } from "~/auth/users.server";
 import {
@@ -16,7 +16,7 @@ import UpNext from "~/components/UpNext";
 
 import { getPageTitle } from "~/utils/utils";
 import smartShuffle from "~/utils/shuffle";
-import calculateTotalScore from "~/utils/score";
+import { calculateTotalScore } from "~/utils/score";
 
 import type { Route } from "./+types";
 
@@ -81,6 +81,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   return {
     user,
     ratings,
+    sessionDetails,
     sessionVotes,
     ratedBeersWithScore,
     notRatedBeersShuffled,
@@ -95,20 +96,23 @@ export default function SessionDetails() {
   const {
     user,
     ratings,
+    sessionDetails,
     sessionVotes,
     ratedBeersWithScore,
     notRatedBeersShuffled,
   } = useLoaderData<typeof loader>();
 
   const upNextBeer = notRatedBeersShuffled[0];
+  const votesNextBeer = getVotesForBeer(sessionVotes, upNextBeer.beerId);
 
   return (
     <>
       {upNextBeer && (
         <UpNext
           beer={upNextBeer}
-          votes={getVotesForBeer(sessionVotes, upNextBeer.beerId)}
+          votes={votesNextBeer}
           ratings={ratings}
+          sessionDetails={sessionDetails}
           user={user}
           mt={50}
         />
@@ -117,6 +121,7 @@ export default function SessionDetails() {
       <Accordion unstyled chevron={false}>
         {ratedBeersWithScore.map((beer, index) => {
           const { id } = beer;
+          const votesForBeer = getVotesForBeer(sessionVotes, beer.beerId);
 
           return (
             <Accordion.Item
@@ -135,26 +140,11 @@ export default function SessionDetails() {
                   userSelect: "none",
                 }}
               >
-                <BeerCard
-                  beer={beer}
-                  votes={getVotesForBeer(sessionVotes, beer.beerId)}
-                  index={index}
-                />
+                <BeerCard beer={beer} votes={votesForBeer} index={index} />
               </Accordion.Control>
 
               <Accordion.Panel>
-                <Paper
-                  withBorder
-                  bg="white"
-                  style={{
-                    padding: "12px 10px 10px 10px",
-                    marginTop: "-8px",
-                    borderBottomLeftRadius: "4px",
-                    borderBottomRightRadius: "4px",
-                  }}
-                >
-                  <BeerCardDetails ratings={ratings} beer={beer} />
-                </Paper>
+                <BeerCardDetails beer={beer} votes={votesForBeer} />
               </Accordion.Panel>
             </Accordion.Item>
           );

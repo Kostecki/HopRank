@@ -6,13 +6,9 @@ import { type SelectSession } from "~/database/schema.types";
 
 import dayjs from "~/utils/day";
 
-type ActiveSessions = SelectSession & {
-  userCount: number;
-};
-
 type InputProps = {
   user: SessionUser;
-  sessions: ActiveSessions[];
+  sessions: SelectSession[];
 } & BoxProps;
 
 const formatDate = (date: string | Date) => {

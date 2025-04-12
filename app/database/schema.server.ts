@@ -37,26 +37,36 @@ export const sessionsTable = sqliteTable("sessions", {
 export type SelectSession = InferSelectModel<typeof sessionsTable>;
 export type InsertSession = InferInsertModel<typeof sessionsTable>;
 
-export const votesTable = sqliteTable("votes", {
-  id: int().primaryKey({ autoIncrement: true }),
-  sessionId: int("session_id")
-    .notNull()
-    .references(() => sessionsTable.id),
-  userId: int("user_id")
-    .notNull()
-    .references(() => usersTable.id),
-  beerId: int("beer_id")
-    .notNull()
-    .references(() => beersTable.beerId),
-  vote: text("vote", { mode: "json" }).$type<Vote[]>().notNull(),
-  createdAt: text("created_at")
-    .notNull()
-    .default(sql`CURRENT_TIMESTAMP`),
-  updatedAt: text("updated_at")
-    .notNull()
-    .default(sql`(CURRENT_TIMESTAMP)`)
-    .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
-});
+export const votesTable = sqliteTable(
+  "votes",
+  {
+    id: int().primaryKey({ autoIncrement: true }),
+    sessionId: int("session_id")
+      .notNull()
+      .references(() => sessionsTable.id),
+    userId: int("user_id")
+      .notNull()
+      .references(() => usersTable.id),
+    beerId: int("beer_id")
+      .notNull()
+      .references(() => beersTable.beerId),
+    vote: text("vote", { mode: "json" }).$type<Vote[]>().notNull(),
+    createdAt: text("created_at")
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: text("updated_at")
+      .notNull()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+  },
+  (table) => ({
+    uniqueSessionUserBeer: unique().on(
+      table.sessionId,
+      table.userId,
+      table.beerId
+    ),
+  })
+);
 export type SelectVote = InferSelectModel<typeof votesTable>;
 export type InsertVote = InferInsertModel<typeof votesTable>;
 
@@ -81,8 +91,8 @@ export const beersTable = sqliteTable("beers", {
     .default(sql`(CURRENT_TIMESTAMP)`)
     .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
 });
-export type SelectSessionBeer = InferSelectModel<typeof beersTable>;
-export type InsertSessionBeer = InferInsertModel<typeof beersTable>;
+export type SelectBeer = InferSelectModel<typeof beersTable>;
+export type InsertBeer = InferInsertModel<typeof beersTable>;
 
 export const usersTable = sqliteTable("users", {
   id: int().primaryKey({ autoIncrement: true }),

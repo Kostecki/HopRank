@@ -14,6 +14,7 @@ export default [
       index("routes/sessions/index.tsx"),
       route("create", "routes/sessions/actions/create.ts"),
       route("vote", "routes/sessions/actions/vote.ts"),
+      route("leave", "routes/sessions/actions/leave.ts"),
       route(":sessionId", "routes/sessions/$sessionId/index.tsx"),
       route(":sessionId/join", "routes/sessions/$sessionId/actions/join.ts"),
     ]),

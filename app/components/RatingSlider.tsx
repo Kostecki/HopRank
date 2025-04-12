@@ -15,13 +15,14 @@ export default function RatingSlider({ form, name, label }: InputProps) {
     value: (i + 1) * stepSize,
   }));
 
-  const value = form.values[name];
+  const value = form.values[name] as number;
 
   return (
     <Box>
       <Flex justify="space-between" align="center" mb="xs">
         <Text size="sm">{label}</Text>
-        <Text size="sm">{value.toFixed(2)}</Text>
+        <Text size="sm">{value.toFixed(2).replace(".", ",")}</Text>
+        {/* local toFixed */}
       </Flex>
 
       <Slider
@@ -29,7 +30,12 @@ export default function RatingSlider({ form, name, label }: InputProps) {
         max={max}
         step={stepSize}
         marks={marks}
-        label={(value) => value.toFixed(2)}
+        label={(value) =>
+          value.toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })
+        }
         color="teal"
         {...form.getInputProps(name)}
       />

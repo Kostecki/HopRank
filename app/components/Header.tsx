@@ -1,19 +1,29 @@
-import { Avatar, Group, Menu, Paper, Text } from "@mantine/core";
-import { IconBeer, IconLogout, IconUsers } from "@tabler/icons-react";
+import {
+  Avatar,
+  Button,
+  Divider,
+  Group,
+  Menu,
+  Paper,
+  Text,
+  useMantineTheme,
+} from "@mantine/core";
+import {
+  IconBeer,
+  IconDoorExit,
+  IconLogout,
+  IconPlus,
+  IconUsers,
+} from "@tabler/icons-react";
+import { useFetcher } from "react-router";
 
 import type { SessionUser } from "~/auth/auth.server";
-import type { SelectSession, SelectSessionBeer } from "~/database/schema.types";
-
-import { slateIndigo } from "~/utils/utils";
-
-type SessionDetails = SelectSession & {
-  userCount: number;
-};
+import type { SelectBeer, SelectSession } from "~/database/schema.types";
 
 type InputProps = {
   user: SessionUser;
-  sessionDetails?: SessionDetails;
-  sessionBeers?: SelectSessionBeer[];
+  sessionDetails?: SelectSession;
+  sessionBeers?: SelectBeer[];
   ratedBeersCount?: number;
 };
 
@@ -47,6 +57,19 @@ export function Header({
   sessionBeers,
   ratedBeersCount,
 }: InputProps) {
+  const theme = useMantineTheme();
+  const fetcher = useFetcher();
+
+  const slateIndigo = theme.colors.slateIndigo[6];
+
+  const handleLeaveSession = () => {
+    const formData = new FormData();
+    fetcher.submit(formData, {
+      method: "POST",
+      action: "/sessions/leave",
+    });
+  };
+
   return (
     <Paper shadow="md" h="100%">
       <Group justify="space-between" px="md" pt="sm">
@@ -54,20 +77,34 @@ export function Header({
           {sessionDetails && (
             <>
               <Group gap="xs" mr="xs">
-                <Text
-                  c={slateIndigo}
-                  fw={600}
-                  tt="capitalize"
-                  fs="italic"
-                  size="sm"
-                >
-                  {sessionDetails.name}
-                </Text>
+                <Menu shadow="md" withArrow width={175}>
+                  <Menu.Target>
+                    <Button c="slateIndigo" variant="light">
+                      {sessionDetails.name}
+                    </Button>
+                  </Menu.Target>
+
+                  <Menu.Dropdown>
+                    <Menu.Label>Aktive smagning</Menu.Label>
+                    <Menu.Item leftSection={<IconPlus size={14} />}>
+                      Tilføj øl
+                    </Menu.Item>
+
+                    <Divider opacity={0.5} />
+
+                    <Menu.Item
+                      onClick={handleLeaveSession}
+                      leftSection={<IconDoorExit size={14} />}
+                    >
+                      Forlad smagning
+                    </Menu.Item>
+                  </Menu.Dropdown>
+                </Menu>
               </Group>
 
               <Group gap="8">
                 <IconUsers color={slateIndigo} size={20} />
-                <Text c={slateIndigo} fw={600}>
+                <Text c="slateIndigo" fw={600}>
                   {sessionDetails.userCount}
                 </Text>
               </Group>
@@ -76,7 +113,7 @@ export function Header({
           {sessionBeers?.length && (
             <Group gap="5">
               <IconBeer color={slateIndigo} size={20} />
-              <Text c={slateIndigo} fw={600}>
+              <Text c="slateIndigo" fw={600}>
                 {`${ratedBeersCount} / ${sessionBeers.length}`}
               </Text>
             </Group>

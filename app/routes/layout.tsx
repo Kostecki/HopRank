@@ -1,6 +1,6 @@
 import { Outlet, useLoaderData } from "react-router";
-import { ActionIcon, AppShell, Container, Divider, Menu } from "@mantine/core";
-import { IconSettings } from "@tabler/icons-react";
+import { ActionIcon, AppShell, Container } from "@mantine/core";
+import { IconPlus } from "@tabler/icons-react";
 
 import { userSessionGet } from "~/auth/users.server";
 import {
@@ -10,8 +10,6 @@ import {
 } from "~/database/helpers";
 
 import { Header } from "~/components/Header";
-
-import { slateIndigo } from "~/utils/utils";
 
 import type { Route } from "../+types/root";
 
@@ -63,28 +61,17 @@ export default function Layout() {
         <Container size="xs" mt="md">
           <Outlet />
 
-          <Menu shadow="md" width="200">
-            <Menu.Target>
-              <ActionIcon
-                size="xl"
-                radius="xl"
-                pos="fixed"
-                bottom={20}
-                right={20}
-                color="white"
-                variant="default"
-              >
-                <IconSettings color={slateIndigo} size={20} />
-              </ActionIcon>
-            </Menu.Target>
-            <Menu.Dropdown>
-              <Menu.Label>Smagning</Menu.Label>
-              {/* <ModalAddBeer /> */}
-              <Menu.Item>Opret ny smagning</Menu.Item>
-              <Divider opacity={0.5} />
-              <Menu.Item>Afslut smagning</Menu.Item>
-            </Menu.Dropdown>
-          </Menu>
+          <ActionIcon
+            size="xl"
+            radius="xl"
+            pos="fixed"
+            bottom={20}
+            right={20}
+            color="white"
+            variant="default"
+          >
+            <IconPlus size={20} />
+          </ActionIcon>
         </Container>
       </AppShell.Main>
     </AppShell>

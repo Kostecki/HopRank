@@ -3,9 +3,8 @@ import { dataWithError, dataWithSuccess } from "remix-toast";
 import { db } from "~/database/config.server";
 import { votesTable } from "~/database/schema.server";
 
-import { wait } from "~/utils/utils";
-
 import type { Route } from "../$sessionId/+types";
+import { wait } from "~/utils/utils";
 
 export async function action({ request }: Route.ActionArgs) {
   const formData = await request.formData();
@@ -23,7 +22,12 @@ export async function action({ request }: Route.ActionArgs) {
 
     await db
       .insert(votesTable)
-      .values(vote)
+      .values({
+        sessionId: vote.sessionId,
+        userId: vote.userId,
+        beerId: vote.beerId,
+        vote: vote.ratings,
+      })
       .onConflictDoUpdate({
         target: [votesTable.sessionId, votesTable.userId, votesTable.beerId],
         set: {

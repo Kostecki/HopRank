@@ -1,4 +1,4 @@
-import type { SelectSessionBeer } from "~/database/schema.types";
+import type { SelectBeer } from "~/database/schema.types";
 
 /* Shout-out to my man GPT 4o 🤖  */
 
@@ -30,7 +30,7 @@ const createSeededRandom = (seed: string) => {
  *
  * Note: It does NOT mutate the original array — it returns a new one.
  */
-const shuffleBeers = (beers: SelectSessionBeer[], random: () => number) => {
+const shuffleBeers = (beers: SelectBeer[], random: () => number) => {
   const arr = beers.map((b) => b); // shallow copy
   for (let i = arr.length - 1; i > 0; i--) {
     const j = Math.floor(random() * (i + 1));
@@ -49,7 +49,7 @@ const shuffleBeers = (beers: SelectSessionBeer[], random: () => number) => {
  * - Adjacent same brewery → +3 penalty
  * - Adjacent same addedBy  → +2 penalty
  */
-const scoreBeers = (beers: SelectSessionBeer[]) => {
+const scoreBeers = (beers: SelectBeer[]) => {
   let score = 0;
   for (let i = 1; i < beers.length; i++) {
     if (beers[i].breweryName === beers[i - 1].breweryName) score += 3;
@@ -67,7 +67,7 @@ const scoreBeers = (beers: SelectSessionBeer[]) => {
  *
  * If a perfect arrangement (score === 0) is found early, it returns that immediately.
  */
-const smartShuffle = (beers: SelectSessionBeer[], seed: string) => {
+const smartShuffle = (beers: SelectBeer[], seed: string) => {
   let bestScore = Infinity;
   let bestList = beers;
 

@@ -1,8 +1,9 @@
 import { Anchor, Box, Divider, Text, type BoxProps } from "@mantine/core";
 
 import type {
+  SelectBeer,
   SelectRating,
-  SelectSessionBeer,
+  SelectSession,
   SelectVote,
 } from "~/database/schema.types";
 
@@ -13,9 +14,10 @@ import { createLink } from "~/utils/untappd";
 import type { SessionUser } from "~/auth/auth.server";
 
 type InputProps = {
-  beer: SelectSessionBeer;
+  beer: SelectBeer;
   votes: SelectVote[];
   ratings: SelectRating[];
+  sessionDetails?: SelectSession;
   user: SessionUser;
 } & BoxProps;
 
@@ -23,6 +25,7 @@ export default function UpNext({
   beer,
   votes,
   ratings,
+  sessionDetails,
   user,
   ...props
 }: InputProps) {
@@ -33,10 +36,10 @@ export default function UpNext({
       </Text>
 
       <Anchor href={createLink(beer.beerId)} target="_blank" underline="never">
-        <BeerCard beer={beer} votes={votes} />
+        <BeerCard beer={beer} votes={votes} sessionDetails={sessionDetails} />
       </Anchor>
 
-      <NewRating ratings={ratings} beer={beer} user={user} />
+      <NewRating ratings={ratings} beer={beer} user={user} votes={votes} />
 
       <Divider my="lg" opacity={0.3} />
     </Box>
