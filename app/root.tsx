@@ -23,12 +23,6 @@ import {
 import { getToast } from "remix-toast";
 import { Notifications } from "@mantine/notifications";
 import { useEffect } from "react";
-import { eq } from "drizzle-orm";
-
-import { db } from "./database/config.server";
-import { beersTable } from "./database/schema.server";
-
-import { userSessionGet } from "./auth/users.server";
 
 import {
   showDangerToast,
@@ -59,15 +53,7 @@ export const links: Route.LinksFunction = () => [
 export async function loader({ request }: LoaderFunctionArgs) {
   const { toast, headers } = await getToast(request);
 
-  const user = await userSessionGet(request);
-
-  const sessionBeers = await db
-    .select()
-    .from(beersTable)
-    .where(eq(beersTable.sessionId, 1));
-  const sessionBeerCount = sessionBeers.length;
-
-  return data({ toast, user, sessionBeerCount }, { headers });
+  return data({ toast }, { headers });
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {

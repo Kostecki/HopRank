@@ -1,4 +1,4 @@
-import { Box, Button, Paper, Table, Text, type BoxProps } from "@mantine/core";
+import { Button, Table } from "@mantine/core";
 import { useFetcher } from "react-router";
 
 import type { SessionUser } from "~/auth/auth.server";
@@ -7,13 +7,9 @@ import { type SelectSession } from "~/database/schema.types";
 type InputProps = {
   user: SessionUser;
   sessions: SelectSession[];
-} & BoxProps;
+};
 
-export default function SessionsTable({
-  user,
-  sessions,
-  ...props
-}: InputProps) {
+export default function SessionsTable({ user, sessions }: InputProps) {
   const fetcher = useFetcher();
 
   const handleSubmit = (userId: number, sessionId: number) => {
@@ -51,25 +47,16 @@ export default function SessionsTable({
   ));
 
   return (
-    <Box {...props}>
-      <Paper p="md" radius="md" withBorder>
-        <Text fw="bold">Aktive smagninger</Text>
-        <Text c="dimmed" size="sm" fs="italic">
-          Vælg en aktiv smagning for at deltage
-        </Text>
-
-        <Table mt="lg">
-          <Table.Thead>
-            <Table.Tr>
-              <Table.Th>Smagning</Table.Th>
-              <Table.Th ta="center">Deltagere</Table.Th>
-              <Table.Th ta="center">Øl</Table.Th>
-              <Table.Td ta="center"></Table.Td>
-            </Table.Tr>
-          </Table.Thead>
-          <Table.Tbody>{rows}</Table.Tbody>
-        </Table>
-      </Paper>
-    </Box>
+    <Table mt="lg">
+      <Table.Thead>
+        <Table.Tr>
+          <Table.Th>Smagning</Table.Th>
+          <Table.Th ta="center">Deltagere</Table.Th>
+          <Table.Th ta="center">Øl</Table.Th>
+          <Table.Td ta="center"></Table.Td>
+        </Table.Tr>
+      </Table.Thead>
+      <Table.Tbody>{rows}</Table.Tbody>
+    </Table>
   );
 }
