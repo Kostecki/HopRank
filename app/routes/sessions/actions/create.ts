@@ -12,14 +12,7 @@ import {
 import { generateUniqueSessionName } from "~/database/helpers";
 
 import type { Route } from "../$sessionId/+types";
-
-type BeerOption = {
-  beerId: string;
-  name: string;
-  style: string;
-  breweryName: string;
-  label: string;
-};
+import type { BeerOption } from "~/types/misc";
 
 export async function action({ request }: Route.ActionArgs) {
   const formData = await request.formData();

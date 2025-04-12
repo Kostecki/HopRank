@@ -16,13 +16,7 @@ import {
 } from "@mantine/core";
 import { useDebouncedValue } from "@mantine/hooks";
 
-type BeerOption = {
-  beerId: string;
-  name: string;
-  style: string;
-  breweryName: string;
-  label: string;
-};
+import type { BeerOption } from "~/types/misc";
 
 type InputProps = {
   selectedBeers: BeerOption[];

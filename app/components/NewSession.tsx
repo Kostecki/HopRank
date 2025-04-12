@@ -1,16 +1,10 @@
+import { useState } from "react";
+import { useFetcher } from "react-router";
 import { Button, Stack, Text } from "@mantine/core";
 
 import BeerMultiSelect from "./BeerMultiSelect";
-import { useState } from "react";
-import { useFetcher } from "react-router";
 
-type BeerOption = {
-  beerId: string;
-  name: string;
-  style: string;
-  breweryName: string;
-  label: string;
-};
+import type { BeerOption } from "~/types/misc";
 
 export default function NewSession() {
   const [selectedBeers, setSelectedBeers] = useState<BeerOption[]>([]);

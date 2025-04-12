@@ -3,7 +3,7 @@ import type { UseFormReturnType } from "@mantine/form";
 import { sliderConf } from "~/utils/utils";
 
 type InputProps = {
-  form: UseFormReturnType<any>; // TODO: Type
+  form: UseFormReturnType<Record<string, number>>;
   name: string;
   label?: string;
 };

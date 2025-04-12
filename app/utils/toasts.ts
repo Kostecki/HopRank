@@ -40,21 +40,4 @@ const showDangerToast = (
   showToast(title, message, "danger", false, autoClose);
 };
 
-const handleToastResponse = (
-  message: string,
-  type: "success" | "warning" | "error",
-  autoClose?: number,
-  data?: any
-) => ({
-  type,
-  message,
-  autoClose,
-  data,
-});
-
-export {
-  showSuccessToast,
-  showWarningToast,
-  showDangerToast,
-  handleToastResponse,
-};
+export { showSuccessToast, showWarningToast, showDangerToast };
