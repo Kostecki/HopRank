@@ -30,20 +30,25 @@ export function meta({}: Route.MetaArgs) {
 
 export async function loader({ request, params }: Route.LoaderArgs) {
   const { sessionId } = params;
-  const sessionIdNumber = Number(sessionId);
-
   const user = await userSessionGet(request);
 
-  if (!sessionId) {
-    console.warn("Session ID is missing");
-    redirect("/sessions");
+  const activeSessionId = user.activeSession;
+  const requestedSessionId = Number(sessionId);
+
+  if (!sessionId || isNaN(requestedSessionId) || !activeSessionId) {
+    console.warn("Session ID is missing or invalid");
+    return redirect("/sessions");
+  }
+
+  if (requestedSessionId !== activeSessionId) {
+    return redirect(`/sessions/${activeSessionId}`);
   }
 
   // Database data fetching
   const ratings = await getRatings();
-  const sessionDetails = await getSessionDetails(sessionIdNumber);
-  const sessionBeers = await getSessionBeers(sessionIdNumber);
-  const sessionVotes = await getSessionVotes(sessionIdNumber);
+  const sessionDetails = await getSessionDetails(requestedSessionId);
+  const sessionBeers = await getSessionBeers(requestedSessionId);
+  const sessionVotes = await getSessionVotes(requestedSessionId);
 
   const { name: sessionName } = sessionDetails;
 

@@ -93,7 +93,7 @@ export function Header({
                       {sessionDetails.name}
                     </Menu.Label>
                     <Menu.Item leftSection={<IconPlus size={14} />}>
-                      Tilføj øl til smagning
+                      Tilføj øl til smagningen
                     </Menu.Item>
 
                     <Divider opacity={0.5} />
@@ -102,7 +102,7 @@ export function Header({
                       onClick={handleLeaveSession}
                       leftSection={<IconDoorExit size={14} />}
                     >
-                      Forlad smagning
+                      Forlad smagningen
                     </Menu.Item>
                   </Menu.Dropdown>
                 </Menu>
@@ -116,14 +116,12 @@ export function Header({
               </Group>
             </>
           )}
-          {sessionBeers?.length && (
-            <Group gap="5">
-              <IconBeer color={slateIndigo} size={20} />
-              <Text c="slateIndigo" fw={600}>
-                {`${ratedBeersCount} / ${sessionBeers.length}`}
-              </Text>
-            </Group>
-          )}
+          <Group gap="5">
+            <IconBeer color={slateIndigo} size={20} />
+            <Text c="slateIndigo" fw={600}>
+              {`${ratedBeersCount ?? 0} / ${sessionBeers?.length ?? 0}`}
+            </Text>
+          </Group>
         </Group>
         {user && <User user={user} />}
       </Group>
