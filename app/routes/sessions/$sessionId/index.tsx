@@ -12,6 +12,7 @@ import {
 import { BeerCard } from "~/components/BeerCard";
 import { BeerCardDetails } from "~/components/BeerCardDetails";
 import UpNext from "~/components/UpNext";
+import EmptySession from "~/components/EmptySession";
 
 import { getPageTitle } from "~/utils/utils";
 import smartShuffle from "~/utils/shuffle";
@@ -84,6 +85,8 @@ export default function SessionDetails() {
 
   return (
     <>
+      {!upNextBeer && ratedBeersWithScore.length === 0 && <EmptySession />}
+
       {upNextBeer && (
         <UpNext
           beer={upNextBeer}

@@ -27,7 +27,7 @@ export default function NewSession() {
 
       <Stack>
         <Text size="sm" c="dimmed" fs="italic">
-          Du kan tilføje øl til en ny smagning ved at finde dem herunder
+          Du kan tilføje øl til en ny smagning ved at søge efter dem herunder
         </Text>
 
         <BeerMultiSelect

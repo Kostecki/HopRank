@@ -22,13 +22,8 @@ export default function SessionsTable({ user, sessions }: InputProps) {
   const end = start + perPage;
   const paginatedSessions = sessions.slice(start, end);
 
-  const handleSubmit = (userId: number, sessionId: number) => {
-    const data = {
-      userId,
-      sessionId,
-    };
-
-    fetcher.submit(data, {
+  const handleSubmit = (sessionId: number) => {
+    fetcher.submit(new FormData(), {
       method: "POST",
       action: `/sessions/${sessionId}/join`,
     });
@@ -44,7 +39,7 @@ export default function SessionsTable({ user, sessions }: InputProps) {
           variant="light"
           size="xs"
           color="teal"
-          onClick={() => handleSubmit(user.id, session.id)}
+          onClick={() => handleSubmit(session.id)}
           loading={
             fetcher.state === "submitting" &&
             fetcher.formData?.get("sessionId") === String(session.id)
