@@ -1,6 +1,9 @@
 import { redirect, useLoaderData } from "react-router";
+import { count, eq } from "drizzle-orm";
 
 import { userSessionGet } from "~/auth/users.server";
+import { db } from "~/database/config.server";
+import { beersTable } from "~/database/schema.server";
 import { getActiveSessions } from "~/database/helpers";
 
 import SessionsTable from "~/components/SessionsTable";
@@ -20,7 +23,20 @@ export async function loader({ request }: Route.LoaderArgs) {
     return redirect("/sessions/" + user.activeSession);
   }
 
-  const activeSessions = await getActiveSessions();
+  const activeSessionsData = await getActiveSessions();
+  const activeSessions = await Promise.all(
+    activeSessionsData.map(async (session) => {
+      const [beersCount] = await db
+        .select({ count: count() })
+        .from(beersTable)
+        .where(eq(beersTable.sessionId, session.id));
+
+      return {
+        ...session,
+        beersCount: beersCount.count,
+      };
+    })
+  );
 
   return { user, activeSessions };
 }

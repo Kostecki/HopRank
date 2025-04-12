@@ -4,21 +4,11 @@ import { useFetcher } from "react-router";
 import type { SessionUser } from "~/auth/auth.server";
 import { type SelectSession } from "~/database/schema.types";
 
-import dayjs from "~/utils/day";
-
 type InputProps = {
   user: SessionUser;
   sessions: SelectSession[];
 } & BoxProps;
 
-const formatDate = (date: string | Date) => {
-  const d = dayjs(date);
-
-  if (d.isToday()) return d.format("HH:mm");
-  if (d.isYesterday()) return d.format("I går, HH:mm");
-
-  return d.format("D. MMMM, HH:mm");
-};
 export default function SessionsTable({
   user,
   sessions,
@@ -41,8 +31,8 @@ export default function SessionsTable({
   const rows = sessions.map((session) => (
     <Table.Tr key={session.id}>
       <Table.Td tt="capitalize">{session.name}</Table.Td>
-      <Table.Td>{formatDate(session.createdAt)}</Table.Td>
       <Table.Td ta="center">{session.userCount}</Table.Td>
+      <Table.Td ta="center">{session.beersCount}</Table.Td>
       <Table.Td ta="center">
         <Button
           variant="light"
@@ -72,8 +62,8 @@ export default function SessionsTable({
           <Table.Thead>
             <Table.Tr>
               <Table.Th>Smagning</Table.Th>
-              <Table.Th>Oprettet</Table.Th>
               <Table.Th ta="center">Deltagere</Table.Th>
+              <Table.Th ta="center">Øl</Table.Th>
               <Table.Td ta="center"></Table.Td>
             </Table.Tr>
           </Table.Thead>
