@@ -9,11 +9,7 @@ type InputProps = {
 };
 
 export default function RatingSlider({ form, name, label }: InputProps) {
-  const { min, max, stepSize } = sliderConf;
-
-  const marks = Array.from({ length: max / stepSize }, (_, i) => ({
-    value: (i + 1) * stepSize,
-  }));
+  const { max, stepSize, marks } = sliderConf();
 
   const value = form.values[name] as number;
 
@@ -26,7 +22,7 @@ export default function RatingSlider({ form, name, label }: InputProps) {
       </Flex>
 
       <Slider
-        min={min}
+        min={stepSize}
         max={max}
         step={stepSize}
         marks={marks}

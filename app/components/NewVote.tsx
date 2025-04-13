@@ -25,7 +25,7 @@ export default function NewVote({ user, ratings, beer, votes }: InputProps) {
   const fetcher = useFetcher();
   const { sessionId } = useParams();
 
-  const { defaultValue } = sliderConf;
+  const { defaultValue } = sliderConf();
 
   const getValue = (id: number) => {
     if (!votes.length) return defaultValue;
