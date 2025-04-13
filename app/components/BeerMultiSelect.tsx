@@ -17,11 +17,13 @@ import {
 } from "@mantine/core";
 import { useDebouncedValue } from "@mantine/hooks";
 
+import type { SelectBeer } from "~/database/schema.types";
 import type { BeerOption } from "~/types/misc";
 
 type InputProps = {
   selectedBeers: BeerOption[];
   setSelectedBeers: (value: BeerOption[]) => void;
+  sessionBeers?: SelectBeer[];
 } & BoxProps;
 
 const getSelectedPills = (
@@ -41,11 +43,16 @@ const getSelectedPills = (
 
 const getComboboxOptions = (
   options: BeerOption[],
-  selectedBeers: BeerOption[]
+  selectedBeers: BeerOption[],
+  sessionBeers?: SelectBeer[]
 ) => {
   return options.map((option) => {
     const isSelected = selectedBeers.some(
       (b) => b.untappdBeerId === option.untappdBeerId
+    );
+
+    const isAlreadyInSession = sessionBeers?.some(
+      (b) => String(b.untappdBeerId) === option.untappdBeerId
     );
 
     return (
@@ -53,6 +60,7 @@ const getComboboxOptions = (
         key={option.untappdBeerId}
         value={option.untappdBeerId}
         active={isSelected}
+        disabled={isAlreadyInSession}
       >
         <Group gap="sm">
           {isSelected && <CheckIcon size={12} />}
@@ -60,6 +68,7 @@ const getComboboxOptions = (
             <Text size="sm">{option.name}</Text>
             <Text size="xs" c="gray" mt="3">
               {option.breweryName}
+              {isAlreadyInSession && " • Allerede tilføjet til smagningen"}
             </Text>
           </Box>
         </Group>
@@ -71,6 +80,7 @@ const getComboboxOptions = (
 export default function BeerMultiSelect({
   selectedBeers,
   setSelectedBeers,
+  sessionBeers,
   ...props
 }: InputProps) {
   const combobox = useCombobox({
@@ -119,14 +129,14 @@ export default function BeerMultiSelect({
     searchFetcher.state === "loading" && searchTerm.trim().length > 0;
 
   const values = getSelectedPills(selectedBeers, handleValueRemove);
-  const optionsList = getComboboxOptions(options, selectedBeers);
+  const optionsList = getComboboxOptions(options, selectedBeers, sessionBeers);
 
   return (
     <Box {...props}>
       <Combobox
         store={combobox}
         onOptionSubmit={handleValueSelect}
-        withinPortal={false}
+        withinPortal={true}
       >
         <Combobox.DropdownTarget>
           <PillsInput onClick={() => combobox.openDropdown()}>

@@ -2,16 +2,17 @@ import { useFetcher, useParams } from "react-router";
 import { Button, Divider, Paper, Stack } from "@mantine/core";
 import { useForm } from "@mantine/form";
 
+import RatingSlider from "./RatingSlider";
+
+import { sliderConf } from "~/utils/utils";
+
+import type { SessionUser } from "~/auth/auth.server";
+
 import type {
   SelectBeer,
   SelectRating,
   SelectVote,
 } from "~/database/schema.types";
-
-import RatingSlider from "./RatingSlider";
-
-import { sliderConf } from "~/utils/utils";
-import type { SessionUser } from "~/auth/auth.server";
 
 type InputProps = {
   ratings: SelectRating[];
@@ -86,7 +87,7 @@ export default function NewVote({ user, ratings, beer, votes }: InputProps) {
         <Divider my="lg" opacity={0.75} />
 
         <Button
-          color="teal"
+          color="slateIndigo"
           tt="uppercase"
           fw="bold"
           lts={0.8}

@@ -9,13 +9,14 @@ import {
   Title,
   useMantineTheme,
 } from "@mantine/core";
+
+import { calculateTotalScore } from "~/utils/score";
+
 import type {
   SelectBeer,
   SelectSession,
   SelectVote,
 } from "~/database/schema.types";
-
-import { calculateTotalScore } from "~/utils/score";
 
 type InputProps = {
   beer: SelectBeer;
@@ -63,7 +64,7 @@ export function BeerCard({ beer, votes, sessionDetails, index }: InputProps) {
         sections={[
           {
             value: progress,
-            color: "teal",
+            color: "slateIndigo",
           },
         ]}
       />

@@ -1,9 +1,10 @@
+import { calculateTotalScore } from "./score";
+
 import type {
   SelectBeer,
   SelectSession,
   SelectVote,
 } from "~/database/schema.types";
-import { calculateTotalScore } from "./score";
 
 const getVotesForBeer = (votes: SelectVote[], id: number) => {
   if (!id) return [];

@@ -1,8 +1,9 @@
 import { Box, Button, Divider, Group, Paper, Stack, Text } from "@mantine/core";
-import type { SelectBeer, SelectVote } from "~/database/schema.types";
 
 import { calculateSingleTotalScore } from "~/utils/score";
 import { createLink } from "~/utils/untappd";
+
+import type { SelectBeer, SelectVote } from "~/database/schema.types";
 
 type InputProps = {
   beer: SelectBeer;
@@ -39,7 +40,7 @@ export function BeerCardDetails({ beer, votes }: InputProps) {
         component="a"
         href={createLink(untappdBeerId)}
         target="_blank"
-        color="teal"
+        color="slateIndigo"
         fullWidth
         mt="xs"
       >

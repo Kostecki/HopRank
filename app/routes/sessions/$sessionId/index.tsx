@@ -72,6 +72,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     sessionVotes,
     ratedBeersWithScore,
     notRatedBeersShuffled,
+    sessionBeers,
   };
 }
 
@@ -83,6 +84,7 @@ export default function SessionDetails() {
     sessionVotes,
     ratedBeersWithScore,
     notRatedBeersShuffled,
+    sessionBeers,
   } = useLoaderData<typeof loader>();
 
   const upNextBeer = notRatedBeersShuffled[0];
@@ -90,7 +92,9 @@ export default function SessionDetails() {
 
   return (
     <>
-      {!upNextBeer && ratedBeersWithScore.length === 0 && <EmptySession />}
+      {!upNextBeer && ratedBeersWithScore.length === 0 && (
+        <EmptySession sessionBeers={sessionBeers} />
+      )}
 
       {upNextBeer && (
         <UpNext

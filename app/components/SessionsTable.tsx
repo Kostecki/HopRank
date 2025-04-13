@@ -38,7 +38,7 @@ export default function SessionsTable({ user, sessions }: InputProps) {
         <Button
           variant="light"
           size="xs"
-          color="teal"
+          color="slateIndigo"
           onClick={() => handleSubmit(session.id)}
           loading={
             fetcher.state === "submitting" &&
@@ -51,6 +51,14 @@ export default function SessionsTable({ user, sessions }: InputProps) {
     </Table.Tr>
   ));
 
+  const emptyRow = (
+    <Table.Tr>
+      <Table.Td colSpan={4} ta="center" c="dimmed" pt="md" fs="italic">
+        Ingen aktive smagninger
+      </Table.Td>
+    </Table.Tr>
+  );
+
   return (
     <>
       <Table mt="lg">
@@ -62,7 +70,7 @@ export default function SessionsTable({ user, sessions }: InputProps) {
             <Table.Td ta="center"></Table.Td>
           </Table.Tr>
         </Table.Thead>
-        <Table.Tbody>{rows}</Table.Tbody>
+        <Table.Tbody>{rows.length > 0 ? rows : emptyRow}</Table.Tbody>
       </Table>
 
       {total > perPage && (

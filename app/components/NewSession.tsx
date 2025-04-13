@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { useFetcher } from "react-router";
-import { Button, Stack, Text } from "@mantine/core";
+import { Box, Button, Stack, Text, type BoxProps } from "@mantine/core";
 
 import BeerMultiSelect from "./BeerMultiSelect";
 
 import type { BeerOption } from "~/types/misc";
 
-export default function NewSession() {
+export default function NewSession({ ...props }: BoxProps) {
   const [selectedBeers, setSelectedBeers] = useState<BeerOption[]>([]);
 
   const fetcher = useFetcher();
@@ -22,7 +22,7 @@ export default function NewSession() {
   };
 
   return (
-    <>
+    <Box {...props}>
       <Text fw="bold">Ny smagning</Text>
 
       <Stack>
@@ -35,10 +35,15 @@ export default function NewSession() {
           setSelectedBeers={setSelectedBeers}
         />
 
-        <Button color="teal" fullWidth radius="md" onClick={handleSubmit}>
-          Opret ny smagning
+        <Button
+          color="slateIndigo"
+          fullWidth
+          radius="md"
+          onClick={handleSubmit}
+        >
+          🍻 Opret ny smagning 🍻
         </Button>
       </Stack>
-    </>
+    </Box>
   );
 }

@@ -70,27 +70,33 @@ export const votesTable = sqliteTable(
 export type SelectVote = InferSelectModel<typeof votesTable>;
 export type InsertVote = InferInsertModel<typeof votesTable>;
 
-export const beersTable = sqliteTable("beers", {
-  id: int().primaryKey({ autoIncrement: true }),
-  addedBy: int("added_by")
-    .notNull()
-    .references(() => usersTable.id),
-  sessionId: int("session_id")
-    .notNull()
-    .references(() => sessionsTable.id),
-  untappdBeerId: int("untappd_beer_id").notNull(),
-  name: text("name").notNull(),
-  style: text("style").notNull(),
-  breweryName: text("brewery_name").notNull(),
-  label: text("label").notNull(),
-  createdAt: text("created_at")
-    .notNull()
-    .default(sql`CURRENT_TIMESTAMP`),
-  updatedAt: text("updated_at")
-    .notNull()
-    .default(sql`(CURRENT_TIMESTAMP)`)
-    .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
-});
+export const beersTable = sqliteTable(
+  "beers",
+  {
+    id: int().primaryKey({ autoIncrement: true }),
+    addedBy: int("added_by")
+      .notNull()
+      .references(() => usersTable.id),
+    sessionId: int("session_id")
+      .notNull()
+      .references(() => sessionsTable.id),
+    untappdBeerId: int("untappd_beer_id").notNull(),
+    name: text("name").notNull(),
+    style: text("style").notNull(),
+    breweryName: text("brewery_name").notNull(),
+    label: text("label").notNull(),
+    createdAt: text("created_at")
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: text("updated_at")
+      .notNull()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+  },
+  (table) => ({
+    uniqueSessionBeer: unique().on(table.sessionId, table.untappdBeerId),
+  })
+);
 export type SelectBeer = InferSelectModel<typeof beersTable>;
 export type InsertBeer = InferInsertModel<typeof beersTable>;
 

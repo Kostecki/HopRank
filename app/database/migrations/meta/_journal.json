@@ -15,6 +15,13 @@
       "when": 1744493198747,
       "tag": "0001_sour_havok",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1744549794852,
+      "tag": "0002_brave_chimera",
+      "breakpoints": true
     }
   ]
 }

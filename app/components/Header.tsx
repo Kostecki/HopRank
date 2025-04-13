@@ -1,3 +1,4 @@
+import { useFetcher } from "react-router";
 import {
   Avatar,
   Button,
@@ -15,7 +16,8 @@ import {
   IconPlus,
   IconUsers,
 } from "@tabler/icons-react";
-import { useFetcher } from "react-router";
+
+import ModalAddBeers, { ModalAddBeersTrigger } from "./modals/ModalAddBeers";
 
 import type { SessionUser } from "~/auth/auth.server";
 import type { SelectBeer, SelectSession } from "~/database/schema.types";
@@ -77,35 +79,40 @@ export function Header({
           {sessionDetails && (
             <>
               <Group gap="xs" mr="xs">
-                <Menu shadow="md" withArrow width="auto">
-                  <Menu.Target>
-                    <Button
-                      c="slateIndigo"
-                      color="slateIndigo"
-                      variant="outline"
-                    >
-                      Smagning
-                    </Button>
-                  </Menu.Target>
+                <ModalAddBeers sessionBeers={sessionBeers}>
+                  <Menu shadow="md" withArrow width="auto">
+                    <Menu.Target>
+                      <Button
+                        c="slateIndigo"
+                        color="slateIndigo"
+                        variant="outline"
+                      >
+                        Smagning
+                      </Button>
+                    </Menu.Target>
 
-                  <Menu.Dropdown>
-                    <Menu.Label tt="capitalize">
-                      {sessionDetails.name}
-                    </Menu.Label>
-                    <Menu.Item leftSection={<IconPlus size={14} />}>
-                      Tilføj øl til smagningen
-                    </Menu.Item>
+                    <Menu.Dropdown>
+                      <Menu.Label tt="capitalize">
+                        {sessionDetails.name}
+                      </Menu.Label>
 
-                    <Divider opacity={0.5} />
+                      <ModalAddBeersTrigger>
+                        <Menu.Item leftSection={<IconPlus size={14} />}>
+                          Tilføj øl til smagningen
+                        </Menu.Item>
+                      </ModalAddBeersTrigger>
 
-                    <Menu.Item
-                      onClick={handleLeaveSession}
-                      leftSection={<IconDoorExit size={14} />}
-                    >
-                      Forlad smagningen
-                    </Menu.Item>
-                  </Menu.Dropdown>
-                </Menu>
+                      <Divider opacity={0.5} />
+
+                      <Menu.Item
+                        onClick={handleLeaveSession}
+                        leftSection={<IconDoorExit size={14} />}
+                      >
+                        Forlad smagningen
+                      </Menu.Item>
+                    </Menu.Dropdown>
+                  </Menu>
+                </ModalAddBeers>
               </Group>
 
               <Group gap="8">
@@ -114,14 +121,14 @@ export function Header({
                   {sessionDetails.userCount}
                 </Text>
               </Group>
+              <Group gap="5">
+                <IconBeer color={slateIndigo} size={20} />
+                <Text c="slateIndigo" fw={600}>
+                  {`${ratedBeersCount ?? 0} / ${sessionBeers?.length ?? 0}`}
+                </Text>
+              </Group>
             </>
           )}
-          <Group gap="5">
-            <IconBeer color={slateIndigo} size={20} />
-            <Text c="slateIndigo" fw={600}>
-              {`${ratedBeersCount ?? 0} / ${sessionBeers?.length ?? 0}`}
-            </Text>
-          </Group>
         </Group>
         {user && <User user={user} />}
       </Group>

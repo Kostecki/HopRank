@@ -36,7 +36,7 @@ export default function RatingSlider({ form, name, label }: InputProps) {
             maximumFractionDigits: 2,
           })
         }
-        color="teal"
+        color="slateIndigo"
         {...form.getInputProps(name)}
       />
     </Box>

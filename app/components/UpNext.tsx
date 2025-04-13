@@ -1,17 +1,17 @@
 import { Anchor, Box, Divider, Text, type BoxProps } from "@mantine/core";
 
+import { BeerCard } from "./BeerCard";
+import NewVote from "./NewVote";
+
+import { createLink } from "~/utils/untappd";
+
+import type { SessionUser } from "~/auth/auth.server";
 import type {
   SelectBeer,
   SelectRating,
   SelectSession,
   SelectVote,
 } from "~/database/schema.types";
-
-import { BeerCard } from "./BeerCard";
-import NewVote from "./NewVote";
-
-import { createLink } from "~/utils/untappd";
-import type { SessionUser } from "~/auth/auth.server";
 
 type InputProps = {
   beer: SelectBeer;

@@ -45,6 +45,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 export default function Sessions() {
   const { user, activeSessions } = useLoaderData<typeof loader>();
+  const isEmpty = activeSessions.length === 0;
 
   return (
     <Paper p="md" radius="md" withBorder mt={64}>
@@ -55,9 +56,9 @@ export default function Sessions() {
 
       <SessionsTable user={user} sessions={activeSessions} />
 
-      <Divider opacity={0.4} my="lg" />
+      {!isEmpty && <Divider opacity={0.4} my="lg" />}
 
-      <NewSession />
+      <NewSession mt={isEmpty ? 50 : undefined} />
     </Paper>
   );
 }

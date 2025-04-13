@@ -4,9 +4,14 @@ import { Button, Paper, Text } from "@mantine/core";
 
 import BeerMultiSelect from "./BeerMultiSelect";
 
+import type { SelectBeer } from "~/database/schema.types";
 import type { BeerOption } from "~/types/misc";
 
-export default function EmptySession() {
+type InputProps = {
+  sessionBeers?: SelectBeer[];
+};
+
+export default function EmptySession({ sessionBeers }: InputProps) {
   const { sessionId } = useParams();
   const [selectedBeers, setSelectedBeers] = useState<BeerOption[]>([]);
 
@@ -35,10 +40,11 @@ export default function EmptySession() {
         my="lg"
         selectedBeers={selectedBeers}
         setSelectedBeers={setSelectedBeers}
+        sessionBeers={sessionBeers}
       />
 
       <Button
-        color="teal"
+        color="slateIndigo"
         fullWidth
         radius="md"
         onClick={handleSubmit}
