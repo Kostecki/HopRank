@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "f323d385-f8a5-4a43-aea8-a1574818a045",
+  "id": "ea0c81f4-6d64-407d-bbd4-0fa025c18fa4",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "beers": {
@@ -28,8 +28,8 @@
           "notNull": true,
           "autoincrement": false
         },
-        "beer_id": {
-          "name": "beer_id",
+        "untappd_beer_id": {
+          "name": "untappd_beer_id",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
@@ -80,7 +80,16 @@
           "default": "(CURRENT_TIMESTAMP)"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "beers_session_id_untappd_beer_id_unique": {
+          "name": "beers_session_id_untappd_beer_id_unique",
+          "columns": [
+            "session_id",
+            "untappd_beer_id"
+          ],
+          "isUnique": true
+        }
+      },
       "foreignKeys": {
         "beers_added_by_users_id_fk": {
           "name": "beers_added_by_users_id_fk",

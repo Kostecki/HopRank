@@ -57,8 +57,6 @@ export default function ModalAddBeers({ children, sessionBeers }: InputProps) {
     close();
   };
 
-  console.log("sessionBeers", sessionBeers);
-
   return (
     <ModalAddBeersContext.Provider value={open}>
       {children}

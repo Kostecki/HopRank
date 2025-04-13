@@ -1,1 +1,0 @@
-CREATE UNIQUE INDEX `beers_session_id_untappd_beer_id_unique` ON `beers` (`session_id`,`untappd_beer_id`);

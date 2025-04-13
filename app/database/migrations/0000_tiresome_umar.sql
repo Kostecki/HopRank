@@ -2,7 +2,7 @@ CREATE TABLE `beers` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`added_by` integer NOT NULL,
 	`session_id` integer NOT NULL,
-	`beer_id` integer NOT NULL,
+	`untappd_beer_id` integer NOT NULL,
 	`name` text NOT NULL,
 	`style` text NOT NULL,
 	`brewery_name` text NOT NULL,
@@ -13,6 +13,7 @@ CREATE TABLE `beers` (
 	FOREIGN KEY (`session_id`) REFERENCES `sessions`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
+CREATE UNIQUE INDEX `beers_session_id_untappd_beer_id_unique` ON `beers` (`session_id`,`untappd_beer_id`);--> statement-breakpoint
 CREATE TABLE `ratings` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`name` text NOT NULL,

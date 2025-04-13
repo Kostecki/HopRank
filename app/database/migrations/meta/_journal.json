@@ -5,22 +5,8 @@
     {
       "idx": 0,
       "version": "6",
-      "when": 1744481644424,
-      "tag": "0000_motionless_stellaris",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "6",
-      "when": 1744493198747,
-      "tag": "0001_sour_havok",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "6",
-      "when": 1744549794852,
-      "tag": "0002_brave_chimera",
+      "when": 1744551608571,
+      "tag": "0000_tiresome_umar",
       "breakpoints": true
     }
   ]
