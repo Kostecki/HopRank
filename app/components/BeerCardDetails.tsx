@@ -1,16 +1,28 @@
-import { Box, Button, Divider, Group, Paper, Stack, Text } from "@mantine/core";
+import {
+  Box,
+  Button,
+  Divider,
+  Grid,
+  Group,
+  Paper,
+  SimpleGrid,
+  Stack,
+  Text,
+} from "@mantine/core";
 
 import { calculateSingleTotalScore } from "~/utils/score";
 import { createLink } from "~/utils/untappd";
+import { displayScore } from "~/utils/utils";
 
 import type { SelectBeer, SelectVote } from "~/database/schema.types";
 
 type InputProps = {
   beer: SelectBeer;
   votes: SelectVote[];
+  untappdInfo: any;
 };
 
-export function BeerCardDetails({ beer, votes }: InputProps) {
+export function BeerCardDetails({ beer, votes, untappdInfo }: InputProps) {
   const { untappdBeerId } = beer;
 
   const totalScores = calculateSingleTotalScore(votes);
@@ -18,18 +30,51 @@ export function BeerCardDetails({ beer, votes }: InputProps) {
   return (
     <Paper withBorder radius="md" p="md" pt="lg" mt={-10}>
       <Box px="sm">
-        <Group justify="space-between">
+        <SimpleGrid cols={3}>
           {totalScores.map(({ name, score }) => (
-            <Stack gap={0} key={name}>
-              <Text ta="center" fw={400}>
-                {name}
-              </Text>
-              <Text ta="center" fw="bold">
-                {score.toFixed(2).replace(".", ",")}
-                {/* local toFixed */}
-              </Text>
+            <Stack gap={0} align="center">
+              <Text fw={400}>{name}</Text>
+              <Text fw="bold">{displayScore(score)}</Text>
             </Stack>
           ))}
+        </SimpleGrid>
+
+        <Divider opacity={0.3} my="md" />
+
+        <Group justify="space-between">
+          <Stack gap={0}>
+            <Text ta="center" fw={400}>
+              ABV
+            </Text>
+            <Text ta="center" fw="bold">
+              {untappdInfo?.abv}%
+            </Text>
+          </Stack>
+          <Stack gap={0}>
+            <Text ta="center" fw={400}>
+              Total
+            </Text>
+            <Text ta="center" fw="bold">
+              {untappdInfo?.checkins.total}
+            </Text>
+          </Stack>
+          <Stack gap={0}>
+            <Text ta="center" fw={400}>
+              Unkikke
+            </Text>
+            <Text ta="center" fw="bold">
+              {untappdInfo?.checkins.unique}
+            </Text>
+          </Stack>
+          <Stack gap={0}>
+            <Text ta="center" fw={400}>
+              Rating
+            </Text>
+            <Text ta="center" fw="bold">
+              {Math.round(parseFloat(untappdInfo?.rating.value) * 100) / 100} (
+              {untappdInfo?.rating.count})
+            </Text>
+          </Stack>
         </Group>
       </Box>
 
