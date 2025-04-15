@@ -52,7 +52,7 @@ export default function Layout() {
       </AppShell.Header>
 
       <AppShell.Main>
-        <Container size="xs" mt="md">
+        <Container size="xs" mt="md" pb="xs">
           <Outlet />
         </Container>
       </AppShell.Main>

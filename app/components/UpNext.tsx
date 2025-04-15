@@ -44,8 +44,6 @@ export default function UpNext({
       </Anchor>
 
       <NewVote ratings={ratings} beer={beer} user={user} votes={votes} />
-
-      <Divider my="lg" opacity={0.3} />
     </Box>
   );
 }
