@@ -29,5 +29,10 @@ export default [
       route("facebook", "routes/auth/actions/facebook.ts"),
     ]),
   ]),
-  ...prefix("api", [route("beers", "routes/api/beers/index.ts")]),
+  ...prefix("api", [
+    ...prefix("untappd", [
+      route("beers", "routes/api/untappd/search.ts"),
+      route("beer/:beerId", "routes/api/untappd/$beerId.ts"),
+    ]),
+  ]),
 ] satisfies RouteConfig;

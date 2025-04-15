@@ -23,6 +23,7 @@ import {
 } from "~/utils/votes";
 
 import type { Route } from "./+types";
+import { useEffect, useState } from "react";
 
 export function meta({}: Route.MetaArgs) {
   return [{ title: getPageTitle("Smagning") }];
@@ -86,9 +87,31 @@ export default function SessionDetails() {
     notRatedBeersShuffled,
     sessionBeers,
   } = useLoaderData<typeof loader>();
+  const [untappdInfoMap, setUntappdInfoMap] = useState<Map<number, any>>(
+    new Map()
+  );
 
   const upNextBeer = notRatedBeersShuffled[0];
   const votesNextBeer = getVotesForBeer(sessionVotes, upNextBeer?.id);
+
+  useEffect(() => {
+    ratedBeersWithScore.forEach((beer) => {
+      if (!untappdInfoMap.has(beer.id)) {
+        fetch(`/api/untappd/beer/${beer.untappdBeerId}`)
+          .then((res) => res.json())
+          .then((data) => {
+            setUntappdInfoMap((prev) => {
+              const newMap = new Map(prev);
+              newMap.set(beer.id, data);
+              return newMap;
+            });
+          })
+          .catch((error) => {
+            console.error("Error fetching Untappd data:", error);
+          });
+      }
+    });
+  }, [ratedBeersWithScore]);
 
   return (
     <>
@@ -103,7 +126,7 @@ export default function SessionDetails() {
           ratings={ratings}
           sessionDetails={sessionDetails}
           user={user}
-          mt={50}
+          mb="xl"
         />
       )}
 
@@ -133,7 +156,11 @@ export default function SessionDetails() {
               </Accordion.Control>
 
               <Accordion.Panel>
-                <BeerCardDetails beer={beer} votes={votesForBeer} />
+                <BeerCardDetails
+                  beer={beer}
+                  votes={votesForBeer}
+                  untappdInfo={untappdInfoMap.get(beer.id)}
+                />
               </Accordion.Panel>
             </Accordion.Item>
           );

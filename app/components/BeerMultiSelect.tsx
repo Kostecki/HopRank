@@ -120,7 +120,7 @@ export default function BeerMultiSelect({
 
   useEffect(() => {
     if (debouncedSearchTerm.trim() && combobox.dropdownOpened) {
-      searchFetcher.load(`/api/beers?q=${debouncedSearchTerm}`);
+      searchFetcher.load(`/api/untappd/beers?q=${debouncedSearchTerm}`);
     }
   }, [debouncedSearchTerm]);
 

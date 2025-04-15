@@ -1,4 +1,4 @@
-const createLink = (untappdBeerId: number) => {
+const createLink = (untappdBeerId: number | string) => {
   return `https://untappd.com/beer/${untappdBeerId}`;
 };
 
