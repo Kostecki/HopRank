@@ -30,7 +30,11 @@ export default function SessionsTable({ user, sessions }: InputProps) {
   };
 
   const rows = paginatedSessions.map((session) => (
-    <Table.Tr key={session.id}>
+    <Table.Tr
+      key={session.id}
+      onClick={() => handleSubmit(session.id)}
+      style={{ cursor: "pointer" }}
+    >
       <Table.Td tt="capitalize">{session.name}</Table.Td>
       <Table.Td ta="center">{session.userCount}</Table.Td>
       <Table.Td ta="center">{session.beersCount}</Table.Td>
@@ -39,7 +43,6 @@ export default function SessionsTable({ user, sessions }: InputProps) {
           variant="filled"
           size="xs"
           color="slateIndigo"
-          onClick={() => handleSubmit(session.id)}
           loading={
             fetcher.state === "submitting" &&
             fetcher.formData?.get("sessionId") === String(session.id)
@@ -61,7 +64,7 @@ export default function SessionsTable({ user, sessions }: InputProps) {
 
   return (
     <>
-      <Table mt="lg">
+      <Table mt="lg" highlightOnHover>
         <Table.Thead>
           <Table.Tr>
             <Table.Th>Smagning</Table.Th>
