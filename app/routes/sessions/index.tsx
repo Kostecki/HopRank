@@ -49,7 +49,7 @@ export default function Sessions() {
   return (
     <Paper p="md" radius="md" withBorder>
       <Tabs defaultValue="active" color="slateIndigo">
-        <Tabs.List mb="sm">
+        <Tabs.List mb="sm" grow justify="center">
           <Tabs.Tab value="active" fw="bold">
             Aktive
           </Tabs.Tab>
