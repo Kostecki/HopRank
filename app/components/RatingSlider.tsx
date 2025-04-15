@@ -1,6 +1,6 @@
 import { Box, Flex, Slider, Text } from "@mantine/core";
 import type { UseFormReturnType } from "@mantine/form";
-import { sliderConf } from "~/utils/utils";
+import { displayScore, sliderConf } from "~/utils/utils";
 
 type InputProps = {
   form: UseFormReturnType<Record<string, number>>;
@@ -17,8 +17,7 @@ export default function RatingSlider({ form, name, label }: InputProps) {
     <Box>
       <Flex justify="space-between" align="center" mb="xs">
         <Text size="sm">{label}</Text>
-        <Text size="sm">{value.toFixed(2).replace(".", ",")}</Text>
-        {/* local toFixed */}
+        <Text size="sm">{displayScore(value)}</Text>
       </Flex>
 
       <Slider

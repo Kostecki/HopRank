@@ -11,6 +11,7 @@ import {
 } from "@mantine/core";
 
 import { calculateTotalScore } from "~/utils/score";
+import { displayScore } from "~/utils/utils";
 
 import type {
   SelectBeer,
@@ -38,6 +39,14 @@ export function BeerCard({ beer, votes, sessionDetails, index }: InputProps) {
     if (index === undefined || index > 2) return null;
 
     return [gold, silver, bronze][index];
+  };
+
+  const RenderTitle = () => {
+    return (
+      <Title size={30} fw={600} lineClamp={1} ta="center">
+        {displayScore(calculateTotalScore(votes))}
+      </Title>
+    );
   };
 
   const RenderProgress = () => {
@@ -82,10 +91,10 @@ export function BeerCard({ beer, votes, sessionDetails, index }: InputProps) {
       withBorder
     >
       <Grid justify="space-between" align="center">
-        <Grid.Col span={2}>
-          <Image src={label} alt={name} radius="md" />
+        <Grid.Col span={3} p="sm">
+          <Image src={label} alt={name} radius="md" mah={65} w="auto" />
         </Grid.Col>
-        <Grid.Col span={7}>
+        <Grid.Col span={6}>
           <Stack gap={0}>
             <Text size="md" ta="center" fw="bold" lineClamp={1}>
               {name}
@@ -101,10 +110,7 @@ export function BeerCard({ beer, votes, sessionDetails, index }: InputProps) {
         <Grid.Col span={3}>
           <Flex justify="center">
             {!sessionDetails && beer.score ? (
-              <Title size={45} fw={600} lineClamp={1} ta="center">
-                {calculateTotalScore(votes).toFixed(2).replace(".", ",")}
-                {/* local toFixed */}
-              </Title>
+              <RenderTitle />
             ) : (
               <RenderProgress />
             )}

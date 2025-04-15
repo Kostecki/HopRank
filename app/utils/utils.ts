@@ -33,4 +33,8 @@ const wait = (ms: number): Promise<void> => {
   });
 };
 
-export { sliderConf, getPageTitle, wait };
+const displayScore = (score: number) => {
+  return score.toFixed(2).replace(".", ",");
+};
+
+export { sliderConf, getPageTitle, wait, displayScore };
