@@ -1,6 +1,6 @@
 import { redirect, useLoaderData } from "react-router";
 import { count, eq } from "drizzle-orm";
-import { Divider, Paper, Text } from "@mantine/core";
+import { Divider, Paper, Tabs, Text } from "@mantine/core";
 
 import { userSessionGet } from "~/auth/users.server";
 import { db } from "~/database/config.server";
@@ -45,20 +45,41 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 export default function Sessions() {
   const { user, activeSessions } = useLoaderData<typeof loader>();
-  const isEmpty = activeSessions.length === 0;
 
   return (
-    <Paper p="md" radius="md" withBorder mt={64}>
-      <Text fw="bold">Aktive smagninger</Text>
-      <Text c="dimmed" size="sm" fs="italic">
-        Vælg en aktiv smagning for at deltage
-      </Text>
+    <Paper p="md" radius="md" withBorder>
+      <Tabs defaultValue="active" color="slateIndigo">
+        <Tabs.List mb="sm">
+          <Tabs.Tab value="active" fw="bold">
+            Aktive
+          </Tabs.Tab>
+          <Tabs.Tab value="past" fw="bold">
+            Afsluttede
+          </Tabs.Tab>
+        </Tabs.List>
 
-      <SessionsTable user={user} sessions={activeSessions} />
+        <Tabs.Panel value="active">
+          <Text c="dimmed" size="sm" fs="italic">
+            Vælg en smagning for at deltage
+          </Text>
 
-      {!isEmpty && <Divider opacity={0.4} my="lg" />}
+          <SessionsTable user={user} sessions={activeSessions} />
+        </Tabs.Panel>
 
-      <NewSession mt={isEmpty ? 50 : undefined} />
+        <Tabs.Panel value="past">
+          <Text c="dimmed" size="sm" fs="italic">
+            Se tidligere smagninger
+          </Text>
+
+          <Text size="xl" c="dimmed" fs="italic" ta="center">
+            Yet to be implemented
+          </Text>
+
+          {/* <SessionsTable user={user} sessions={activeSessions} /> */}
+        </Tabs.Panel>
+      </Tabs>
+
+      <NewSession mt={30} />
     </Paper>
   );
 }
