@@ -34,9 +34,9 @@ export default function SessionsTable({ user, sessions }: InputProps) {
       <Table.Td tt="capitalize">{session.name}</Table.Td>
       <Table.Td ta="center">{session.userCount}</Table.Td>
       <Table.Td ta="center">{session.beersCount}</Table.Td>
-      <Table.Td ta="center">
+      <Table.Td ta="right">
         <Button
-          variant="light"
+          variant="filled"
           size="xs"
           color="slateIndigo"
           onClick={() => handleSubmit(session.id)}
