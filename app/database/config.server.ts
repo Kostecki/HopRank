@@ -10,8 +10,15 @@ invariant(DATABASE_PATH, "DATABASE_PATH must be defined");
 
 export const db = drizzle(new Database(DATABASE_PATH));
 
-void migrate(db, {
-  migrationsFolder: "./app/database/migrations",
-});
+const setupDatabase = async () => {
+  await migrate(db, {
+    migrationsFolder: "./app/database/migrations",
+  });
 
-await seedDatabase();
+  await seedDatabase();
+};
+
+setupDatabase().catch((error) => {
+  console.error("Error setting up the database:", error);
+  process.exit(1);
+});
