@@ -1,6 +1,6 @@
 import { redirect, useLoaderData } from "react-router";
 import { count, eq } from "drizzle-orm";
-import { Divider, Paper, Tabs, Text } from "@mantine/core";
+import { Paper, Tabs, Text } from "@mantine/core";
 
 import { userSessionGet } from "~/auth/users.server";
 import { db } from "~/database/config.server";

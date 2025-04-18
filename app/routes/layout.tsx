@@ -1,5 +1,5 @@
 import { Outlet, useLoaderData } from "react-router";
-import { ActionIcon, AppShell, Container } from "@mantine/core";
+import { AppShell, Container } from "@mantine/core";
 
 import { userSessionGet } from "~/auth/users.server";
 import {
@@ -10,8 +10,11 @@ import {
 
 import { Header } from "~/components/Header";
 
-import type { Route } from "../+types/root";
+import { useAutoRevalidate } from "~/hooks/useAutoRevalidate";
+
 import { getBeersVotedByAllUsers } from "~/utils/votes";
+
+import type { Route } from "../+types/root";
 
 export async function loader({ params, request }: Route.LoaderArgs) {
   const user = await userSessionGet(request);
@@ -37,6 +40,8 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 }
 
 export default function Layout() {
+  useAutoRevalidate();
+
   const { user, sessionDetails, sessionBeers, completedBeersCount } =
     useLoaderData<typeof loader>();
 
