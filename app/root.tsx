@@ -48,6 +48,30 @@ export const links: Route.LinksFunction = () => [
     rel: "stylesheet",
     href: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap",
   },
+  {
+    rel: "icon",
+    type: "image/png",
+    href: "/favicon/favicon-96x96.png",
+    sizes: "96x96",
+  },
+  {
+    rel: "icon",
+    type: "image/svg+xml",
+    href: "/favicon/favicon.ico",
+  },
+  {
+    rel: "shortcut icon",
+    href: "/favicon/favicon.ico",
+  },
+  {
+    rel: "apple-touch-icon",
+    href: "/favicon/apple-touch-icon.png",
+    sizes: "180x180",
+  },
+  {
+    rel: "manifest",
+    href: "/favicon/site.webmanifest",
+  },
 ];
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -82,21 +106,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link
-          rel="icon"
-          type="image/png"
-          href="/favicon/favicon-96x96.png"
-          sizes="96x96"
-        />
-        <link rel="icon" type="image/svg+xml" href="/favicon/favicon.svg" />
-        <link rel="shortcut icon" href="/favicon/favicon.ico" />
-        <link
-          rel="apple-touch-icon"
-          sizes="180x180"
-          href="/favicon/apple-touch-icon.png"
-        />
         <meta name="apple-mobile-web-app-title" content="HopRank" />
-        <link rel="manifest" href="/favicon/site.webmanifest" />
         <Meta />
         <Links />
         <ColorSchemeScript />
