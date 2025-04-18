@@ -2,7 +2,6 @@ import {
   Box,
   Button,
   Divider,
-  Grid,
   Group,
   Paper,
   SimpleGrid,
@@ -32,7 +31,7 @@ export function BeerCardDetails({ beer, votes, untappdInfo }: InputProps) {
       <Box px="sm">
         <SimpleGrid cols={3}>
           {totalScores.map(({ name, score }) => (
-            <Stack gap={0} align="center">
+            <Stack gap={0} align="center" key={name}>
               <Text fw={400}>{name}</Text>
               <Text fw="bold">{displayScore(score)}</Text>
             </Stack>
