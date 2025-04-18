@@ -33,3 +33,24 @@ export type AlgoliaBeerHit = {
 export type AlgoliaBeerResponse = {
   hits: AlgoliaBeerHit[];
 };
+
+export type ScrapedBeer = {
+  id: number;
+  name: string;
+  brewery: {
+    name: string;
+    link?: string;
+  };
+  style: string;
+  label?: string;
+  abv: number;
+  description: string;
+  checkins: {
+    total: number;
+    unique: number;
+  };
+  rating: {
+    value: number;
+    count: number;
+  };
+};
