@@ -42,6 +42,9 @@ COPY package.json pnpm-lock.yaml ./
 COPY --from=production-dependencies-env /app/node_modules ./node_modules
 COPY --from=build-env /app/build ./build
 
+# ✅ Rebuild native modules for Alpine/musl
+RUN pnpm rebuild better-sqlite3
+
 EXPOSE 3000
 
 CMD ["pnpm", "start"]
