@@ -12,7 +12,7 @@ jobs:
 
     env:
       REGISTRY: ghcr.io
-      IMAGE_NAME: hop-rank
+      IMAGE_NAME: hoprank
 
     steps:
       - name: Checkout code
