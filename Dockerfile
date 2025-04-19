@@ -10,7 +10,7 @@ RUN npm install -g pnpm
 FROM base AS deps
 WORKDIR /app
 
-# Copy only package manifests first (to maximize cache)
+# Copy only package manifests first (for maximum cache)
 COPY package.json pnpm-lock.yaml ./
 
 RUN pnpm install --frozen-lockfile
@@ -20,8 +20,10 @@ RUN pnpm install --frozen-lockfile
 FROM deps AS build
 WORKDIR /app
 
-# Copy app source code needed for building
-COPY app/ ./app
+# Copy app source code FLAT into /app
+COPY app/. ./
+
+# Copy config files
 COPY vite.config.ts tsconfig.json drizzle.config.ts postcss.config.cjs react-router.config.ts theme.ts ./
 COPY package.json pnpm-lock.yaml ./
 
@@ -51,10 +53,10 @@ WORKDIR /app
 # Copy only built output and runtime deps
 COPY --from=prod-deps /app/node_modules ./node_modules
 COPY --from=build /app/build ./build
-COPY --from=build /app/app/database ./database    # Only database folder copied
+COPY --from=build /app/database ./database
 COPY package.json pnpm-lock.yaml ./
 
-# 🛠 Rebuild native modules (like better-sqlite3) for Alpine/musl
+# 🛠 Rebuild native modules for Alpine/musl
 RUN npm rebuild better-sqlite3
 
 # 🧹 Clean up
@@ -68,5 +70,5 @@ ENTRYPOINT ["/sbin/tini", "--"]
 # Expose app port
 EXPOSE 3000
 
-# Start app
+# Start the app
 CMD ["node", "./build/server/index.js"]
