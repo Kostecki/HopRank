@@ -1,5 +1,3 @@
-# syntax=docker/dockerfile:1.5
-
 # -------------------------------
 # Base build image with pnpm installed
 FROM node:23-slim AS base
@@ -39,15 +37,16 @@ FROM node:23-alpine AS runner
 
 WORKDIR /app
 
-# Only copy built output and runtime deps
+# Copy built output and runtime deps
 COPY --from=prod-deps /app/node_modules ./node_modules
 COPY --from=build /app/build ./build
+COPY --from=build /app/migrations ./migrations
 COPY package.json pnpm-lock.yaml ./
 
 # 🛠 Rebuild native modules (like better-sqlite3) for Alpine/musl
 RUN npm rebuild better-sqlite3
 
-# Optional: Cleanup to minimize final image size
+# Cleanup to minimize final image size
 RUN apk add --no-cache tini \
   && npm cache clean --force \
   && rm -rf /root/.npm /root/.pnpm-store /tmp/*
@@ -55,8 +54,7 @@ RUN apk add --no-cache tini \
 # Use tini as entrypoint for proper signal handling
 ENTRYPOINT ["/sbin/tini", "--"]
 
-# Expose your app port
+
 EXPOSE 3000
 
-# Start directly with node
 CMD ["node", "./build/server/index.js"]

@@ -6,13 +6,15 @@ import invariant from "tiny-invariant";
 import seedDatabase from "./seed";
 
 const DATABASE_PATH = process.env.DATABASE_PATH;
+const MIGRATIONS_PATH = process.env.MIGRATIONS_PATH;
 invariant(DATABASE_PATH, "DATABASE_PATH must be defined");
+invariant(MIGRATIONS_PATH, "MIGRATIONS_PATH must be defined");
 
 export const db = drizzle(new Database(DATABASE_PATH));
 
 const setupDatabase = async () => {
   migrate(db, {
-    migrationsFolder: "./app/database/migrations",
+    migrationsFolder: MIGRATIONS_PATH,
   });
 
   if (process.env.NODE_ENV === "development") {

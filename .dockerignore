@@ -1,5 +1,32 @@
+# Ignore node_modules (reinstalled fresh inside image)
 node_modules
+
+# Ignore build output (rebuilt inside Dockerfile)
 build
-.DS_Store
+
+# Ignore local environment files
+.env
+*.env
+
+# Ignore SQLite local databases
+*.db
+*.sqlite
+
+# Ignore Vite or other tool caches
+.vite
+
+# Ignore npm/pnpm caches
+.npm
+.pnpm-store
+
+# Ignore Git stuff
 .git
+.gitignore
+
+# Ignore logs
 *.log
+
+# Ignore Docker cache itself
+Dockerfile
+docker-compose.yml
+.dockerignore
