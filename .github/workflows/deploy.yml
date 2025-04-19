@@ -59,9 +59,3 @@ jobs:
             FB_OAUTH_USERINFO_ENDPOINT=${{ vars.FB_OAUTH_USERINFO_ENDPOINT }}
             VITE_ALGOLIA_APP_ID=${{ vars.VITE_ALGOLIA_APP_ID }}
             VITE_ALGOLIA_API_KEY=${{ vars.VITE_ALGOLIA_API_KEY }}
-
-      - name: Bypass Cloudflare for GitHub Action
-        uses: xiaotianxt/bypass-cloudflare-for-github-action@v1.1.1
-        with:
-          cf_zone_id: ${{ secrets.CF_ZONE_ID }}
-          cf_api_token: ${{ secrets.CF_API_TOKEN }}
