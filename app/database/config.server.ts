@@ -11,13 +11,13 @@ invariant(DATABASE_PATH, "DATABASE_PATH must be defined");
 export const db = drizzle(new Database(DATABASE_PATH));
 
 const setupDatabase = async () => {
-  if (process.env.NODE_ENV === "development") {
-    migrate(db, {
-      migrationsFolder: "./app/database/migrations",
-    });
-  }
+  migrate(db, {
+    migrationsFolder: "./app/database/migrations",
+  });
 
-  await seedDatabase();
+  if (process.env.NODE_ENV === "development") {
+    await seedDatabase();
+  }
 };
 
 setupDatabase().catch((error) => {
