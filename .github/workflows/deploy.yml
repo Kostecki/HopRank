@@ -48,14 +48,5 @@ jobs:
           cache-to: type=gha,mode=max
           provenance: false
           build-args: |
-            BASE_URL=${{ vars.BASE_URL }}
-            SESSION_SECRET=${{ secrets.SESSION_SECRET }}
-            DATABASE_PATH=${{ vars.DATABASE_PATH }}
-            MIGRATIONS_PATH=${{ vars.MIGRATIONS_PATH }}
-            FB_OAUTH_CLIENT_ID=${{ vars.FB_OAUTH_CLIENT_ID }}
-            FB_OAUTH_CLIENT_SECRET=${{ secrets.FB_OAUTH_CLIENT_SECRET }}
-            FB_OAUTH_AUTH_ENDPOINT=${{ vars.FB_OAUTH_AUTH_ENDPOINT }}
-            FB_OAUTH_TOKEN_ENDPOINT=${{ vars.FB_OAUTH_TOKEN_ENDPOINT }}
-            FB_OAUTH_USERINFO_ENDPOINT=${{ vars.FB_OAUTH_USERINFO_ENDPOINT }}
             VITE_ALGOLIA_APP_ID=${{ vars.VITE_ALGOLIA_APP_ID }}
             VITE_ALGOLIA_API_KEY=${{ vars.VITE_ALGOLIA_API_KEY }}
