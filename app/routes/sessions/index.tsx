@@ -1,18 +1,26 @@
 import { redirect, useLoaderData } from "react-router";
-import { count, eq } from "drizzle-orm";
+import { inArray } from "drizzle-orm";
 import { Paper, Tabs, Text } from "@mantine/core";
 
 import { userSessionGet } from "~/auth/users.server";
 import { db } from "~/database/config.server";
-import { beersTable } from "~/database/schema.server";
-import { getActiveSessions } from "~/database/helpers";
+import { sessionsTable, usersTable } from "~/database/schema.server";
+import {
+  getSessions,
+  getSessionLastActivity,
+  getBeersCountPerSession,
+} from "~/database/helpers";
 
-import SessionsTable from "~/components/SessionsTable";
 import NewSession from "~/components/NewSession";
+import SessionsTable from "~/components/SessionsTable";
 
 import { getPageTitle } from "~/utils/utils";
 
 import type { Route } from "./+types";
+
+// Timeout rules
+const SESSION_MIN_AGE_HOURS = 6;
+const SESSION_INACTIVITY_TIMEOUT_HOURS = 6;
 
 export function meta({}: Route.MetaArgs) {
   return [{ title: getPageTitle("Smagninger") }];
@@ -25,26 +33,81 @@ export async function loader({ request }: Route.LoaderArgs) {
     return redirect("/sessions/" + user.activeSession);
   }
 
-  const activeSessionsData = await getActiveSessions();
-  const activeSessions = await Promise.all(
-    activeSessionsData.map(async (session) => {
-      const [beersCount] = await db
-        .select({ count: count() })
-        .from(beersTable)
-        .where(eq(beersTable.sessionId, session.id));
+  // Fetch data from database
+  const allSessions = await getSessions();
+  const activityMap = await getSessionLastActivity();
+  const beersCountMap = await getBeersCountPerSession();
 
-      return {
-        ...session,
-        beersCount: beersCount.count,
-      };
-    })
-  );
+  const now = new Date();
+  const staleSessionIds: number[] = [];
 
-  return { user, activeSessions };
+  const sessions = allSessions.map((session) => {
+    const lastActivity = activityMap.get(session.id);
+    const fallbackActivityTime = lastActivity || new Date(session.createdAt);
+
+    const createdAgoHours =
+      (now.getTime() - new Date(session.createdAt).getTime()) / 1000 / 60 / 60;
+    const lastActivityAgoHours =
+      (now.getTime() - new Date(fallbackActivityTime).getTime()) /
+      1000 /
+      60 /
+      60;
+
+    const isStale =
+      createdAgoHours >= SESSION_MIN_AGE_HOURS &&
+      lastActivityAgoHours >= SESSION_INACTIVITY_TIMEOUT_HOURS;
+
+    if (isStale && session.active) {
+      staleSessionIds.push(session.id);
+    }
+
+    return {
+      ...session,
+      beersCount: beersCountMap.get(session.id) || 0,
+    };
+  });
+
+  if (staleSessionIds.length > 0) {
+    // Close session
+    await db
+      .update(sessionsTable)
+      .set({ active: false })
+      .where(inArray(sessionsTable.id, staleSessionIds));
+
+    // Remove closed session from users active session
+    await db
+      .update(usersTable)
+      .set({ activeSessionId: null })
+      .where(inArray(usersTable.activeSessionId, staleSessionIds));
+  }
+
+  const staleSessionIdSet = new Set(staleSessionIds);
+  const sessionsWithStatus = sessions.map((session) => ({
+    ...session,
+    status:
+      !session.active || staleSessionIdSet.has(session.id)
+        ? "inactive"
+        : "active",
+  }));
+
+  return { sessions: sessionsWithStatus };
 }
 
 export default function Sessions() {
-  const { user, activeSessions } = useLoaderData<typeof loader>();
+  const { sessions } = useLoaderData<typeof loader>();
+
+  const activeSessions = sessions
+    .filter((session) => session.status === "active")
+    .sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+  const inactiveSessions = sessions
+    .filter((session) => session.status === "inactive")
+    .sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
 
   return (
     <Paper p="md" radius="md" withBorder>
@@ -63,7 +126,7 @@ export default function Sessions() {
             Vælg en smagning for at deltage
           </Text>
 
-          <SessionsTable user={user} sessions={activeSessions} />
+          <SessionsTable sessions={activeSessions} mode="active" />
         </Tabs.Panel>
 
         <Tabs.Panel value="past">
@@ -71,11 +134,7 @@ export default function Sessions() {
             Se tidligere smagninger
           </Text>
 
-          <Text size="xl" c="dimmed" fs="italic" ta="center">
-            Yet to be implemented
-          </Text>
-
-          {/* <SessionsTable user={user} sessions={activeSessions} /> */}
+          <SessionsTable sessions={inactiveSessions} mode="inactive" />
         </Tabs.Panel>
       </Tabs>
 

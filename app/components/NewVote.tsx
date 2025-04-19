@@ -68,6 +68,8 @@ export default function NewVote({ user, ratings, beer, votes }: InputProps) {
       method: "POST",
       action: "/sessions/vote",
     });
+
+    form.reset();
   };
 
   return (

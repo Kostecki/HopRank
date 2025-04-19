@@ -16,16 +16,25 @@ const getVotesForBeer = (votes: SelectVote[], id: number) => {
 const getRatedAndNotRatedBeers = (
   sessionBeers: SelectBeer[],
   sessionVotes: SelectVote[],
-  sessionDetails: SelectSession
+  sessionDetails: SelectSession,
+  mode: "active" | "inactive"
 ) => {
   const ratedIds = new Set(sessionVotes.map((v) => v.beerId));
 
   const [ratedBeers, notRatedBeers] = sessionBeers.reduce(
     ([voted, notVoted], beer) => {
       const votesForBeer = getVotesForBeer(sessionVotes, beer.id);
-      if (
+
+      const isRatedInActiveMode =
         ratedIds.has(beer.id) &&
-        sessionDetails.userCount === votesForBeer.length
+        sessionDetails.userCount === votesForBeer.length;
+
+      const isRatedInInactiveMode =
+        ratedIds.has(beer.id) && votesForBeer.length > 0;
+
+      if (
+        (mode === "active" && isRatedInActiveMode) ||
+        (mode === "inactive" && isRatedInInactiveMode)
       ) {
         voted.push(beer);
       } else {

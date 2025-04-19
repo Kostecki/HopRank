@@ -54,7 +54,7 @@ export function BeerCardDetails({ beer, votes, untappdInfo }: InputProps) {
               Total
             </Text>
             <Text ta="center" fw="bold">
-              {untappdInfo?.checkins.total}
+              {untappdInfo?.checkins.total.toLocaleString("da-DK")}
             </Text>
           </Stack>
           <Stack gap={0}>
@@ -62,7 +62,7 @@ export function BeerCardDetails({ beer, votes, untappdInfo }: InputProps) {
               Unkikke
             </Text>
             <Text ta="center" fw="bold">
-              {untappdInfo?.checkins.unique}
+              {untappdInfo?.checkins.unique.toLocaleString("da-DK")}
             </Text>
           </Stack>
           <Stack gap={0}>
@@ -70,8 +70,10 @@ export function BeerCardDetails({ beer, votes, untappdInfo }: InputProps) {
               Rating
             </Text>
             <Text ta="center" fw="bold">
-              {Math.round(parseFloat(untappdInfo?.rating.value) * 100) / 100} (
-              {untappdInfo?.rating.count})
+              {(
+                Math.round(parseFloat(untappdInfo?.rating.value) * 100) / 100
+              ).toLocaleString("da-DK")}{" "}
+              ({untappdInfo?.rating.count.toLocaleString("da-DK")})
             </Text>
           </Stack>
         </Group>

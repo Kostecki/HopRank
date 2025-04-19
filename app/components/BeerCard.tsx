@@ -7,7 +7,6 @@ import {
   Stack,
   Text,
   Title,
-  useMantineTheme,
 } from "@mantine/core";
 
 import { calculateTotalScore } from "~/utils/score";
@@ -23,22 +22,28 @@ type InputProps = {
   beer: SelectBeer;
   votes: SelectVote[];
   sessionDetails?: SelectSession;
-  index?: number;
+  topThreeIds?: number[];
 };
 
 const gold = "#ffd700";
 const silver = "#c0c0c0";
 const bronze = "#8c6239";
 
-export function BeerCard({ beer, votes, sessionDetails, index }: InputProps) {
+export function BeerCard({
+  beer,
+  votes,
+  sessionDetails,
+  topThreeIds,
+}: InputProps) {
   const { label, name, breweryName, style } = beer;
 
-  const theme = useMantineTheme();
+  const getMedalColor = () => {
+    if (!topThreeIds) return null;
 
-  const getMedalColor = (index?: number) => {
-    if (index === undefined || index > 2) return null;
+    const position = topThreeIds.indexOf(beer.id);
+    if (position === -1) return null; // not top 3
 
-    return [gold, silver, bronze][index];
+    return [gold, silver, bronze][position];
   };
 
   const RenderTitle = () => {
@@ -85,7 +90,9 @@ export function BeerCard({ beer, votes, sessionDetails, index }: InputProps) {
       shadow="sm"
       p="xs"
       style={{
-        borderLeft: `8px solid ${getMedalColor(index)}`,
+        ...(getMedalColor()
+          ? { borderLeft: `8px solid ${getMedalColor()}` }
+          : {}),
         zIndex: 10,
       }}
       withBorder

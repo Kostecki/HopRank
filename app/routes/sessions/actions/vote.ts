@@ -3,8 +3,9 @@ import { dataWithError, dataWithSuccess } from "remix-toast";
 import { db } from "~/database/config.server";
 import { votesTable } from "~/database/schema.server";
 
-import type { Route } from "../$sessionId/+types";
 import { wait } from "~/utils/utils";
+
+import type { Route } from "../$sessionId/+types";
 
 export async function action({ request }: Route.ActionArgs) {
   const formData = await request.formData();

@@ -60,10 +60,19 @@ export async function loader({ params }: Route.LoaderArgs) {
 
     const rating = $(".details .caps").attr("data-rating");
     const ratingsCountElement = $(".raters").text().trim();
-    const ratingsCount = ratingsCountElement?.replace(" Ratings", "").trim();
+    const ratingsCount = ratingsCountElement
+      ?.trim()
+      .replace(" Ratings", "")
+      .replace(",", "");
 
-    const checkinCount = $(".stats p:first-child .count").text().trim();
-    const checkinCountUnique = $(".stats p:nth-child(2) .count").text().trim();
+    const checkinCount = $(".stats p:first-child .count")
+      .text()
+      .trim()
+      .replace(",", "");
+    const checkinCountUnique = $(".stats p:nth-child(2) .count")
+      .text()
+      .trim()
+      .replace(",", "");
 
     const description = $(".beer-descrption-read-less")
       .contents()

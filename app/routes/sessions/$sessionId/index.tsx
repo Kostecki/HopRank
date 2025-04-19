@@ -1,6 +1,6 @@
 import { redirect, useLoaderData } from "react-router";
 
-import { Accordion } from "@mantine/core";
+import { Accordion, Card, Text, Title } from "@mantine/core";
 import { userSessionGet } from "~/auth/users.server";
 import {
   getRatings,
@@ -33,16 +33,11 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   const { sessionId } = params;
   const user = await userSessionGet(request);
 
-  const activeSessionId = user.activeSession;
   const requestedSessionId = Number(sessionId);
 
-  if (!sessionId || isNaN(requestedSessionId) || !activeSessionId) {
+  if (!sessionId || isNaN(requestedSessionId)) {
     console.warn("Session ID is missing or invalid");
     return redirect("/sessions");
-  }
-
-  if (requestedSessionId !== activeSessionId) {
-    return redirect(`/sessions/${activeSessionId}`);
   }
 
   // Database data fetching
@@ -51,13 +46,18 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   const sessionBeers = await getSessionBeers(requestedSessionId);
   const sessionVotes = await getSessionVotes(requestedSessionId);
 
+  const isUserInSession = user.activeSession === requestedSessionId;
+  const isSessionActive = sessionDetails.active;
+  const mode = isUserInSession && isSessionActive ? "active" : "inactive";
+
   const { name: sessionName } = sessionDetails;
 
   // Split beers into rated and not rated
   const { ratedBeers, notRatedBeers } = getRatedAndNotRatedBeers(
     sessionBeers,
     sessionVotes,
-    sessionDetails
+    sessionDetails,
+    mode
   );
 
   // Calculate total score for each finifhed beer to display - ordered by score
@@ -68,6 +68,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 
   return {
     user,
+    mode,
     ratings,
     sessionDetails,
     sessionVotes,
@@ -80,6 +81,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 export default function SessionDetails() {
   const {
     user,
+    mode,
     ratings,
     sessionDetails,
     sessionVotes,
@@ -91,10 +93,13 @@ export default function SessionDetails() {
     new Map()
   );
 
+  const [topThreeBeerIds, setTopThreeBeerIds] = useState<number[]>([]);
+
   const upNextBeer = notRatedBeersShuffled[0];
   const votesNextBeer = getVotesForBeer(sessionVotes, upNextBeer?.id);
 
   useEffect(() => {
+    // Fetch beer details from Untappd API for already rated beers
     ratedBeersWithScore.forEach((beer) => {
       if (!untappdInfoMap.has(beer.id)) {
         fetch(`/api/untappd/beer/${beer.untappdBeerId}`)
@@ -106,39 +111,58 @@ export default function SessionDetails() {
               return newMap;
             });
           })
-          .catch((error) => {
-            console.error("Error fetching Untappd data:", error);
-          });
+          .catch((error) =>
+            console.error("Error fetching Untappd data:", error)
+          );
       }
     });
+
+    // Set top three beers based on the scores
+    const newTopThree = ratedBeersWithScore.slice(0, 3).map((beer) => beer.id);
+    setTopThreeBeerIds(newTopThree);
   }, [ratedBeersWithScore]);
 
   return (
     <>
-      {!upNextBeer && ratedBeersWithScore.length === 0 && (
-        <EmptySession sessionBeers={sessionBeers} />
+      {mode === "active" && (
+        <>
+          {!upNextBeer && ratedBeersWithScore.length === 0 && (
+            <EmptySession sessionBeers={sessionBeers} />
+          )}
+
+          {upNextBeer && (
+            <UpNext
+              beer={upNextBeer}
+              votes={votesNextBeer}
+              ratings={ratings}
+              sessionDetails={sessionDetails}
+              user={user}
+              mb="xl"
+            />
+          )}
+        </>
       )}
 
-      {upNextBeer && (
-        <UpNext
-          beer={upNextBeer}
-          votes={votesNextBeer}
-          ratings={ratings}
-          sessionDetails={sessionDetails}
-          user={user}
-          mb="xl"
-        />
+      {mode === "inactive" && (
+        <Card withBorder radius="md" mb="xl">
+          <Title>{sessionDetails.name}</Title>
+          <Text size="sm" color="dimmed" mt="xs">
+            Something with stats
+          </Text>
+        </Card>
       )}
 
       <Accordion unstyled chevron={false}>
-        {ratedBeersWithScore.map((beer, index) => {
+        {ratedBeersWithScore.map((beer) => {
           const { id } = beer;
           const votesForBeer = getVotesForBeer(sessionVotes, beer.id);
+          const podiumPosition = topThreeBeerIds.indexOf(id);
 
           return (
             <Accordion.Item
               value={id.toString()}
-              style={{ margin: `0 0 ${index == 2 ? "26px" : "8px"} 0` }}
+              m={0}
+              mb={podiumPosition === 2 ? "26px" : "8px"}
               key={id}
             >
               <Accordion.Control
@@ -152,7 +176,11 @@ export default function SessionDetails() {
                   userSelect: "none",
                 }}
               >
-                <BeerCard beer={beer} votes={votesForBeer} index={index} />
+                <BeerCard
+                  beer={beer}
+                  votes={votesForBeer}
+                  topThreeIds={topThreeBeerIds}
+                />
               </Accordion.Control>
 
               <Accordion.Panel>

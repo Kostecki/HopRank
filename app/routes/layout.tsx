@@ -24,11 +24,14 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   let sessionDetails = undefined;
   let sessionBeers = undefined;
   let completedBeersCount = undefined;
+  let uniqueVoterCount = undefined;
 
   if (sessionId) {
     sessionDetails = await getSessionDetails(sessionId);
     sessionBeers = await getSessionBeers(sessionId);
     const sessionVotes = await getSessionVotes(sessionId);
+
+    uniqueVoterCount = new Set(sessionVotes.map((vote) => vote.userId)).size;
 
     completedBeersCount = getBeersVotedByAllUsers(
       sessionVotes,
@@ -36,14 +39,25 @@ export async function loader({ params, request }: Route.LoaderArgs) {
     );
   }
 
-  return { user, sessionDetails, sessionBeers, completedBeersCount };
+  return {
+    user,
+    sessionDetails,
+    sessionBeers,
+    completedBeersCount,
+    uniqueVoterCount,
+  };
 }
 
 export default function Layout() {
   useAutoRevalidate();
 
-  const { user, sessionDetails, sessionBeers, completedBeersCount } =
-    useLoaderData<typeof loader>();
+  const {
+    user,
+    sessionDetails,
+    sessionBeers,
+    completedBeersCount,
+    uniqueVoterCount,
+  } = useLoaderData<typeof loader>();
 
   return (
     <AppShell header={{ height: 60 }}>
@@ -53,6 +67,7 @@ export default function Layout() {
           sessionDetails={sessionDetails}
           sessionBeers={sessionBeers}
           ratedBeersCount={completedBeersCount}
+          uniqueVoterCount={uniqueVoterCount}
         />
       </AppShell.Header>
 

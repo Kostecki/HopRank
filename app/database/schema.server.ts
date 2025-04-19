@@ -19,8 +19,6 @@ export const ratingsTable = sqliteTable("ratings", {
     .default(sql`(CURRENT_TIMESTAMP)`)
     .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
 });
-export type SelectRating = InferSelectModel<typeof ratingsTable>;
-export type InsertRating = InferInsertModel<typeof ratingsTable>;
 
 export const sessionsTable = sqliteTable("sessions", {
   id: int().primaryKey({ autoIncrement: true }),
@@ -34,8 +32,6 @@ export const sessionsTable = sqliteTable("sessions", {
     .default(sql`(CURRENT_TIMESTAMP)`)
     .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
 });
-export type SelectSession = InferSelectModel<typeof sessionsTable>;
-export type InsertSession = InferInsertModel<typeof sessionsTable>;
 
 export const votesTable = sqliteTable(
   "votes",
@@ -59,16 +55,14 @@ export const votesTable = sqliteTable(
       .default(sql`(CURRENT_TIMESTAMP)`)
       .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
   },
-  (table) => ({
-    uniqueSessionUserBeer: unique().on(
+  (table) => [
+    unique("uniqueSessionUserBeer").on(
       table.sessionId,
       table.userId,
       table.beerId
     ),
-  })
+  ]
 );
-export type SelectVote = InferSelectModel<typeof votesTable>;
-export type InsertVote = InferInsertModel<typeof votesTable>;
 
 export const beersTable = sqliteTable(
   "beers",
@@ -93,12 +87,10 @@ export const beersTable = sqliteTable(
       .default(sql`(CURRENT_TIMESTAMP)`)
       .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
   },
-  (table) => ({
-    uniqueSessionBeer: unique().on(table.sessionId, table.untappdBeerId),
-  })
+  (table) => [
+    unique("uniqueSessionBeer").on(table.sessionId, table.untappdBeerId),
+  ]
 );
-export type SelectBeer = InferSelectModel<typeof beersTable>;
-export type InsertBeer = InferInsertModel<typeof beersTable>;
 
 export const usersTable = sqliteTable("users", {
   id: int().primaryKey({ autoIncrement: true }),
@@ -112,5 +104,3 @@ export const usersTable = sqliteTable("users", {
     .default(sql`(CURRENT_TIMESTAMP)`)
     .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
 });
-export type SelectUser = InferSelectModel<typeof usersTable>;
-export type InsertUser = InferInsertModel<typeof usersTable>;

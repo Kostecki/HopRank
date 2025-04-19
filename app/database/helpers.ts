@@ -1,4 +1,4 @@
-import { count, desc, eq } from "drizzle-orm";
+import { count, desc, eq, sql } from "drizzle-orm";
 import { db } from "./config.server";
 import {
   beersTable,
@@ -10,11 +10,16 @@ import {
 import { redirect } from "react-router";
 import { createNameId } from "mnemonic-id";
 
+type SessionActivity = {
+  sessionId: number;
+  lastActivity: string;
+};
+
 const getRatings = async () => {
   return await db.select().from(ratingsTable);
 };
 
-const getActiveSessions = async () => {
+const getSessions = async () => {
   const activeSessions = await db
     .select({
       id: sessionsTable.id,
@@ -26,7 +31,6 @@ const getActiveSessions = async () => {
     })
     .from(sessionsTable)
     .leftJoin(usersTable, eq(usersTable.activeSessionId, sessionsTable.id))
-    .where(eq(sessionsTable.active, true))
     .groupBy(sessionsTable.id)
     .orderBy(desc(sessionsTable.createdAt));
 
@@ -100,12 +104,55 @@ const generateUniqueSessionName = async () => {
   );
 };
 
+const getSessionLastActivity = async () => {
+  const result = (await db
+    .select({
+      sessionId: sql<number>`session_id`,
+      lastActivity: sql<string>`MAX(created_at)`,
+    })
+    .from(
+      sql`(
+    SELECT session_id, created_at from ${beersTable}
+    UNION ALL
+    SELECT session_id, created_at from ${votesTable}
+  )`
+    )
+    .groupBy(sql`session_id`)) as unknown as SessionActivity[];
+
+  const activityMap = new Map<number, Date>();
+
+  for (const row of result) {
+    if (row.lastActivity) {
+      activityMap.set(row.sessionId, new Date(row.lastActivity));
+    }
+  }
+
+  return activityMap;
+};
+
+const getBeersCountPerSession = async () => {
+  const result = await db
+    .select({
+      sessionId: beersTable.sessionId,
+      beersCount: count().as("beersCount"),
+    })
+    .from(beersTable)
+    .groupBy(beersTable.sessionId);
+
+  const map = new Map<number, number>();
+  result.forEach((row) => map.set(row.sessionId, row.beersCount));
+
+  return map;
+};
+
 export {
   getRatings,
-  getActiveSessions,
+  getSessions,
   getSessionDetails,
   getSessionBeers,
   getSessionVotes,
   leaveSession,
   generateUniqueSessionName,
+  getSessionLastActivity,
+  getBeersCountPerSession,
 };

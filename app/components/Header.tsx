@@ -27,6 +27,7 @@ type InputProps = {
   sessionDetails?: SelectSession;
   sessionBeers?: SelectBeer[];
   ratedBeersCount?: number;
+  uniqueVoterCount?: number;
 };
 
 const User = ({ user }: { user: SessionUser }) => {
@@ -58,11 +59,14 @@ export function Header({
   sessionDetails,
   sessionBeers,
   ratedBeersCount,
+  uniqueVoterCount,
 }: InputProps) {
   const theme = useMantineTheme();
   const fetcher = useFetcher();
 
   const slateIndigo = theme.colors.slateIndigo[6];
+
+  const activeSession = sessionDetails?.active;
 
   const handleLeaveSession = () => {
     const formData = new FormData();
@@ -97,7 +101,10 @@ export function Header({
                       </Menu.Label>
 
                       <ModalAddBeersTrigger>
-                        <Menu.Item leftSection={<IconPlus size={14} />}>
+                        <Menu.Item
+                          leftSection={<IconPlus size={14} />}
+                          disabled={!sessionDetails.active}
+                        >
                           Tilføj øl til smagningen
                         </Menu.Item>
                       </ModalAddBeersTrigger>
@@ -118,13 +125,15 @@ export function Header({
               <Group gap="8">
                 <IconUsers color={slateIndigo} size={20} />
                 <Text c="slateIndigo" fw={600}>
-                  {sessionDetails.userCount}
+                  {activeSession ? sessionDetails.userCount : uniqueVoterCount}
                 </Text>
               </Group>
               <Group gap="5">
                 <IconBeer color={slateIndigo} size={20} />
                 <Text c="slateIndigo" fw={600}>
-                  {`${ratedBeersCount ?? 0} / ${sessionBeers?.length ?? 0}`}
+                  {activeSession
+                    ? `${ratedBeersCount ?? 0} / ${sessionBeers?.length ?? 0}`
+                    : sessionBeers?.length}
                 </Text>
               </Group>
             </>
