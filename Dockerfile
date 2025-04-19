@@ -1,5 +1,3 @@
-# syntax=docker/dockerfile:1.5
-
 # -----------------------------------
 # Base image with pnpm installed
 FROM node:23-slim AS base
@@ -10,9 +8,8 @@ RUN npm install -g pnpm
 FROM base AS deps
 WORKDIR /app
 
-# Copy only package manifests first (for caching)
+# Copy only package manifests first
 COPY package.json pnpm-lock.yaml ./
-
 RUN pnpm install --frozen-lockfile
 
 # -----------------------------------
@@ -20,7 +17,7 @@ RUN pnpm install --frozen-lockfile
 FROM deps AS build
 WORKDIR /app
 
-# Copy app source folder (keep app/ structure intact)
+# Copy app source folder
 COPY app/ ./app
 # Copy config files
 COPY vite.config.ts tsconfig.json drizzle.config.ts postcss.config.cjs react-router.config.ts theme.ts ./
@@ -52,7 +49,7 @@ WORKDIR /app
 # Copy only runtime artifacts
 COPY --from=prod-deps /app/node_modules ./node_modules
 COPY --from=build /app/build ./build
-COPY --from=build /app/app/database ./database
+COPY --from=build /app/app/database/migrations ./migrations
 COPY package.json pnpm-lock.yaml ./
 
 # Rebuild native modules for Alpine/musl
