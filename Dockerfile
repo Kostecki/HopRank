@@ -67,4 +67,4 @@ ENTRYPOINT ["/sbin/tini", "--"]
 EXPOSE 3000
 
 # Start the app
-CMD ["react-router-serve", "./build/server/index.js"]
+CMD ["npm", "start"]
