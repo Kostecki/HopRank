@@ -46,9 +46,14 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   const sessionBeers = await getSessionBeers(requestedSessionId);
   const sessionVotes = await getSessionVotes(requestedSessionId);
 
-  const isUserInSession = user.activeSession === requestedSessionId;
+  const isUserInSession = user?.activeSession === requestedSessionId;
   const isSessionActive = sessionDetails.active;
   const mode = isUserInSession && isSessionActive ? "active" : "inactive";
+
+  // Only allow access to the session if the user is in it or if the session is inactive
+  if (user?.activeSession !== requestedSessionId && isSessionActive) {
+    return redirect("/");
+  }
 
   const { name: sessionName } = sessionDetails;
 

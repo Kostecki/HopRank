@@ -9,6 +9,10 @@ import type { Route } from "../$sessionId/+types";
 export async function action({ request }: Route.ActionArgs) {
   const user = await userSessionGet(request);
 
+  if (!user) {
+    return redirect("/");
+  }
+
   try {
     await leaveSession(user.id);
 

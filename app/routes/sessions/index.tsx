@@ -29,6 +29,12 @@ export function meta({}: Route.MetaArgs) {
 export async function loader({ request }: Route.LoaderArgs) {
   const user = await userSessionGet(request);
 
+  // Don't show sessions if user is not logged in
+  if (!user) {
+    return redirect("/");
+  }
+
+  // Redirect to active session if user has one
   if (user.activeSession) {
     return redirect("/sessions/" + user.activeSession);
   }
