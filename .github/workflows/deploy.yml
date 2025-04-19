@@ -47,6 +47,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           provenance: false
+          sbom: false
           build-args: |
             VITE_ALGOLIA_APP_ID=${{ vars.VITE_ALGOLIA_APP_ID }}
             VITE_ALGOLIA_API_KEY=${{ vars.VITE_ALGOLIA_API_KEY }}
