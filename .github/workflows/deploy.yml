@@ -13,7 +13,7 @@ jobs:
 
     env:
       REGISTRY: ghcr.io
-      IMAGE_NAME: hoprank
+      IMAGE_NAME: kostecki/HopRank
 
     steps:
       - name: Checkout code
@@ -33,7 +33,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/kostecki/${{ env.IMAGE_NAME }}
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
@@ -41,11 +41,12 @@ jobs:
           push: true
           tags: |
             ${{ steps.meta.outputs.tags }}
-            ${{ env.REGISTRY }}/kostecki/${{ env.IMAGE_NAME }}:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
           labels: ${{ steps.meta.outputs.labels }}
           platforms: linux/amd64,linux/arm64
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          provenance: false
           build-args: |
             BASE_URL=${{ vars.BASE_URL }}
             SESSION_SECRET=${{ secrets.SESSION_SECRET }}
