@@ -10,7 +10,9 @@ RUN npm install -g pnpm
 FROM base AS deps
 WORKDIR /app
 
+# Copy only package manifests first (to maximize cache)
 COPY package.json pnpm-lock.yaml ./
+
 RUN pnpm install --frozen-lockfile
 
 # -------------------------------
@@ -18,12 +20,12 @@ RUN pnpm install --frozen-lockfile
 FROM deps AS build
 WORKDIR /app
 
-# Copy only necessary source files
-COPY app/. ./database/
+# Copy app source code needed for building
+COPY app/ ./app
 COPY vite.config.ts tsconfig.json drizzle.config.ts postcss.config.cjs react-router.config.ts theme.ts ./
 COPY package.json pnpm-lock.yaml ./
 
-# Inject build-time environment variables
+# Inject public build-time environment variables
 ARG VITE_ALGOLIA_APP_ID
 ARG VITE_ALGOLIA_API_KEY
 ENV VITE_ALGOLIA_APP_ID=$VITE_ALGOLIA_APP_ID
@@ -46,22 +48,25 @@ FROM node:23-alpine AS runner
 
 WORKDIR /app
 
-# Copy built app and runtime deps
+# Copy only built output and runtime deps
 COPY --from=prod-deps /app/node_modules ./node_modules
 COPY --from=build /app/build ./build
-COPY --from=build /app/database ./database
+COPY --from=build /app/app/database ./database    # Only database folder copied
 COPY package.json pnpm-lock.yaml ./
 
-# Rebuild native modules for Alpine/musl
+# 🛠 Rebuild native modules (like better-sqlite3) for Alpine/musl
 RUN npm rebuild better-sqlite3
 
-# Clean up and install tini
+# 🧹 Clean up
 RUN apk add --no-cache tini \
   && npm cache clean --force \
   && rm -rf /root/.npm /root/.pnpm-store /tmp/*
 
+# Use tini for correct signal handling
 ENTRYPOINT ["/sbin/tini", "--"]
 
+# Expose app port
 EXPOSE 3000
 
+# Start app
 CMD ["node", "./build/server/index.js"]
