@@ -19,7 +19,9 @@ WORKDIR /app
 
 # Copy app source folder
 COPY app/ ./app
+
 # Copy config files
+COPY public/ ./public
 COPY vite.config.ts tsconfig.json drizzle.config.ts postcss.config.cjs react-router.config.ts theme.ts ./
 COPY package.json pnpm-lock.yaml ./
 
@@ -49,6 +51,7 @@ WORKDIR /app
 # Copy only runtime artifacts
 COPY --from=prod-deps /app/node_modules ./node_modules
 COPY --from=build /app/build ./build
+COPY --from=build /app/public ./public
 COPY --from=build /app/app/database/migrations ./migrations
 COPY package.json pnpm-lock.yaml ./
 
