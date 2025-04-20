@@ -82,7 +82,7 @@ authenticator.use(
         .from(usersTable)
         .where(eq(usersTable.fbId, user.fbId));
 
-      if (!existingUser) {
+      if (existingUser.length === 0) {
         const insertedUser = await db
           .insert(usersTable)
           .values({ fbId: user.fbId })
