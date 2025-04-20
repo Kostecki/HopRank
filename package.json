@@ -6,6 +6,7 @@
     "build": "react-router build",
     "dev": "react-router dev",
     "start": "react-router-serve ./build/server/index.js",
+    "start_dev": "dotenv -e .env react-router-serve ./build/server/index.js",
     "typecheck": "react-router typegen && tsc",
     "generate": "drizzle-kit generate",
     "migrate": "drizzle-kit migrate",
