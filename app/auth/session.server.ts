@@ -14,8 +14,8 @@ export const { getSession, commitSession, destroySession } =
       maxAge,
       sameSite: "none",
       path: "/",
-      httpOnly: false,
+      httpOnly: true,
       secrets: [SESSION_SECRET],
-      secure: process.env.NODE_ENV === "production",
+      secure: false,
     },
   });
