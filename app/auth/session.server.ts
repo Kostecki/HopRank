@@ -12,11 +12,11 @@ export const { getSession, commitSession, destroySession } =
     cookie: {
       name: "_session",
       maxAge,
-      sameSite: "lax",
+      sameSite: "none",
       path: "/",
       httpOnly: true,
       secrets: [SESSION_SECRET],
-      secure: false,
+      secure: process.env.NODE_ENV === "production",
       domain: COOKIE_DOMAIN,
     },
   });
