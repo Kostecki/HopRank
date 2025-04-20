@@ -60,6 +60,16 @@ authenticator.use(
       });
       const profile = await response.json();
 
+      console.log("👤 [auth.server] Facebook profile:", profile);
+
+      if (!profile || profile.error) {
+        throw new Error(
+          `Failed to fetch user profile from Facebook: ${
+            profile?.error?.message || "Unknown error"
+          }`
+        );
+      }
+
       const user: SessionUser = {
         id: -1,
         fbId: profile.id,

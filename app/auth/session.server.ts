@@ -16,6 +16,6 @@ export const { getSession, commitSession, destroySession } =
       path: "/",
       httpOnly: true,
       secrets: [SESSION_SECRET],
-      secure: false,
+      secure: process.env.NODE_ENV === "production",
     },
   });
