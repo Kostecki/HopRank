@@ -51,3 +51,11 @@ jobs:
           build-args: |
             VITE_ALGOLIA_APP_ID=${{ vars.VITE_ALGOLIA_APP_ID }}
             VITE_ALGOLIA_API_KEY=${{ vars.VITE_ALGOLIA_API_KEY }}
+
+      - name: Ping Portainer
+        uses: fjogeleit/http-request-action@v1
+        with:
+          url: ${{ vars.PORTAINER_WEBHOOK }}
+          method: "POST"
+          timeout: 15000
+          retry: 3
