@@ -53,8 +53,11 @@ export default function VerifyLogin() {
         <Card shadow="lg" padding="lg" radius="md" ta="center">
           <Card.Section p="xl">
             <Title>Verificér kode</Title>
-            <Text fw={600} c="dimmed" fs="italic">
-              En 6-cifret kode er blevet sendt til din email
+            <Text fw={600} c="dimmed" fs="italic" mt="xs">
+              En login-kode er blevet sendt til din email
+            </Text>
+            <Text c="dimmed" fs="italic">
+              Koden er gyldig i 5 minutter
             </Text>
           </Card.Section>
 
@@ -91,7 +94,7 @@ export default function VerifyLogin() {
               </Text>
             )}
 
-            <Box mt="xl">
+            <Box mt="lg">
               <Text c="dimmed" mb="sm">
                 Har du ikke modtaget en kode?
               </Text>
