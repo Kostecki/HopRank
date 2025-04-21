@@ -1,23 +1,13 @@
-import { useFetcher } from "react-router";
 import {
   Avatar,
-  Button,
-  Divider,
+  Burger,
   Group,
   Menu,
   Paper,
   Text,
   useMantineTheme,
 } from "@mantine/core";
-import {
-  IconBeer,
-  IconDoorExit,
-  IconLogout,
-  IconPlus,
-  IconUsers,
-} from "@tabler/icons-react";
-
-import ModalAddBeers, { ModalAddBeersTrigger } from "./modals/ModalAddBeers";
+import { IconBeer, IconLogout, IconUsers } from "@tabler/icons-react";
 
 import type { SessionUser } from "~/auth/auth.server";
 import type {
@@ -29,6 +19,10 @@ import { getBeersVotedByAllUsers } from "~/utils/votes";
 
 type InputProps = {
   user: SessionUser;
+  mobileOpened: boolean;
+  desktopOpened: boolean;
+  toggleMobile: () => void;
+  toggleDesktop: () => void;
   sessionDetails?: SelectSession;
   sessionBeers?: SelectBeer[];
   sessionVotes?: SelectVote[];
@@ -61,12 +55,15 @@ const User = ({ user }: { user: SessionUser }) => {
 
 export function Header({
   user,
+  mobileOpened,
+  desktopOpened,
+  toggleMobile,
+  toggleDesktop,
   sessionDetails,
   sessionBeers,
   sessionVotes,
 }: InputProps) {
   const theme = useMantineTheme();
-  const fetcher = useFetcher();
 
   const slateIndigo = theme.colors.slateIndigo[6];
 
@@ -78,14 +75,6 @@ export function Header({
     sessionDetails?.userCount
   );
 
-  const handleLeaveSession = () => {
-    const formData = new FormData();
-    fetcher.submit(formData, {
-      method: "POST",
-      action: "/sessions/leave",
-    });
-  };
-
   return (
     <Paper shadow="md" h="100%">
       <Group justify="space-between" px="md" pt="sm">
@@ -93,45 +82,19 @@ export function Header({
           {sessionDetails && (
             <>
               <Group gap="xs" mr="xs">
-                <ModalAddBeers sessionBeers={sessionBeers}>
-                  <Menu shadow="md" withArrow width="auto">
-                    <Menu.Target>
-                      <Button
-                        c="slateIndigo"
-                        color="slateIndigo"
-                        variant="outline"
-                      >
-                        Smagning
-                      </Button>
-                    </Menu.Target>
-
-                    <Menu.Dropdown>
-                      <Menu.Label tt="capitalize">
-                        {sessionDetails.name}
-                      </Menu.Label>
-
-                      <ModalAddBeersTrigger>
-                        <Menu.Item
-                          leftSection={<IconPlus size={14} />}
-                          disabled={!sessionDetails.active}
-                        >
-                          Tilføj øl til smagningen
-                        </Menu.Item>
-                      </ModalAddBeersTrigger>
-
-                      <Divider opacity={0.5} />
-
-                      <Menu.Item
-                        onClick={handleLeaveSession}
-                        leftSection={<IconDoorExit size={14} />}
-                      >
-                        Forlad smagningen
-                      </Menu.Item>
-                    </Menu.Dropdown>
-                  </Menu>
-                </ModalAddBeers>
+                <Burger
+                  opened={mobileOpened}
+                  onClick={toggleMobile}
+                  hiddenFrom="sm"
+                  size="sm"
+                />
+                <Burger
+                  opened={desktopOpened}
+                  onClick={toggleDesktop}
+                  visibleFrom="sm"
+                  size="sm"
+                />
               </Group>
-
               <Group gap="8">
                 <IconUsers color={slateIndigo} size={20} />
                 <Text c="slateIndigo" fw={600}>

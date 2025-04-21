@@ -150,9 +150,9 @@ export default function SessionDetails() {
 
       {mode === "inactive" && (
         <Card withBorder radius="md" mb="xl">
-          <Title>{sessionDetails.name}</Title>
-          <Text size="sm" color="dimmed" mt="xs">
-            Something with stats
+          <Title>Something with stats</Title>
+          <Text size="sm" c="dimmed" mt="xs">
+            Graphs and stuff?
           </Text>
         </Card>
       )}
