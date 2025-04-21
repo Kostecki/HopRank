@@ -60,7 +60,10 @@ export async function sendMagicLinkEmail({
     });
 
     if (process.env.NODE_ENV !== "production") {
-      console.log("Email Preview URL:", nodemailer.getTestMessageUrl(info));
+      console.log();
+      console.log("Code:", code);
+      console.log("Email URL:", nodemailer.getTestMessageUrl(info));
+      console.log();
     }
   } catch (error) {
     console.error("Failed to send email:", error);

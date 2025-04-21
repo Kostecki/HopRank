@@ -48,7 +48,9 @@ const getRatedAndNotRatedBeers = (
   return { ratedBeers, notRatedBeers };
 };
 
-const getBeersVotedByAllUsers = (votes: SelectVote[], userCount: number) => {
+const getBeersVotedByAllUsers = (votes?: SelectVote[], userCount?: number) => {
+  if (!votes || userCount === 0) return 0;
+
   const beerVotes = new Map<number, Set<number>>();
 
   votes.forEach(({ beerId, userId }) => {

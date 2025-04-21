@@ -20,14 +20,18 @@ import {
 import ModalAddBeers, { ModalAddBeersTrigger } from "./modals/ModalAddBeers";
 
 import type { SessionUser } from "~/auth/auth.server";
-import type { SelectBeer, SelectSession } from "~/database/schema.types";
+import type {
+  SelectBeer,
+  SelectSession,
+  SelectVote,
+} from "~/database/schema.types";
+import { getBeersVotedByAllUsers } from "~/utils/votes";
 
 type InputProps = {
   user: SessionUser;
   sessionDetails?: SelectSession;
   sessionBeers?: SelectBeer[];
-  ratedBeersCount?: number;
-  uniqueVoterCount?: number;
+  sessionVotes?: SelectVote[];
 };
 
 const User = ({ user }: { user: SessionUser }) => {
@@ -59,8 +63,7 @@ export function Header({
   user,
   sessionDetails,
   sessionBeers,
-  ratedBeersCount,
-  uniqueVoterCount,
+  sessionVotes,
 }: InputProps) {
   const theme = useMantineTheme();
   const fetcher = useFetcher();
@@ -68,6 +71,12 @@ export function Header({
   const slateIndigo = theme.colors.slateIndigo[6];
 
   const activeSession = sessionDetails?.active;
+  const uniqueVoterCount = new Set(sessionVotes?.map((vote) => vote.userId))
+    .size;
+  const ratedBeersCount = getBeersVotedByAllUsers(
+    sessionVotes,
+    sessionDetails?.userCount
+  );
 
   const handleLeaveSession = () => {
     const formData = new FormData();
