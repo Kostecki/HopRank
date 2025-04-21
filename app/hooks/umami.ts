@@ -6,14 +6,18 @@ export function useUmamiIdentify(email?: string) {
   const hasIdentified = useRef(false);
 
   useEffect(() => {
+    console.log("useEffect, umami", email, hasIdentified.current);
     if (!email) return;
     if (location.pathname.startsWith("/auth")) return;
+
+    console.log("useEffect, after", email, hasIdentified.current);
 
     if (
       !hasIdentified.current &&
       typeof window !== "undefined" &&
       window.umami
     ) {
+      console.log("umami if", email, hasIdentified.current);
       window.umami.identify({
         email: email,
       });
