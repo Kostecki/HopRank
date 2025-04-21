@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import {
   data,
   isRouteErrorResponse,
@@ -22,7 +23,8 @@ import {
 } from "@mantine/core";
 import { getToast } from "remix-toast";
 import { Notifications } from "@mantine/notifications";
-import { useEffect } from "react";
+
+import { userSessionGet } from "./auth/users.server";
 
 import {
   showDangerToast,
@@ -36,6 +38,7 @@ import "@mantine/notifications/styles.css";
 import "./app.css";
 
 import type { Route } from "./+types/root";
+import { useUmamiIdentify } from "./hooks/umami";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -75,13 +78,27 @@ export const links: Route.LinksFunction = () => [
 ];
 
 export async function loader({ request }: LoaderFunctionArgs) {
+  const user = await userSessionGet(request);
   const { toast, headers } = await getToast(request);
 
-  return data({ toast }, { headers });
+  return data({ user, toast }, { headers });
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const { toast } = useLoaderData<typeof loader>();
+
+  const UmamiScript = () => {
+    const isProd = import.meta.env.PROD;
+    if (!isProd) return null;
+
+    return (
+      <script
+        defer
+        src="https://umami.israndom.win/script.js"
+        data-website-id="05e5f7ee-6b31-48ad-b853-994f11cd2291"
+      ></script>
+    );
+  };
 
   useEffect(() => {
     if (toast) {
@@ -109,6 +126,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <meta name="apple-mobile-web-app-title" content="HopRank" />
         <Meta />
         <Links />
+        <UmamiScript />
         <ColorSchemeScript />
       </head>
       <body style={{ backgroundColor: "#FBFBFB" }}>
@@ -125,6 +143,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
+  const { user } = useLoaderData<typeof loader>();
+  useUmamiIdentify(user?.email);
+
   return <Outlet />;
 }
 
