@@ -1,6 +1,7 @@
+import { useEffect, useState } from "react";
 import { redirect, useLoaderData } from "react-router";
-
 import { Accordion, Card, Text, Title } from "@mantine/core";
+
 import { userSessionGet } from "~/auth/users.server";
 import {
   getRatings,
@@ -23,7 +24,6 @@ import {
 } from "~/utils/votes";
 
 import type { Route } from "./+types";
-import { useEffect, useState } from "react";
 
 export function meta({}: Route.MetaArgs) {
   return [{ title: getPageTitle("Smagning") }];
@@ -46,12 +46,12 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   const sessionBeers = await getSessionBeers(requestedSessionId);
   const sessionVotes = await getSessionVotes(requestedSessionId);
 
-  const isUserInSession = user?.activeSession === requestedSessionId;
+  const isUserInSession = user?.activeSessionId === requestedSessionId;
   const isSessionActive = sessionDetails.active;
   const mode = isUserInSession && isSessionActive ? "active" : "inactive";
 
   // Only allow access to the session if the user is in it or if the session is inactive
-  if (user?.activeSession !== requestedSessionId && isSessionActive) {
+  if (user?.activeSessionId !== requestedSessionId && isSessionActive) {
     return redirect("/");
   }
 

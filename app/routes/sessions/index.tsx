@@ -35,8 +35,8 @@ export async function loader({ request }: Route.LoaderArgs) {
   }
 
   // Redirect to active session if user has one
-  if (user.activeSession) {
-    return redirect("/sessions/" + user.activeSession);
+  if (user.activeSessionId) {
+    return redirect("/sessions/" + user.activeSessionId);
   }
 
   // Fetch data from database

@@ -3,10 +3,10 @@ import invariant from "tiny-invariant";
 import type { AlgoliaBeerResponse } from "~/types/untappd";
 import type { Route } from "./+types/search";
 
-const algoliaApplicationId = import.meta.env.VITE_ALGOLIA_APP_ID;
-const algoliaApiKey = import.meta.env.VITE_ALGOLIA_API_KEY;
-invariant(algoliaApplicationId, "Algolia Application Id is required");
-invariant(algoliaApiKey, "Algolia Api Key is required");
+const ALGOLIA_APP_ID = import.meta.env.VITE_ALGOLIA_APP_ID;
+const ALGOLIA_API_KEY = import.meta.env.VITE_ALGOLIA_API_KEY;
+invariant(ALGOLIA_APP_ID, "VITE_ALGOLIA_APP_ID must be set in .env");
+invariant(ALGOLIA_API_KEY, "VITE_ALGOLIA_API_KEY must be set in .env");
 
 export async function loader({ request }: Route.LoaderArgs) {
   const url = new URL(request.url);
@@ -14,7 +14,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 
   if (!searchString) return [];
 
-  const requestUrl = `https://${algoliaApplicationId}-dsn.algolia.net/1/indexes/beer/query?x-algolia-application-id=${algoliaApplicationId}&x-algolia-api-key=${algoliaApiKey}`;
+  const requestUrl = `https://${ALGOLIA_APP_ID}-dsn.algolia.net/1/indexes/beer/query?x-algolia-application-id=${ALGOLIA_APP_ID}&x-algolia-api-key=${ALGOLIA_API_KEY}`;
 
   const response = await fetch(requestUrl, {
     method: "POST",

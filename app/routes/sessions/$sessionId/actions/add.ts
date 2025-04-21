@@ -4,9 +4,10 @@ import { userSessionGet } from "~/auth/users.server";
 import { db } from "~/database/config.server";
 import { beersTable } from "~/database/schema.server";
 
+import { wait } from "~/utils/utils";
+
 import type { Route } from "../+types";
 import type { BeerOption } from "~/types/misc";
-import { wait } from "~/utils/utils";
 
 export async function action({ params, request }: Route.ActionArgs) {
   const { sessionId } = params;

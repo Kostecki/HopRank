@@ -13,7 +13,7 @@ CREATE TABLE `beers` (
 	FOREIGN KEY (`session_id`) REFERENCES `sessions`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
-CREATE UNIQUE INDEX `beers_session_id_untappd_beer_id_unique` ON `beers` (`session_id`,`untappd_beer_id`);--> statement-breakpoint
+CREATE UNIQUE INDEX `uniqueSessionBeer` ON `beers` (`session_id`,`untappd_beer_id`);--> statement-breakpoint
 CREATE TABLE `ratings` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`name` text NOT NULL,
@@ -33,14 +33,14 @@ CREATE TABLE `sessions` (
 CREATE UNIQUE INDEX `sessions_name_unique` ON `sessions` (`name`);--> statement-breakpoint
 CREATE TABLE `users` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-	`fb_id` text NOT NULL,
+	`email` text NOT NULL,
 	`active_session_id` integer,
 	`created_at` text DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	`updated_at` text DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
 	FOREIGN KEY (`active_session_id`) REFERENCES `sessions`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
-CREATE UNIQUE INDEX `users_fb_id_unique` ON `users` (`fb_id`);--> statement-breakpoint
+CREATE UNIQUE INDEX `users_email_unique` ON `users` (`email`);--> statement-breakpoint
 CREATE TABLE `votes` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`session_id` integer NOT NULL,
@@ -54,4 +54,4 @@ CREATE TABLE `votes` (
 	FOREIGN KEY (`beer_id`) REFERENCES `beers`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
-CREATE UNIQUE INDEX `votes_session_id_user_id_beer_id_unique` ON `votes` (`session_id`,`user_id`,`beer_id`);
+CREATE UNIQUE INDEX `uniqueSessionUserBeer` ON `votes` (`session_id`,`user_id`,`beer_id`);

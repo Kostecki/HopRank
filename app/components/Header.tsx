@@ -31,16 +31,17 @@ type InputProps = {
 };
 
 const User = ({ user }: { user: SessionUser }) => {
-  const { name, picture } = user;
+  const { email } = user;
+  const firstLetter = email.slice(0, 1).toUpperCase();
 
   return (
     <Menu shadow="md" width="auto" withArrow>
       <Menu.Target>
-        <Avatar src={picture.url} alt={name} style={{ cursor: "pointer" }} />
+        <Avatar style={{ cursor: "pointer" }}>{firstLetter}</Avatar>
       </Menu.Target>
 
       <Menu.Dropdown>
-        <Menu.Label>{name}</Menu.Label>
+        <Menu.Label>{email}</Menu.Label>
         <Menu.Divider />
         <Menu.Item
           component="a"

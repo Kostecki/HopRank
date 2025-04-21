@@ -24,9 +24,8 @@ export default [
     ...prefix("auth", [
       index("routes/auth/index.ts"),
       route("login", "routes/auth/login.tsx"),
-      route("logout", "routes/auth/actions/logout.ts"),
-      route("callback", "routes/auth/actions/callback.ts"),
-      route("facebook", "routes/auth/actions/facebook.ts"),
+      route("verify", "routes/auth/verify/verify.tsx"),
+      route("logout", "routes/auth/logout.ts"),
     ]),
   ]),
   ...prefix("api", [

@@ -1,4 +1,4 @@
-import { type InferInsertModel, type InferSelectModel, sql } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import { int, real, sqliteTable, text, unique } from "drizzle-orm/sqlite-core";
 
 type Vote = {
@@ -94,7 +94,7 @@ export const beersTable = sqliteTable(
 
 export const usersTable = sqliteTable("users", {
   id: int().primaryKey({ autoIncrement: true }),
-  fbId: text("fb_id").notNull().unique(),
+  email: text("email").notNull().unique(),
   activeSessionId: int("active_session_id").references(() => sessionsTable.id),
   createdAt: text("created_at")
     .notNull()

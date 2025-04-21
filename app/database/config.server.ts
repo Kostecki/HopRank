@@ -7,8 +7,8 @@ import seedDatabase from "./seed";
 
 const DATABASE_PATH = process.env.DATABASE_PATH;
 const MIGRATIONS_PATH = process.env.MIGRATIONS_PATH;
-invariant(DATABASE_PATH, "DATABASE_PATH must be defined");
-invariant(MIGRATIONS_PATH, "MIGRATIONS_PATH must be defined");
+invariant(DATABASE_PATH, "DATABASE_PATH must be set in .env");
+invariant(MIGRATIONS_PATH, "MIGRATIONS_PATH must be set in .env");
 
 export const db = drizzle(new Database(DATABASE_PATH));
 

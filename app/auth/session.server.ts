@@ -11,7 +11,7 @@ export const { getSession, commitSession, destroySession } =
     cookie: {
       name: "_session",
       maxAge,
-      sameSite: "none",
+      sameSite: "lax",
       path: "/",
       httpOnly: true,
       secrets: [SESSION_SECRET],
