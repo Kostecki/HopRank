@@ -1,98 +1,75 @@
-import { eq } from "drizzle-orm";
 import { Authenticator } from "remix-auth";
-import { OAuth2Strategy } from "remix-auth-oauth2";
-import invariant from "tiny-invariant";
+import { TOTPStrategy } from "remix-auth-totp";
+import { redirect } from "react-router";
+import { eq } from "drizzle-orm";
 
 import { db } from "~/database/config.server";
 import { usersTable } from "~/database/schema.server";
+import { getSession, commitSession } from "./session.server";
+
+import { sendMagicLinkEmail } from "./email.server";
 
 export type SessionUser = {
   id: number;
-  fbId: string;
-  name: string;
-  picture: {
-    height: number;
-    is_silhouette: boolean;
-    url: string;
-    width: number;
-  };
-  activeSession?: number;
+  email: string;
+  activeSessionId?: number;
 };
 
 export const authenticator = new Authenticator<SessionUser>();
 
-const BASE_URL = process.env.BASE_URL;
-invariant(BASE_URL, "BASE_URL is required");
-
-const FB_OAUTH_CLIENT_ID = process.env.FB_OAUTH_CLIENT_ID;
-const FB_OAUTH_CLIENT_SECRET = process.env.FB_OAUTH_CLIENT_SECRET;
-const FB_OAUTH_AUTH_ENDPOINT = process.env.FB_OAUTH_AUTH_ENDPOINT;
-const FB_OAUTH_TOKEN_ENDPOINT = process.env.FB_OAUTH_TOKEN_ENDPOINT;
-const FB_OAUTH_USERINFO_ENDPOINT = process.env.FB_OAUTH_USERINFO_ENDPOINT;
-invariant(FB_OAUTH_CLIENT_ID, "FB_OAUTH_CLIENT_ID must be set in .env");
-invariant(FB_OAUTH_CLIENT_SECRET, "FB_OAUTH_CLIENT_SECRET must be set in .env");
-invariant(FB_OAUTH_AUTH_ENDPOINT, "FB_OAUTH_AUTH_ENDPOINT must be set in .env");
-invariant(
-  FB_OAUTH_TOKEN_ENDPOINT,
-  "FB_OAUTH_TOKEN_ENDPOINT must be set in .env"
-);
-invariant(
-  FB_OAUTH_USERINFO_ENDPOINT,
-  "FB_OAUTH_USERINFO_ENDPOINT must be set in .env"
-);
-
 authenticator.use(
-  new OAuth2Strategy(
+  new TOTPStrategy<SessionUser>(
     {
-      clientId: FB_OAUTH_CLIENT_ID,
-      clientSecret: FB_OAUTH_CLIENT_SECRET,
-      authorizationEndpoint: FB_OAUTH_AUTH_ENDPOINT,
-      tokenEndpoint: FB_OAUTH_TOKEN_ENDPOINT,
-      redirectURI: `${BASE_URL}/auth/callback`,
-      scopes: ["public_profile"],
+      secret: process.env.TOTP_SECRET || "",
+      totpGeneration: {
+        digits: 6,
+        charSet: "0123456789",
+        period: 300,
+        algorithm: "SHA-256",
+      },
+      emailSentRedirect: "/auth/verify",
+      magicLinkPath: "/auth/verify",
+      successRedirect: "/sessions",
+      failureRedirect: "/auth/verify",
+      cookieOptions: {
+        ...(process.env.NODE_ENV === "production" ? { secure: true } : {}),
+      },
+      sendTOTP: async ({ email, code, magicLink }) => {
+        await sendMagicLinkEmail({ email, code, magicLink });
+      },
     },
-    async ({ tokens }) => {
-      const url = `${FB_OAUTH_USERINFO_ENDPOINT}?fields=id,name,picture`;
-      const response = await fetch(url, {
-        headers: {
-          Authorization: `Bearer ${tokens.accessToken()}`,
-        },
-      });
-      const profile = await response.json();
+    async ({ email, request }) => {
+      let dbUser = await db
+        .select()
+        .from(usersTable)
+        .where(eq(usersTable.email, email))
+        .then((rows) => rows[0]);
 
-      if (!profile || profile.error) {
-        throw new Error(
-          `Failed to fetch user profile from Facebook: ${
-            profile?.error?.message || "Unknown error"
-          }`
-        );
+      if (!dbUser) {
+        dbUser = await db
+          .insert(usersTable)
+          .values({ email })
+          .returning()
+          .then((rows) => rows[0]);
       }
 
       const user: SessionUser = {
-        id: -1,
-        fbId: profile.id,
-        name: profile.name,
-        picture: profile.picture.data,
+        id: dbUser.id,
+        email: dbUser.email,
+        activeSessionId: dbUser.activeSessionId ?? undefined,
       };
 
-      const existingUser = await db
-        .select()
-        .from(usersTable)
-        .where(eq(usersTable.fbId, user.fbId));
+      const session = await getSession(request.headers.get("cookie"));
+      session.set("user", user);
 
-      if (existingUser.length === 0) {
-        const insertedUser = await db
-          .insert(usersTable)
-          .values({ fbId: user.fbId })
-          .returning();
+      const sessionCookie = await commitSession(session);
 
-        user.id = insertedUser[0].id;
-      } else {
-        user.id = existingUser[0].id;
-      }
-
-      return user;
+      throw redirect("/sessions", {
+        headers: {
+          "Set-Cookie": sessionCookie,
+        },
+      });
     }
   ),
-  "facebook"
+  "TOTP"
 );

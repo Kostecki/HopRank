@@ -47,8 +47,8 @@ const seedSessions = async () => {
 
 const seedUsers = async () => {
   const users = [
-    { fbId: "10164421742167293", activeSessionId: 1 },
-    { fbId: "10164421742167294", activeSessionId: 1 },
+    { email: "jacob@kostecki.dk", activeSessionId: 1 },
+    { email: "hoprank@kostecki.dk", activeSessionId: 1 },
   ];
 
   const [existingUsers] = await db.select({ count: count() }).from(usersTable);
@@ -306,10 +306,14 @@ const seedVotes = async () => {
 
 const seedDatabase = async () => {
   await seedCategories();
-  await seedSessions();
-  await seedUsers();
-  await seedBeers();
-  await seedVotes();
+
+  // Seed the development database with test data
+  if (process.env.NODE_ENV === "development") {
+    await seedSessions();
+    await seedUsers();
+    await seedBeers();
+    await seedVotes();
+  }
 };
 
 export default seedDatabase;

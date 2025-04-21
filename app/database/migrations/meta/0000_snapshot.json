@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "ea0c81f4-6d64-407d-bbd4-0fa025c18fa4",
+  "id": "d67bde6e-b7e3-450e-bb64-fee01d254a44",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "beers": {
@@ -81,8 +81,8 @@
         }
       },
       "indexes": {
-        "beers_session_id_untappd_beer_id_unique": {
-          "name": "beers_session_id_untappd_beer_id_unique",
+        "uniqueSessionBeer": {
+          "name": "uniqueSessionBeer",
           "columns": [
             "session_id",
             "untappd_beer_id"
@@ -236,8 +236,8 @@
           "notNull": true,
           "autoincrement": true
         },
-        "fb_id": {
-          "name": "fb_id",
+        "email": {
+          "name": "email",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
@@ -268,10 +268,10 @@
         }
       },
       "indexes": {
-        "users_fb_id_unique": {
-          "name": "users_fb_id_unique",
+        "users_email_unique": {
+          "name": "users_email_unique",
           "columns": [
-            "fb_id"
+            "email"
           ],
           "isUnique": true
         }
@@ -351,8 +351,8 @@
         }
       },
       "indexes": {
-        "votes_session_id_user_id_beer_id_unique": {
-          "name": "votes_session_id_user_id_beer_id_unique",
+        "uniqueSessionUserBeer": {
+          "name": "uniqueSessionUserBeer",
           "columns": [
             "session_id",
             "user_id",

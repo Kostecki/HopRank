@@ -1,4 +1,7 @@
 import { count, desc, eq, sql } from "drizzle-orm";
+import { redirect } from "react-router";
+import { createNameId } from "mnemonic-id";
+
 import { db } from "./config.server";
 import {
   beersTable,
@@ -7,8 +10,6 @@ import {
   usersTable,
   votesTable,
 } from "./schema.server";
-import { redirect } from "react-router";
-import { createNameId } from "mnemonic-id";
 
 type SessionActivity = {
   sessionId: number;
@@ -80,7 +81,7 @@ const leaveSession = async (userId: number) => {
     .set({ activeSessionId: null })
     .where(eq(usersTable.id, userId));
 
-  return redirect("/home");
+  return redirect("/");
 };
 
 const MAX_ATTEMPTS = 5;

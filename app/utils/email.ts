@@ -1,0 +1,29 @@
+import mjml2html from "mjml";
+
+const getMagicLinkEmail = (code: string, magicLink: string) => {
+  const mjml = `<mjml>
+  <mj-body width="400">
+    <mj-section>
+      <mj-column>
+        <mj-image width="100px" src="https://xn--l-4ga.kostecki.dk/logo.png"></mj-image>
+
+        <mj-divider border-width="1px" border-color="#c3c6d0"></mj-divider>
+
+        <mj-text font-size="20px" color="#484f65" font-family="helvetica" font-weight="bold" align="center" padding-bottom="25px">Log ind på HopRank</mj-text>
+
+        <mj-text font-size="16px" color="#484f65" font-family="helvetica" align="center">Med følgende kode:</mj-text>
+        <mj-text font-size="16px" color="#484f65" font-family="helvetica" font-weight="bold" align="center" padding-top="0px">${code}</mj-text>
+        
+        <mj-text font-size="16px" color="#484f65" font-family="helvetica" padding-top="20px" align="center">Eller direkte med knappen herunder</mj-text>
+        <mj-button href="${magicLink}" background-color="#484f65" padding-top="0px">Log ind</mj-button>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>`;
+
+  const { html } = mjml2html(mjml);
+
+  return html;
+};
+
+export { getMagicLinkEmail };
