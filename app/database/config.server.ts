@@ -17,9 +17,7 @@ const setupDatabase = async () => {
     migrationsFolder: MIGRATIONS_PATH,
   });
 
-  if (process.env.NODE_ENV === "development") {
-    await seedDatabase();
-  }
+  await seedDatabase();
 };
 
 setupDatabase().catch((error) => {
