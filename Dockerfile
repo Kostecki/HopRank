@@ -46,6 +46,8 @@ RUN pnpm install --prod --frozen-lockfile
 # Final runtime image
 FROM node:23-alpine AS runner
 
+RUN apk add tzdata
+
 WORKDIR /app
 
 # Copy only runtime artifacts
