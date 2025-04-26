@@ -12,7 +12,6 @@ export const ratingsTable = sqliteTable("ratings", {
   name: text("name").notNull(),
   description: text("description").notNull(),
   weight: real().notNull().default(1),
-  default: int({ mode: "boolean" }).notNull().default(false),
   createdAt: text("created_at")
     .notNull()
     .default(sql`CURRENT_TIMESTAMP`),

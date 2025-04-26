@@ -11,11 +11,11 @@ import {
 
 const seedCategories = async () => {
   const categories = [
-    { name: "Kriterie 1", weight: 1.0 },
-    { name: "Kriterie 2", weight: 1.0 },
-    { name: "Kriterie 3", weight: 1.0 },
-    { name: "Kriterie 4", weight: 1.0 },
-    { name: "Kriterie 5", weight: 1.0 },
+    { name: "Kriterie 1", description: "Beskrivelse af #1", weight: 1.0 },
+    { name: "Kriterie 2", description: "Beskrivelse af #2", weight: 1.0 },
+    { name: "Kriterie 3", description: "Beskrivelse af #3", weight: 1.0 },
+    { name: "Kriterie 4", description: "Beskrivelse af #4", weight: 1.0 },
+    { name: "Kriterie 5", description: "Beskrivelse af #5", weight: 1.0 },
   ];
 
   const [existingCategories] = await db
