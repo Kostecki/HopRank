@@ -23,9 +23,11 @@ export default [
   layout("routes/auth/layout.tsx", [
     ...prefix("auth", [
       index("routes/auth/index.ts"),
-      route("login", "routes/auth/login.tsx"),
-      route("verify", "routes/auth/verify/verify.tsx"),
+      route("login", "routes/auth/login/index.tsx"),
       route("logout", "routes/auth/logout.ts"),
+      route("untappd", "routes/auth/untappd/index.ts"),
+      route("untappd/callback", "routes/auth/untappd/callback.ts"),
+      route("totp", "routes/auth/totp/index.tsx"),
     ]),
   ]),
   ...prefix("api", [

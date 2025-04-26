@@ -1,4 +1,4 @@
-import { AppShell, Container } from "@mantine/core";
+import { AppShell, Container, Grid } from "@mantine/core";
 import { Outlet } from "react-router";
 
 export default function Layout() {
@@ -6,7 +6,11 @@ export default function Layout() {
     <AppShell>
       <AppShell.Main>
         <Container size="xs">
-          <Outlet />
+          <Grid justify="center" pt={80}>
+            <Grid.Col span={10}>
+              <Outlet />
+            </Grid.Col>
+          </Grid>
         </Container>
       </AppShell.Main>
     </AppShell>

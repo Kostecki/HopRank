@@ -47,7 +47,7 @@ const seedSessions = async () => {
 
 const seedUsers = async () => {
   const users = [
-    { email: "jacob@kostecki.dk", activeSessionId: 1 },
+    { email: "jacob@kostecki.dk", activeSessionId: 1, untappdId: 6063090 },
     { email: "hoprank@kostecki.dk", activeSessionId: 1 },
   ];
 

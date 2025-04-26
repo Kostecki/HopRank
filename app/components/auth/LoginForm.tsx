@@ -1,15 +1,25 @@
 import { useState } from "react";
-import { useFetcher } from "react-router";
-import { Button, Card, Flex, Image, Paper, TextInput } from "@mantine/core";
+import { Link, useFetcher } from "react-router";
+import {
+  Button,
+  Card,
+  Divider,
+  Flex,
+  Image,
+  Paper,
+  TextInput,
+} from "@mantine/core";
+
+import styles from "./styles.module.css";
 import { IconAt } from "@tabler/icons-react";
 import { useForm } from "@mantine/form";
 
-import styles from "./styles.module.css";
-
-export default function TotpForm() {
+export default function LoginForm() {
   const [isRotating, setIsRotating] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const fetcher = useFetcher();
+  const isSubmitting = fetcher.state !== "idle" || fetcher.formData != null;
 
   const handleClick = () => {
     setIsRotating(true);
@@ -52,13 +62,28 @@ export default function TotpForm() {
         </Flex>
       </Card.Section>
 
+      <Button
+        component={Link}
+        to="/auth/untappd"
+        color="untappd"
+        fullWidth
+        loading={isLoading}
+        onClick={() => setIsLoading(true)}
+      >
+        Log ind med Untappd
+      </Button>
+
+      <Divider opacity={0.4} my="md" label="Eller" labelPosition="center" />
+
       <form onSubmit={form.onSubmit(handleSubmit)}>
         <TextInput
           placeholder="Indtast din email"
           leftSection={<IconAt size={16} />}
           leftSectionPointerEvents="none"
           required
+          name="email"
           type="email"
+          autoComplete="email"
           key={form.key("email")}
           {...form.getInputProps("email")}
         />
@@ -68,9 +93,9 @@ export default function TotpForm() {
           color="slateIndigo"
           fullWidth
           mt="xs"
-          loading={fetcher.state === "submitting"}
+          loading={isSubmitting}
         >
-          Fortsæt med email
+          Log ind med email
         </Button>
       </form>
     </Card>

@@ -4,6 +4,7 @@ import {
   Group,
   Menu,
   Paper,
+  Stack,
   Text,
   useMantineTheme,
 } from "@mantine/core";
@@ -29,17 +30,30 @@ type InputProps = {
 };
 
 const User = ({ user }: { user: SessionUser }) => {
-  const { email } = user;
+  const { email, name, avatar } = user;
   const firstLetter = email.slice(0, 1).toUpperCase();
 
   return (
     <Menu shadow="md" width="auto" withArrow>
       <Menu.Target>
-        <Avatar style={{ cursor: "pointer" }}>{firstLetter}</Avatar>
+        <Avatar src={avatar} style={{ cursor: "pointer" }}>
+          {firstLetter}
+        </Avatar>
       </Menu.Target>
 
       <Menu.Dropdown>
-        <Menu.Label>{email}</Menu.Label>
+        <Menu.Label>
+          <Stack gap={0}>
+            <Text fw={500} size="sm" c="slateIndigo">
+              {name ?? email}
+            </Text>
+            {name && (
+              <Text c="dimmed" fw={500} size="xs" fs="italic">
+                {email}
+              </Text>
+            )}
+          </Stack>
+        </Menu.Label>
         <Menu.Divider />
         <Menu.Item
           component="a"

@@ -4,7 +4,7 @@ import { Cookie } from "@mjackson/headers";
 import { userSessionGet } from "~/auth/users.server";
 import { authenticator } from "~/auth/auth.server";
 
-import type { Route } from "../+types";
+import type { Route } from "./+types";
 
 export async function loader({ request }: Route.LoaderArgs) {
   // Check for existing session.

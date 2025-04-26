@@ -4,7 +4,7 @@ import invariant from "tiny-invariant";
 import { getMagicLinkEmail } from "~/utils/email";
 
 const SMTP_FROM = process.env.SMTP_FROM;
-invariant(SMTP_FROM, "SMTP_FROM must be set");
+invariant(SMTP_FROM, "SMTP_FROM must be set in .env");
 
 export async function sendMagicLinkEmail({
   email,
@@ -34,10 +34,10 @@ export async function sendMagicLinkEmail({
     const SMTP_PORT = process.env.SMTP_PORT;
     const SMTP_USER = process.env.SMTP_USER;
     const SMTP_PASS = process.env.SMTP_PASS;
-    invariant(SMTP_HOST, "SMTP_HOST must be set");
-    invariant(SMTP_PORT, "SMTP_PORT must be set");
-    invariant(SMTP_USER, "SMTP_USER must be set");
-    invariant(SMTP_PASS, "SMTP_PASS must be set");
+    invariant(SMTP_HOST, "SMTP_HOST must be set in .env");
+    invariant(SMTP_PORT, "SMTP_PORT must be set in .env");
+    invariant(SMTP_USER, "SMTP_USER must be set in .env");
+    invariant(SMTP_PASS, "SMTP_PASS must be set in .env");
 
     transporter = nodemailer.createTransport({
       host: SMTP_HOST,

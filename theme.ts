@@ -65,6 +65,19 @@ const bronze: MantineColorsTuple = [
   "#8c6239",
 ];
 
+const untappd: MantineColorsTuple = [
+  "#fffae1",
+  "#fff3cb",
+  "#ffe69a",
+  "#ffd964",
+  "#ffcd38",
+  "#ffc61c",
+  "#ffc209",
+  "#e3ab00",
+  "#ca9700",
+  "#af8200",
+];
+
 export const theme = createTheme({
   colors: {
     teal,
@@ -72,5 +85,6 @@ export const theme = createTheme({
     bronze,
     silver,
     gold,
+    untappd,
   },
 });

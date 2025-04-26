@@ -94,6 +94,7 @@ export const beersTable = sqliteTable(
 
 export const usersTable = sqliteTable("users", {
   id: int().primaryKey({ autoIncrement: true }),
+  untappdId: int("untappd_id").unique(),
   email: text("email").notNull().unique(),
   activeSessionId: int("active_session_id").references(() => sessionsTable.id),
   createdAt: text("created_at")
