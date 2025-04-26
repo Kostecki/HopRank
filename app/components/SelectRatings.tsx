@@ -1,5 +1,14 @@
-import { Box, Chip, Divider, Group, Stack, Switch, Text } from "@mantine/core";
 import { useState } from "react";
+import {
+  Box,
+  Chip,
+  Collapse,
+  Divider,
+  Group,
+  Stack,
+  Switch,
+  Text,
+} from "@mantine/core";
 
 import type { SelectRating } from "~/database/schema.types";
 
@@ -16,12 +25,7 @@ const ratingGroups = [
   {
     id: "extended",
     name: "Udvidet",
-    active: [1, 2, 3, 4, 5, 6],
-  },
-  {
-    id: "custom",
-    name: "Brugerdefineret",
-    active: [],
+    active: [1, 2, 3, 4, 5],
   },
 ];
 
@@ -32,6 +36,15 @@ export default function SelectRatings({ ratings }: InputProps) {
     return group?.active ?? [];
   });
 
+  const handleGroupChange = (groupId: string) => {
+    setValue(groupId);
+
+    const group = ratingGroups.find((group) => group.id === groupId);
+    if (group) {
+      setActiveRatings(group.active);
+    }
+  };
+
   return (
     <>
       <Text fw="bold">Smagnings-kriterier</Text>
@@ -40,37 +53,31 @@ export default function SelectRatings({ ratings }: InputProps) {
       </Text>
 
       <Box my="xs">
-        <Chip.Group
-          multiple={false}
-          value={value}
-          onChange={(groupId) => {
-            setValue(groupId);
-            const group = ratingGroups.find((group) => group.id === groupId);
-            if (group) {
-              setActiveRatings(group.active);
-            }
-          }}
-        >
-          <Group>
-            {ratingGroups
-              .filter((group) => group.id !== "custom" || value === "custom")
-              .map((group) => (
-                <Chip
-                  key={group.id}
-                  value={group.id}
-                  size="xs"
-                  color="slateIndigo"
-                >
-                  {group.name}
-                </Chip>
-              ))}
+        <Chip.Group multiple={false} value={value} onChange={handleGroupChange}>
+          <Group gap="xs">
+            {ratingGroups.map((group) => (
+              <Chip
+                key={group.id}
+                value={group.id}
+                size="xs"
+                color="slateIndigo"
+              >
+                {group.name}
+              </Chip>
+            ))}
+
+            <Collapse in={value === "custom"} transitionDuration={150}>
+              <Chip key="custom" value="custom" size="xs" color="slateIndigo">
+                Manuel
+              </Chip>
+            </Collapse>
           </Group>
         </Chip.Group>
       </Box>
 
-      <Divider opacity={0.5} />
+      <Divider opacity={0.3} />
 
-      <Stack mt="md">
+      <Stack mt="md" gap="xs">
         {ratings.map((rating) => (
           <Switch
             key={rating.id}
@@ -83,7 +90,6 @@ export default function SelectRatings({ ratings }: InputProps) {
                   : prev.filter((id) => id !== rating.id);
 
                 const matchedGroup = ratingGroups.find((group) => {
-                  if (group.id === "custom") return false;
                   return (
                     group.active.length === next.length &&
                     group.active.every((id) => next.includes(id))
