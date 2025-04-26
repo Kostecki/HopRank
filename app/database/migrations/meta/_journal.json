@@ -15,6 +15,20 @@
       "when": 1745686762803,
       "tag": "0001_spotty_hardball",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1745704563945,
+      "tag": "0002_huge_morlocks",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1745704625915,
+      "tag": "0003_pretty_ezekiel",
+      "breakpoints": true
     }
   ]
 }

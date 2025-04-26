@@ -10,7 +10,9 @@ type Vote = {
 export const ratingsTable = sqliteTable("ratings", {
   id: int().primaryKey({ autoIncrement: true }),
   name: text("name").notNull(),
-  weight: real().default(1).notNull(),
+  description: text("description").notNull(),
+  weight: real().notNull().default(1),
+  default: int({ mode: "boolean" }).notNull().default(false),
   createdAt: text("created_at")
     .notNull()
     .default(sql`CURRENT_TIMESTAMP`),

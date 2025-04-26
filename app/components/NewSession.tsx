@@ -5,8 +5,14 @@ import { Box, Button, Stack, Text, type BoxProps } from "@mantine/core";
 import BeerMultiSelect from "./BeerMultiSelect";
 
 import type { BeerOption } from "~/types/misc";
+import SelectRatings from "./SelectRatings";
+import type { SelectRating } from "~/database/schema.types";
 
-export default function NewSession({ ...props }: BoxProps) {
+type InputProps = {
+  ratings: SelectRating[];
+} & BoxProps;
+
+export default function NewSession({ ratings, ...props }: InputProps) {
   const [selectedBeers, setSelectedBeers] = useState<BeerOption[]>([]);
 
   const fetcher = useFetcher();
@@ -35,11 +41,16 @@ export default function NewSession({ ...props }: BoxProps) {
           setSelectedBeers={setSelectedBeers}
         />
 
+        <Stack gap={0} mt="sm">
+          <SelectRatings ratings={ratings} />
+        </Stack>
+
         <Button
           color="slateIndigo"
           fullWidth
           radius="md"
           onClick={handleSubmit}
+          mt="md"
         >
           🍻 Opret ny smagning 🍻
         </Button>

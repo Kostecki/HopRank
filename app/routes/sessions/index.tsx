@@ -9,6 +9,7 @@ import {
   getSessions,
   getSessionLastActivity,
   getBeersCountPerSession,
+  getRatings,
 } from "~/database/helpers";
 
 import NewSession from "~/components/NewSession";
@@ -43,6 +44,7 @@ export async function loader({ request }: Route.LoaderArgs) {
   const allSessions = await getSessions();
   const activityMap = await getSessionLastActivity();
   const beersCountMap = await getBeersCountPerSession();
+  const ratings = await getRatings();
 
   const now = new Date();
   const staleSessionIds: number[] = [];
@@ -96,11 +98,11 @@ export async function loader({ request }: Route.LoaderArgs) {
         : "active",
   }));
 
-  return { sessions: sessionsWithStatus };
+  return { sessions: sessionsWithStatus, ratings };
 }
 
 export default function Sessions() {
-  const { sessions } = useLoaderData<typeof loader>();
+  const { sessions, ratings } = useLoaderData<typeof loader>();
 
   const activeSessions = sessions
     .filter((session) => session.status === "active")
@@ -144,7 +146,7 @@ export default function Sessions() {
         </Tabs.Panel>
       </Tabs>
 
-      <NewSession mt={30} />
+      <NewSession mt={30} ratings={ratings} />
     </Paper>
   );
 }
