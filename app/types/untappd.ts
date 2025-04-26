@@ -2,6 +2,29 @@ type AliasAlt = string[];
 type SpellingAlt = string[];
 type BreweryAlias = string[];
 
+export interface UntappdStrategyOptions {
+  clientID: string;
+  clientSecret: string;
+  callbackURL: string;
+}
+
+export interface UntappdStrategyProfile {
+  untappdId: number;
+  email: string;
+  userName: string;
+  firstName: string;
+  lastName: string;
+  avatar: string;
+}
+
+export type UntappdStrategyVerifyParams = {
+  accessToken: string;
+  refreshToken: string | undefined;
+  extraParams: Record<string, unknown>;
+  profile: UntappdStrategyProfile;
+  request: Request;
+};
+
 export type AlgoliaBeerHit = {
   bid: number;
   beer_abv: number;

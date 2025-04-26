@@ -1,31 +1,14 @@
 import { OAuth2Strategy } from "remix-auth-oauth2";
 
+import type {
+  UntappdStrategyOptions,
+  UntappdStrategyProfile,
+  UntappdStrategyVerifyParams,
+} from "~/types/untappd";
+
 const AUTH_ENDPOINT = "https://untappd.com/oauth/authenticate";
 const TOKEN_ENDPOINT = "https://untappd.com/oauth/authorize";
 const PROFILE_ENDPOINT = "https://api.untappd.com/v4/user/info?compact=true";
-
-export interface UntappdStrategyOptions {
-  clientID: string;
-  clientSecret: string;
-  callbackURL: string;
-}
-
-export interface UntappdProfile {
-  untappdId: number;
-  email: string;
-  userName: string;
-  firstName: string;
-  lastName: string;
-  avatar: string;
-}
-
-export type UntappdStrategyVerifyParams = {
-  accessToken: string;
-  refreshToken: string | undefined;
-  extraParams: Record<string, unknown>;
-  profile: UntappdProfile;
-  request: Request;
-};
 
 export class UntappdStrategy<User> extends OAuth2Strategy<User> {
   name = "untappd";
@@ -59,7 +42,6 @@ export class UntappdStrategy<User> extends OAuth2Strategy<User> {
     const code = url.searchParams.get("code");
 
     if (!code) {
-      // 👇 THIS PART: Redirect the user to Untappd login
       const authUrl = new URL(AUTH_ENDPOINT);
       authUrl.searchParams.set("client_id", this.clientID);
       authUrl.searchParams.set("response_type", "code");
@@ -106,7 +88,7 @@ export class UntappdStrategy<User> extends OAuth2Strategy<User> {
 
     const url = `${TOKEN_ENDPOINT}?${params.toString()}`;
 
-    const response = await fetch(url, { method: "GET" });
+    const response = await fetch(url);
     if (!response.ok) {
       const error = await response.text();
       throw new Error(`Untappd token request failed: ${error}`);
@@ -126,7 +108,7 @@ export class UntappdStrategy<User> extends OAuth2Strategy<User> {
   }
 
   /** Fetches user info from Untappd */
-  async userProfile(accessToken: string): Promise<UntappdProfile> {
+  async userProfile(accessToken: string): Promise<UntappdStrategyProfile> {
     const response = await fetch(`${PROFILE_ENDPOINT}`, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
