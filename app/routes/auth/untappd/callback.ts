@@ -1,5 +1,12 @@
+import { redirect, type LoaderFunction, type MetaFunction } from "react-router";
+
 import { authenticator } from "~/auth/auth.server";
-import { redirect, type LoaderFunction } from "react-router";
+
+import { getPageTitle } from "~/utils/utils";
+
+export const meta: MetaFunction = () => {
+  return [{ title: getPageTitle("Log ind med Untappd") }];
+};
 
 export const loader: LoaderFunction = ({ request }) => {
   const url = new URL(request.url);

@@ -1,11 +1,17 @@
-import { redirect } from "react-router";
+import { redirect, type MetaFunction } from "react-router";
 
 import { userSessionGet } from "~/auth/users.server";
 import { authenticator } from "~/auth/auth.server";
 
 import LoginForm from "~/components/auth/LoginForm";
 
+import { getPageTitle } from "~/utils/utils";
+
 import type { Route } from "../+types";
+
+export const meta: MetaFunction = () => {
+  return [{ title: getPageTitle("Log ind") }];
+};
 
 export async function loader({ request }: Route.LoaderArgs) {
   const user = await userSessionGet(request);
