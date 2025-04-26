@@ -18,17 +18,19 @@ const ratingGroups = [
     name: "Udvidet",
     active: [1, 2, 3, 4, 5, 6],
   },
+  {
+    id: "custom",
+    name: "Brugerdefineret",
+    active: [],
+  },
 ];
 
 export default function SelectRatings({ ratings }: InputProps) {
   const [value, setValue] = useState("simple");
-
-  const setChecked = (ratingId: number) => {
-    const group = ratingGroups.find((group) => group.id === value);
-    if (!group) return false;
-
-    return group.active.includes(ratingId);
-  };
+  const [activeRatings, setActiveRatings] = useState<number[]>(() => {
+    const group = ratingGroups.find((group) => group.id === "simple");
+    return group?.active ?? [];
+  });
 
   return (
     <>
@@ -38,18 +40,30 @@ export default function SelectRatings({ ratings }: InputProps) {
       </Text>
 
       <Box my="xs">
-        <Chip.Group multiple={false} value={value} onChange={setValue}>
+        <Chip.Group
+          multiple={false}
+          value={value}
+          onChange={(groupId) => {
+            setValue(groupId);
+            const group = ratingGroups.find((group) => group.id === groupId);
+            if (group) {
+              setActiveRatings(group.active);
+            }
+          }}
+        >
           <Group>
-            {ratingGroups.map((group) => (
-              <Chip
-                key={group.id}
-                value={group.id}
-                size="xs"
-                color="slateIndigo"
-              >
-                {group.name}
-              </Chip>
-            ))}
+            {ratingGroups
+              .filter((group) => group.id !== "custom" || value === "custom")
+              .map((group) => (
+                <Chip
+                  key={group.id}
+                  value={group.id}
+                  size="xs"
+                  color="slateIndigo"
+                >
+                  {group.name}
+                </Chip>
+              ))}
           </Group>
         </Chip.Group>
       </Box>
@@ -57,17 +71,39 @@ export default function SelectRatings({ ratings }: InputProps) {
       <Divider opacity={0.5} />
 
       <Stack mt="md">
-        {ratings.map((rating) => {
-          return (
-            <Switch
-              key={rating.id}
-              checked={setChecked(rating.id)}
-              label={rating.name}
-              description={rating.description}
-              color="slateIndigo"
-            />
-          );
-        })}
+        {ratings.map((rating) => (
+          <Switch
+            key={rating.id}
+            checked={activeRatings.includes(rating.id)}
+            onChange={(event) => {
+              const checked = event.currentTarget.checked;
+              setActiveRatings((prev) => {
+                const next = checked
+                  ? [...prev, rating.id]
+                  : prev.filter((id) => id !== rating.id);
+
+                const matchedGroup = ratingGroups.find((group) => {
+                  if (group.id === "custom") return false;
+                  return (
+                    group.active.length === next.length &&
+                    group.active.every((id) => next.includes(id))
+                  );
+                });
+
+                if (matchedGroup) {
+                  setValue(matchedGroup.id);
+                } else {
+                  setValue("custom");
+                }
+
+                return next;
+              });
+            }}
+            label={rating.name}
+            description={rating.description}
+            color="slateIndigo"
+          />
+        ))}
       </Stack>
     </>
   );
