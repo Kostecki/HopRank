@@ -1,6 +1,4 @@
-// untappd-strategy.server.ts
 import { OAuth2Strategy } from "remix-auth-oauth2";
-import invariant from "tiny-invariant";
 
 const AUTH_ENDPOINT = "https://untappd.com/oauth/authenticate";
 const TOKEN_ENDPOINT = "https://untappd.com/oauth/authorize";
@@ -109,14 +107,12 @@ export class UntappdStrategy<User> extends OAuth2Strategy<User> {
     const url = `${TOKEN_ENDPOINT}?${params.toString()}`;
 
     const response = await fetch(url, { method: "GET" });
-    console.log("Untappd token response1", response);
     if (!response.ok) {
       const error = await response.text();
       throw new Error(`Untappd token request failed: ${error}`);
     }
 
     const json = await response.json();
-    console.log("Untappd token response2", json);
 
     if (!json.response?.access_token) {
       throw new Error(`Untappd token response missing access_token`);
