@@ -10,13 +10,14 @@ import {
 } from "@mantine/core";
 import { IconBeer, IconLogout, IconUsers } from "@tabler/icons-react";
 
+import { getBeersVotedByAllUsers } from "~/utils/votes";
+
 import type { SessionUser } from "~/auth/auth.server";
 import type {
   SelectBeer,
   SelectSession,
   SelectVote,
 } from "~/database/schema.types";
-import { getBeersVotedByAllUsers } from "~/utils/votes";
 
 type InputProps = {
   user: SessionUser;

@@ -1,5 +1,6 @@
 import { Box, Flex, Slider, Text } from "@mantine/core";
 import type { UseFormReturnType } from "@mantine/form";
+
 import { displayScore, sliderConf } from "~/utils/utils";
 
 type InputProps = {

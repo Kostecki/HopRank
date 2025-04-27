@@ -2,8 +2,9 @@ import { Box, Button, Divider, Stack, Text } from "@mantine/core";
 import { IconDoorExit, IconPlus } from "@tabler/icons-react";
 import { useFetcher, useNavigate } from "react-router";
 
-import type { SelectBeer, SelectSession } from "~/database/schema.types";
 import ModalAddBeers, { ModalAddBeersTrigger } from "./modals/ModalAddBeers";
+
+import type { SelectBeer, SelectSession } from "~/database/schema.types";
 
 type InputProps = {
   closeMobile: () => void;

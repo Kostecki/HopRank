@@ -9,10 +9,10 @@ import {
   Paper,
   TextInput,
 } from "@mantine/core";
-
-import styles from "./styles.module.css";
 import { IconAt } from "@tabler/icons-react";
 import { useForm } from "@mantine/form";
+
+import styles from "./styles.module.css";
 
 export default function LoginForm() {
   const [isRotating, setIsRotating] = useState(false);

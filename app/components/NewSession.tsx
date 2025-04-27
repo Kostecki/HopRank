@@ -3,9 +3,9 @@ import { useFetcher } from "react-router";
 import { Box, Button, Stack, Text, type BoxProps } from "@mantine/core";
 
 import BeerMultiSelect from "./BeerMultiSelect";
+import SelectRatings from "./SelectRatings";
 
 import type { BeerOption } from "~/types/misc";
-import SelectRatings from "./SelectRatings";
 import type { SelectRating } from "~/database/schema.types";
 
 type InputProps = {
