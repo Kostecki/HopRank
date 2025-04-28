@@ -18,7 +18,7 @@ type InputProps = {
 } & BoxProps;
 
 // Your Untappd API access token (secure properly in production!)
-const UNTAPPD_ACCESS_TOKEN = "3D83C793AB3C1339383853D6711703FB03247B51";
+const UNTAPPD_ACCESS_TOKEN = "";
 
 // Types for Untappd
 interface UntappdFriend {
