@@ -1,31 +1,39 @@
-import type { InferInsertModel, InferSelectModel } from "drizzle-orm";
+import type { InferSelectModel } from "drizzle-orm";
 import type {
-  ratingsTable,
-  sessionsTable,
-  beersTable,
-  usersTable,
-  votesTable,
+  beers,
+  criteria,
+  ratings,
+  sessionBeers,
+  sessionCriteria,
+  sessions,
+  sessionState,
+  sessionUsers,
+  users,
 } from "./schema.server";
 
-export type SelectRating = InferSelectModel<typeof ratingsTable>;
-export type InsertRating = InferInsertModel<typeof ratingsTable>;
+export type SelectUsers = InferSelectModel<typeof users>;
+export type InsertUsers = InferSelectModel<typeof users>;
 
-export type SelectSession = InferSelectModel<typeof sessionsTable> & {
-  users: {
-    totalCount?: number;
-    untappdUserIds?: number[];
-  };
-  beersCount?: number;
-};
-export type InsertSession = InferInsertModel<typeof sessionsTable>;
+export type SelectSessions = InferSelectModel<typeof sessions>;
+export type InsertSessions = InferSelectModel<typeof sessions>;
 
-export type SelectVote = InferSelectModel<typeof votesTable>;
-export type InsertVote = InferInsertModel<typeof votesTable>;
+export type SelectSessionUsers = InferSelectModel<typeof sessionUsers>;
+export type InsertSessionUsers = InferSelectModel<typeof sessionUsers>;
 
-export type SelectBeer = InferSelectModel<typeof beersTable> & {
-  score?: number;
-};
-export type InsertBeer = InferInsertModel<typeof beersTable>;
+export type SelectBeers = InferSelectModel<typeof beers>;
+export type InsertBeers = InferSelectModel<typeof beers>;
 
-export type SelectUser = InferSelectModel<typeof usersTable>;
-export type InsertUser = InferInsertModel<typeof usersTable>;
+export type SelectSessionBeers = InferSelectModel<typeof sessionBeers>;
+export type InsertSessionBeers = InferSelectModel<typeof sessionBeers>;
+
+export type SelectCriteria = InferSelectModel<typeof criteria>;
+export type InsertCriteria = InferSelectModel<typeof criteria>;
+
+export type SelectSessionCriteria = InferSelectModel<typeof sessionCriteria>;
+export type InsertSessionCriteria = InferSelectModel<typeof sessionCriteria>;
+
+export type SelectRatings = InferSelectModel<typeof ratings>;
+export type InsertRatings = InferSelectModel<typeof ratings>;
+
+export type SelectSessionState = InferSelectModel<typeof sessionState>;
+export type InsertSessionState = InferSelectModel<typeof sessionState>;
