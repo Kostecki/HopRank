@@ -1,4 +1,4 @@
-import { count, desc, eq, sql } from "drizzle-orm";
+import { count, desc, eq, sql, not, isNull, and } from "drizzle-orm";
 import { redirect } from "react-router";
 import { createNameId } from "mnemonic-id";
 
@@ -16,29 +16,58 @@ type SessionActivity = {
   lastActivity: string;
 };
 
-const getRatings = async () => {
+export const getRatings = async () => {
   return await db.select().from(ratingsTable);
 };
 
-const getSessions = async () => {
-  const activeSessions = await db
+export const getSessions = async () => {
+  const sessions = await db
     .select({
       id: sessionsTable.id,
       name: sessionsTable.name,
       active: sessionsTable.active,
       createdAt: sessionsTable.createdAt,
       updatedAt: sessionsTable.updatedAt,
-      userCount: count(usersTable.id).as("userCount"),
     })
     .from(sessionsTable)
-    .leftJoin(usersTable, eq(usersTable.activeSessionId, sessionsTable.id))
-    .groupBy(sessionsTable.id)
     .orderBy(desc(sessionsTable.createdAt));
 
-  return activeSessions;
+  const userRows = await db
+    .select({
+      sessionId: usersTable.activeSessionId,
+      untappdId: usersTable.untappdId,
+    })
+    .from(usersTable)
+    .where(not(isNull(usersTable.activeSessionId)));
+
+  const usersBySessionId = userRows.reduce((acc, user) => {
+    if (user.sessionId == null || user.untappdId == null) return acc;
+
+    if (!acc[user.sessionId]) {
+      acc[user.sessionId] = [];
+    }
+    acc[user.sessionId].push(user.untappdId);
+    return acc;
+  }, {} as Record<number, number[]>);
+
+  const enrichedSessions = sessions.map((session) => {
+    const untappdUserIds = usersBySessionId[session.id] || [];
+
+    return {
+      ...session,
+      users: {
+        totalCount: untappdUserIds.length,
+        untappdUserIds: untappdUserIds as number[],
+      },
+    };
+  });
+
+  console.log("balls", enrichedSessions);
+
+  return enrichedSessions;
 };
 
-const getSessionDetails = async (sessionId: number) => {
+export const getSessionDetails = async (sessionId: number) => {
   const [sessionDetails] = await db
     .select({
       id: sessionsTable.id,
@@ -46,18 +75,32 @@ const getSessionDetails = async (sessionId: number) => {
       active: sessionsTable.active,
       createdAt: sessionsTable.createdAt,
       updatedAt: sessionsTable.updatedAt,
-      userCount: count(usersTable.id).as("userCount"),
     })
     .from(sessionsTable)
-    .leftJoin(usersTable, eq(usersTable.activeSessionId, sessionsTable.id))
-    .where(eq(sessionsTable.id, sessionId))
-    .groupBy(sessionsTable.id)
-    .orderBy(desc(sessionsTable.createdAt));
+    .where(eq(sessionsTable.id, sessionId));
 
-  return sessionDetails;
+  const untappdIds = await db
+    .select({ untappdId: usersTable.untappdId })
+    .from(usersTable)
+    .where(
+      and(
+        eq(usersTable.activeSessionId, sessionId),
+        not(isNull(usersTable.untappdId))
+      )
+    );
+
+  return {
+    ...sessionDetails,
+    users: {
+      totalCount: untappdIds.length,
+      untappdUserIds: untappdIds
+        .map((u) => u.untappdId)
+        .filter((id): id is number => id !== null),
+    },
+  };
 };
 
-const getSessionBeers = async (sessionId: number) => {
+export const getSessionBeers = async (sessionId: number) => {
   const sessionBeers = await db
     .select()
     .from(beersTable)
@@ -66,7 +109,7 @@ const getSessionBeers = async (sessionId: number) => {
   return sessionBeers;
 };
 
-const getSessionVotes = async (sessionId: number) => {
+export const getSessionVotes = async (sessionId: number) => {
   const sessionVotes = await db
     .select()
     .from(votesTable)
@@ -75,7 +118,7 @@ const getSessionVotes = async (sessionId: number) => {
   return sessionVotes;
 };
 
-const leaveSession = async (userId: number) => {
+export const leaveSession = async (userId: number) => {
   await db
     .update(usersTable)
     .set({ activeSessionId: null })
@@ -85,7 +128,7 @@ const leaveSession = async (userId: number) => {
 };
 
 const MAX_ATTEMPTS = 5;
-const generateUniqueSessionName = async () => {
+export const generateUniqueSessionName = async () => {
   for (let i = 0; i < MAX_ATTEMPTS; i++) {
     const name = createNameId();
 
@@ -105,7 +148,7 @@ const generateUniqueSessionName = async () => {
   );
 };
 
-const getSessionLastActivity = async () => {
+export const getSessionLastActivity = async () => {
   const result = (await db
     .select({
       sessionId: sql<number>`session_id`,
@@ -131,7 +174,7 @@ const getSessionLastActivity = async () => {
   return activityMap;
 };
 
-const getBeersCountPerSession = async () => {
+export const getBeersCountPerSession = async () => {
   const result = await db
     .select({
       sessionId: beersTable.sessionId,
@@ -146,14 +189,11 @@ const getBeersCountPerSession = async () => {
   return map;
 };
 
-export {
-  getRatings,
-  getSessions,
-  getSessionDetails,
-  getSessionBeers,
-  getSessionVotes,
-  leaveSession,
-  generateUniqueSessionName,
-  getSessionLastActivity,
-  getBeersCountPerSession,
+export const getUsersWithSession = async (sessionId: number) => {
+  const users = await db
+    .select()
+    .from(usersTable)
+    .where(eq(usersTable.activeSessionId, sessionId));
+
+  return users;
 };

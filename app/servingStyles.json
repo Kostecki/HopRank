@@ -1,0 +1,112 @@
+[
+  {
+    "container_id": 1,
+    "container_key": "can",
+    "container_name": "Can",
+    "container_name_dk": "Dåse",
+    "container_position": "3",
+    "container_description": null,
+    "container_image_url": "/serving-styles/can.png",
+    "created_at": "2016-12-20 08:57:31"
+  },
+  {
+    "container_id": 2,
+    "container_key": "bottle",
+    "container_name": "Bottle",
+    "container_name_dk": "Flaske",
+    "container_position": "2",
+    "container_description": null,
+    "container_image_url": "/serving-styles/bottle.png",
+    "created_at": "2016-12-20 08:59:14"
+  },
+  {
+    "container_id": 3,
+    "container_key": "draft",
+    "container_name": "Draft",
+    "container_name_dk": "Fad",
+    "container_position": "1",
+    "container_description": null,
+    "container_image_url": "/serving-styles/draft.png",
+    "created_at": "2016-12-20 08:59:12"
+  },
+  {
+    "container_id": 8,
+    "container_key": "taster",
+    "container_name": "Taster",
+    "container_name_dk": "Smagsprøve",
+    "container_position": "4",
+    "container_description": null,
+    "container_image_url": "/serving-styles/taster.png",
+    "created_at": "2017-02-09 16:09:13"
+  },
+  {
+    "container_id": 5,
+    "container_key": "cask",
+    "container_name": "Cask",
+    "container_name_dk": "Cask",
+    "container_position": "5",
+    "container_description": null,
+    "container_image_url": "/serving-styles/cask.png",
+    "created_at": "2016-12-20 08:58:58"
+  },
+  {
+    "container_id": 4,
+    "container_key": "nitro",
+    "container_name": "Nitro",
+    "container_name_dk": "Nitro",
+    "container_position": "6",
+    "container_description": null,
+    "container_image_url": "/serving-styles/nitro.png",
+    "created_at": "2016-12-20 08:59:01"
+  },
+  {
+    "container_id": 6,
+    "container_key": "crowler",
+    "container_name": "Crowler",
+    "container_name_dk": "Crowler",
+    "container_position": "7",
+    "container_description": null,
+    "container_image_url": "/serving-styles/crowler.png",
+    "created_at": "2017-02-06 11:12:23"
+  },
+  {
+    "container_id": 7,
+    "container_key": "growler",
+    "container_name": "Growler",
+    "container_name_dk": "Growler",
+    "container_position": "8",
+    "container_description": null,
+    "container_image_url": "/serving-styles/growler.png",
+    "created_at": "2017-02-06 11:12:39"
+  },
+  {
+    "container_id": 9,
+    "container_key": "tank",
+    "container_name": "Tank",
+    "container_name_dk": "Tank",
+    "container_position": "9",
+    "container_description": null,
+    "container_image_url": "/serving-styles/tank.png",
+    "created_at": "2024-07-22 16:10:29"
+  },
+  {
+    "container_id": 10,
+    "container_key": "slushie",
+    "container_name": "Slushie",
+    "container_name_dk": "Slushie",
+    "container_position": "10",
+    "container_description": null,
+    "container_image_url": "/serving-styles/slushie.png",
+    "created_at": "2024-07-22 16:10:29"
+  },
+  {
+    "container_id": 11,
+    "container_key": "side_pull",
+    "container_name": "Side Pull",
+    "container_name_dk": "Side pull",
+    "container_position": "11",
+    "container_description": null,
+    "container_image_url": "/serving-styles/side_pull.png",
+    "created_at": "2024-07-22 16:10:29"
+  }
+]

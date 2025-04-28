@@ -11,7 +11,10 @@ export type SelectRating = InferSelectModel<typeof ratingsTable>;
 export type InsertRating = InferInsertModel<typeof ratingsTable>;
 
 export type SelectSession = InferSelectModel<typeof sessionsTable> & {
-  userCount?: number;
+  users: {
+    totalCount?: number;
+    untappdUserIds?: number[];
+  };
   beersCount?: number;
 };
 export type InsertSession = InferInsertModel<typeof sessionsTable>;

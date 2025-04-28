@@ -34,6 +34,7 @@ export default [
     ...prefix("untappd", [
       route("beers", "routes/api/untappd/search.ts"),
       route("beer/:beerId", "routes/api/untappd/$beerId.ts"),
+      route("venues", "routes/api/untappd/venues.ts"),
     ]),
   ]),
 ] satisfies RouteConfig;

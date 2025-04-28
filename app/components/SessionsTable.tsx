@@ -61,7 +61,7 @@ export default function SessionsTable({ sessions, mode }: InputProps) {
       <Table.Td tt="capitalize">{session.name}</Table.Td>
 
       {mode === "active" ? (
-        <Table.Td ta="center">{session.userCount}</Table.Td>
+        <Table.Td ta="center">{session.users.totalCount}</Table.Td>
       ) : (
         <Table.Td ta="center">{formatDate(session.createdAt)}</Table.Td>
       )}

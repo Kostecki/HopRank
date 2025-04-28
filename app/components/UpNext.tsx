@@ -44,7 +44,13 @@ export default function UpNext({
         <BeerCard beer={beer} votes={votes} sessionDetails={sessionDetails} />
       </Anchor>
 
-      <NewVote ratings={ratings} beer={beer} user={user} votes={votes} />
+      <NewVote
+        ratings={ratings}
+        beer={beer}
+        user={user}
+        votes={votes}
+        sessionDetails={sessionDetails}
+      />
     </Box>
   );
 }

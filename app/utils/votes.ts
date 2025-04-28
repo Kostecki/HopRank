@@ -6,14 +6,14 @@ import type {
   SelectVote,
 } from "~/database/schema.types";
 
-const getVotesForBeer = (votes: SelectVote[], id: number) => {
+export const getVotesForBeer = (votes: SelectVote[], id: number) => {
   if (!id) return [];
 
   const beerVotes = votes.filter((vote) => vote.beerId === id);
   return beerVotes;
 };
 
-const getRatedAndNotRatedBeers = (
+export const getRatedAndNotRatedBeers = (
   sessionBeers: SelectBeer[],
   sessionVotes: SelectVote[],
   sessionDetails: SelectSession,
@@ -27,7 +27,7 @@ const getRatedAndNotRatedBeers = (
 
       const isRatedInActiveMode =
         ratedIds.has(beer.id) &&
-        sessionDetails.userCount === votesForBeer.length;
+        sessionDetails.users.totalCount === votesForBeer.length;
 
       const isRatedInInactiveMode =
         ratedIds.has(beer.id) && votesForBeer.length > 0;
@@ -48,7 +48,10 @@ const getRatedAndNotRatedBeers = (
   return { ratedBeers, notRatedBeers };
 };
 
-const getBeersVotedByAllUsers = (votes?: SelectVote[], userCount?: number) => {
+export const getBeersVotedByAllUsers = (
+  votes?: SelectVote[],
+  userCount?: number
+) => {
   if (!votes || userCount === 0) return 0;
 
   const beerVotes = new Map<number, Set<number>>();
@@ -71,7 +74,7 @@ const getBeersVotedByAllUsers = (votes?: SelectVote[], userCount?: number) => {
   return count;
 };
 
-const getBeersOrderedByScore = (
+export const getBeersOrderedByScore = (
   beers: SelectBeer[],
   sessionVotes: SelectVote[]
 ) => {
@@ -88,11 +91,4 @@ const getBeersOrderedByScore = (
     .sort((a, b) => b.score - a.score);
 
   return beersWithScore;
-};
-
-export {
-  getVotesForBeer,
-  getRatedAndNotRatedBeers,
-  getBeersVotedByAllUsers,
-  getBeersOrderedByScore,
 };

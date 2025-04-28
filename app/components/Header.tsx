@@ -87,7 +87,7 @@ export function Header({
     .size;
   const ratedBeersCount = getBeersVotedByAllUsers(
     sessionVotes,
-    sessionDetails?.userCount
+    sessionDetails?.users.totalCount
   );
 
   return (
@@ -113,7 +113,9 @@ export function Header({
               <Group gap="8">
                 <IconUsers color={slateIndigo} size={20} />
                 <Text c="slateIndigo" fw={600}>
-                  {activeSession ? sessionDetails.userCount : uniqueVoterCount}
+                  {activeSession
+                    ? sessionDetails.users.totalCount
+                    : uniqueVoterCount}
                 </Text>
               </Group>
               <Group gap="5">

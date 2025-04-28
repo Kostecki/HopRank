@@ -34,7 +34,7 @@ export default function ActiveSessionsTable({ sessions }: InputProps) {
       style={{ cursor: "pointer" }}
     >
       <Table.Td tt="capitalize">{session.name}</Table.Td>
-      <Table.Td ta="center">{session.userCount}</Table.Td>
+      <Table.Td ta="center">{session.users.totalCount}</Table.Td>
       <Table.Td ta="center">{session.beersCount}</Table.Td>
       <Table.Td ta="right">
         <Button

@@ -55,9 +55,9 @@ export function BeerCard({
   };
 
   const RenderProgress = () => {
-    if (!sessionDetails || !sessionDetails.userCount) return null;
+    if (!sessionDetails || !sessionDetails.users.totalCount) return null;
 
-    const totalPossibleVotes = sessionDetails.userCount;
+    const totalPossibleVotes = sessionDetails.users.totalCount;
     const currentNumberOfVotes = votes.length;
     const progress = (currentNumberOfVotes / totalPossibleVotes) * 100;
 
