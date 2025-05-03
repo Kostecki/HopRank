@@ -1,96 +1,114 @@
-import type { SelectBeer } from "~/database/schema.types";
+import { and, eq, ne } from "drizzle-orm";
+import { db } from "~/database/config.server";
+import { sessionBeers } from "~/database/schema.server";
+import { SessionBeerStatus } from "~/types/session";
 
-/* Shout-out to my man GPT 4o 🤖  */
-
-/**
- * Generates a deterministic pseudo-random number generator (PRNG)
- * based on a string seed.
- *
- * The same input seed will always generate the same sequence of numbers.
- */
-const createSeededRandom = (seed: string) => {
-  let hash = 0;
-  for (let i = 0; i < seed.length; i++) {
-    hash = (hash << 5) - hash + seed.charCodeAt(i);
-    hash |= 0;
-  }
-
-  return function () {
-    // Mulberry32 PRNG algorithm
-    let t = (hash += 0x6d2b79f5);
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
+type BeerRow = {
+  id: number;
+  beerId: number;
+  addedByUserId: number | null;
+  breweryName: string;
+  style: string;
+  order: number | null;
 };
 
 /**
- * Uses the provided seeded PRNG to shuffle the list of beers.
- * This is a standard Fisher-Yates shuffle algorithm.
+ * Scores the given beer list based on how well it avoids repeating brewery, style, and user in adjacent items.
+ * Higher scores indicate more variety between neighboring beers.
  *
- * Note: It does NOT mutate the original array — it returns a new one.
+ * @param list - The list of beers to score.
+ * @returns The calculated score as a number.
  */
-const shuffleBeers = (beers: SelectBeer[], random: () => number) => {
-  const arr = beers.map((b) => b); // shallow copy
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(random() * (i + 1));
-    const temp = arr[i];
-    arr[i] = arr[j];
-    arr[j] = temp;
-  }
-  return arr;
-};
-
-/**
- * Scores a shuffled beer list.
- * Penalizes adjacent beers from the same brewery or same addedBy user.
- *
- * Rules:
- * - Adjacent same brewery → +3 penalty
- * - Adjacent same addedBy  → +2 penalty
- */
-const scoreBeers = (beers: SelectBeer[]) => {
+const scoreBeerOrder = (list: BeerRow[]) => {
   let score = 0;
-  for (let i = 1; i < beers.length; i++) {
-    if (beers[i].breweryName === beers[i - 1].breweryName) score += 3;
-    if (beers[i].addedBy === beers[i - 1].addedBy) score += 2;
+  for (let i = 1; i < list.length; i++) {
+    const prev = list[i - 1];
+    const curr = list[i];
+    if (curr.breweryName !== prev.breweryName) score++;
+    if (curr.style !== prev.style) score++;
+    if (curr.addedByUserId !== prev.addedByUserId) score++;
   }
+
   return score;
 };
 
 /**
- * Main smart shuffler.
+ * Performs an in-place Fisher–Yates shuffle and returns a new array with randomized order.
  *
- * Shuffles the beers deterministically based on the given seed,
- * and attempts 750 variations to find the best-scoring layout
- * (fewest adjacent same-brewery or same-user beers).
- *
- * If a perfect arrangement (score === 0) is found early, it returns that immediately.
+ * @param array - The array to shuffle.
+ * @returns A new shuffled array.
  */
-const smartShuffle = (beers: SelectBeer[], seed: string) => {
-  let bestScore = Infinity;
-  let bestList = beers;
+const shuffle = <T>(array: T[]) => {
+  const arr = [...array];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
 
-  for (let i = 0; i < 750; i++) {
-    // Make each trial unique but still deterministic by varying the seed slightly
-    const trialSeed = `${seed}-${i}`;
-    const random = createSeededRandom(trialSeed);
+  return arr;
+};
 
-    // Try a new shuffle
-    const shuffled = shuffleBeers(beers, random);
+/**
+ * Shuffles the beers in a session to create a randomized, yet thoughtfully ordered sequence.
+ * The shuffle algorithm aims to avoid placing beers from the same brewery, style, or added by the same user consecutively.
+ *
+ * @param sessionId - The ID of the session whose beers should be shuffled.
+ */
+export const shuffleBeersInSession = async (sessionId: number) => {
+  const rows = await db.query.sessionBeers.findMany({
+    where: and(
+      eq(sessionBeers.sessionId, sessionId),
+      eq(sessionBeers.status, SessionBeerStatus.waiting)
+    ),
+    with: { beer: true },
+  });
 
-    // Score the new arrangement
-    const score = scoreBeers(shuffled);
+  const complete: BeerRow[] = rows
+    .filter(
+      (row): row is typeof row & { beer: NonNullable<typeof row.beer> } =>
+        row.beer !== null
+    )
+    .map((row) => ({
+      id: row.id,
+      beerId: row.beer.id,
+      addedByUserId: row.addedByUserId,
+      breweryName: row.beer.breweryName,
+      style: row.beer.style,
+      order: row.order,
+    }));
 
-    // Keep the best-scoring one
-    if (score < bestScore) {
+  let best: BeerRow[] = complete;
+  let bestScore = scoreBeerOrder(complete);
+
+  for (let i = 0; i < 200; i++) {
+    const shuffled = shuffle(complete);
+    const score = scoreBeerOrder(shuffled);
+
+    if (score > bestScore) {
+      best = shuffled;
       bestScore = score;
-      bestList = shuffled;
-      if (score === 0) break; // Stop early if perfect
+
+      const maxScore = (complete.length - 1) * 3;
+      if (score === maxScore) break;
     }
   }
 
-  return bestList;
-};
+  const maxOrderRow = await db.query.sessionBeers.findMany({
+    where: and(
+      eq(sessionBeers.sessionId, sessionId),
+      ne(sessionBeers.status, SessionBeerStatus.waiting)
+    ),
+    orderBy: (sb, { desc }) => desc(sb.order),
+    limit: 1,
+  });
+  const baseOrder = maxOrderRow[0]?.order ?? -1;
 
-export default smartShuffle;
+  await Promise.all(
+    best.map((beer, index) =>
+      db
+        .update(sessionBeers)
+        .set({ order: baseOrder + index + 1 })
+        .where(eq(sessionBeers.id, beer.id))
+    )
+  );
+};

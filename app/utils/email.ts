@@ -1,6 +1,13 @@
 import mjml2html from "mjml";
 
-const getMagicLinkEmail = (code: string, magicLink: string) => {
+/**
+ * Generates the HTML content for a magic link login email using MJML.
+ *
+ * @param code - The one-time passcode to display in the email.
+ * @param magicLink - The full magic link URL that allows the user to log in directly.
+ * @returns The compiled HTML string to be sent as an email.
+ */
+export const getMagicLinkEmail = (code: string, magicLink: string) => {
   const mjml = `<mjml>
   <mj-body width="400">
     <mj-section>
@@ -25,5 +32,3 @@ const getMagicLinkEmail = (code: string, magicLink: string) => {
 
   return html;
 };
-
-export { getMagicLinkEmail };

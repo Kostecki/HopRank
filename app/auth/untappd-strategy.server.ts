@@ -24,7 +24,7 @@ export class UntappdStrategy<User> extends OAuth2Strategy<User> {
     super(
       {
         authorizationEndpoint: AUTH_ENDPOINT,
-        tokenEndpoint: TOKEN_ENDPOINT, // Not actually used the normal way, but still needed for internal flow
+        tokenEndpoint: TOKEN_ENDPOINT,
         clientId: options.clientID,
         clientSecret: options.clientSecret,
         redirectURI: options.callbackURL,

@@ -25,6 +25,9 @@ export type InsertBeers = InferSelectModel<typeof beers>;
 
 export type SelectSessionBeers = InferSelectModel<typeof sessionBeers>;
 export type InsertSessionBeers = InferSelectModel<typeof sessionBeers>;
+export type SelectSessionBeersWithBeer = SelectSessionBeers & {
+  beer: SelectBeers;
+};
 
 export type SelectCriteria = InferSelectModel<typeof criteria>;
 export type InsertCriteria = InferSelectModel<typeof criteria>;

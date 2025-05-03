@@ -32,13 +32,14 @@ import {
   showWarningToast,
 } from "./utils/toasts";
 
+import { useUmamiIdentify } from "./hooks/umami";
+
 import { theme } from "theme";
 import "@mantine/core/styles.css";
 import "@mantine/notifications/styles.css";
 import "./app.css";
 
 import type { Route } from "./+types/root";
-import { useUmamiIdentify } from "./hooks/umami";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },

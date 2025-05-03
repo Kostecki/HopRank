@@ -9,19 +9,13 @@ import {
   Title,
 } from "@mantine/core";
 
-import { calculateTotalScore } from "~/utils/score";
 import { displayScore } from "~/utils/utils";
 
-import type {
-  SelectBeer,
-  SelectSession,
-  SelectVote,
-} from "~/database/schema.types";
+import { type RatedBeers, type SessionProgress } from "~/types/session";
 
 type InputProps = {
-  beer: SelectBeer;
-  votes: SelectVote[];
-  sessionDetails?: SelectSession;
+  session: SessionProgress;
+  beer?: RatedBeers;
   topThreeIds?: number[];
 };
 
@@ -29,37 +23,36 @@ const gold = "#ffd700";
 const silver = "#c0c0c0";
 const bronze = "#8c6239";
 
-export function BeerCard({
-  beer,
-  votes,
-  sessionDetails,
-  topThreeIds,
-}: InputProps) {
-  const { label, name, breweryName, style } = beer;
+export function BeerCard({ session, beer, topThreeIds }: InputProps) {
+  const isRatedBeer = !!beer;
+
+  const { beerId, label, name, breweryName, style } =
+    beer || session.currentBeer || {};
 
   const getMedalColor = () => {
-    if (!topThreeIds) return null;
+    if (!topThreeIds || !beerId) return null;
 
-    const position = topThreeIds.indexOf(beer.id);
+    const position = topThreeIds.indexOf(beerId);
     if (position === -1) return null; // not top 3
 
     return [gold, silver, bronze][position];
   };
 
-  const RenderTitle = () => {
+  const RenderScore = () => {
     return (
       <Title size={30} fw={600} lineClamp={1} ta="center">
-        {displayScore(calculateTotalScore(votes))}
+        {displayScore(beer?.averageScore)}
       </Title>
     );
   };
 
   const RenderProgress = () => {
-    if (!sessionDetails || !sessionDetails.users.totalCount) return null;
+    if (!session || !session.users.length) return null;
 
-    const totalPossibleVotes = sessionDetails.users.totalCount;
-    const currentNumberOfVotes = votes.length;
-    const progress = (currentNumberOfVotes / totalPossibleVotes) * 100;
+    if (!session.currentBeer) return null;
+    const { currentVoteCount, totalPossibleVoteCount } = session.currentBeer;
+
+    const progress = (currentVoteCount / totalPossibleVoteCount) * 100;
 
     return (
       <RingProgress
@@ -72,7 +65,7 @@ export function BeerCard({
             fw="600"
             style={{ pointerEvents: "none" }}
           >
-            {`${currentNumberOfVotes}/${totalPossibleVotes}`}
+            {`${currentVoteCount}/${totalPossibleVoteCount}`}
           </Text>
         }
         sections={[
@@ -116,11 +109,7 @@ export function BeerCard({
         </Grid.Col>
         <Grid.Col span={3}>
           <Flex justify="center">
-            {!sessionDetails && beer.score ? (
-              <RenderTitle />
-            ) : (
-              <RenderProgress />
-            )}
+            {isRatedBeer ? <RenderScore /> : <RenderProgress />}
           </Flex>
         </Grid.Col>
       </Grid>

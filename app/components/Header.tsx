@@ -10,24 +10,16 @@ import {
 } from "@mantine/core";
 import { IconBeer, IconLogout, IconUsers } from "@tabler/icons-react";
 
-import { getBeersVotedByAllUsers } from "~/utils/votes";
-
-import type { SessionUser } from "~/auth/auth.server";
-import type {
-  SelectBeer,
-  SelectSession,
-  SelectVote,
-} from "~/database/schema.types";
+import type { SessionUser } from "~/types/user";
+import { SessionStatus, type SessionProgress } from "~/types/session";
 
 type InputProps = {
-  user: SessionUser;
+  user: SessionUser | null;
+  session: SessionProgress | null;
   mobileOpened: boolean;
   desktopOpened: boolean;
   toggleMobile: () => void;
   toggleDesktop: () => void;
-  sessionDetails?: SelectSession;
-  sessionBeers?: SelectBeer[];
-  sessionVotes?: SelectVote[];
 };
 
 const User = ({ user }: { user: SessionUser }) => {
@@ -70,31 +62,21 @@ const User = ({ user }: { user: SessionUser }) => {
 
 export function Header({
   user,
+  session,
   mobileOpened,
   desktopOpened,
   toggleMobile,
   toggleDesktop,
-  sessionDetails,
-  sessionBeers,
-  sessionVotes,
 }: InputProps) {
   const theme = useMantineTheme();
 
   const slateIndigo = theme.colors.slateIndigo[6];
 
-  const activeSession = sessionDetails?.active;
-  const uniqueVoterCount = new Set(sessionVotes?.map((vote) => vote.userId))
-    .size;
-  const ratedBeersCount = getBeersVotedByAllUsers(
-    sessionVotes,
-    sessionDetails?.users.totalCount
-  );
-
   return (
     <Paper shadow="md" h="100%">
       <Group justify="space-between" px="md" pt="sm">
         <Group gap="sm">
-          {sessionDetails && (
+          {session && (
             <>
               <Group gap="xs" mr="xs">
                 <Burger
@@ -113,17 +95,16 @@ export function Header({
               <Group gap="8">
                 <IconUsers color={slateIndigo} size={20} />
                 <Text c="slateIndigo" fw={600}>
-                  {activeSession
-                    ? sessionDetails.users.totalCount
-                    : uniqueVoterCount}
+                  {/* TODO: show users in old session when viewing old session */}
+                  {session.users.length}
                 </Text>
               </Group>
               <Group gap="5">
                 <IconBeer color={slateIndigo} size={20} />
                 <Text c="slateIndigo" fw={600}>
-                  {activeSession
-                    ? `${ratedBeersCount ?? 0} / ${sessionBeers?.length ?? 0}`
-                    : sessionBeers?.length}
+                  {session.status === SessionStatus.active
+                    ? `${session.beersRatedCount} / ${session.beersTotalCount}`
+                    : session.beersTotalCount}
                 </Text>
               </Group>
             </>

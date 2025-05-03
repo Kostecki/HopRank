@@ -1,0 +1,1 @@
+ALTER TABLE `criteria` ADD `description` text NOT NULL;

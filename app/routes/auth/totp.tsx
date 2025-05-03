@@ -1,10 +1,24 @@
-import { redirect } from "react-router";
+import {
+  redirect,
+  useFetcher,
+  useLoaderData,
+  type MetaFunction,
+} from "react-router";
+import { useEffect, useState } from "react";
 import { Cookie } from "@mjackson/headers";
+
+import TOTPVerify from "~/components/auth/TOTPVerify";
 
 import { userSessionGet } from "~/auth/users.server";
 import { authenticator } from "~/auth/auth.server";
 
-import type { Route } from "./+types";
+import { getPageTitle } from "~/utils/utils";
+
+import type { Route } from "./+types/totp";
+
+export const meta: MetaFunction = () => {
+  return [{ title: getPageTitle("Verificér") }];
+};
 
 export async function loader({ request }: Route.LoaderArgs) {
   // Check for existing session.
@@ -64,4 +78,30 @@ export async function action({ request }: Route.ActionArgs) {
     }
     return { error: "Invalid TOTP" };
   }
+}
+
+export default function VerifyLogin() {
+  const loaderData = useLoaderData<typeof loader>();
+
+  const [code, setCode] = useState("");
+
+  const fetcher = useFetcher();
+
+  const error = "error" in loaderData ? loaderData.error : null;
+  const errors = fetcher.data?.error || error;
+
+  useEffect(() => {
+    if (code.length === 6) {
+      fetcher.submit({ code }, { method: "post" });
+    }
+  }, [code]);
+
+  return (
+    <TOTPVerify
+      code={code}
+      setCode={setCode}
+      fetcher={fetcher}
+      errors={errors}
+    />
+  );
 }

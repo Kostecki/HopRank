@@ -1,28 +1,34 @@
 import { Authenticator } from "remix-auth";
 import { TOTPStrategy } from "remix-auth-totp";
-import { eq } from "drizzle-orm";
+import { redirect } from "react-router";
+import invariant from "tiny-invariant";
 
 import { UntappdStrategy } from "./untappd-strategy.server";
 
-import { db } from "~/database/config.server";
-import { usersTable } from "~/database/schema.server";
-
+import { findOrCreateUserByEmail } from "~/database/utils/findOrCreateUserByEmail.server";
 import { sendMagicLinkEmail } from "./email.server";
-import invariant from "tiny-invariant";
 import { commitSession, getSession } from "./session.server";
-import { redirect } from "react-router";
 
-export type SessionUser = {
-  id: number;
-  email: string;
-  untappdId?: number;
-  untappdAccessToken?: string;
-  name?: string;
-  avatar?: string;
-  activeSessionId?: number;
-};
+import type { SessionUser } from "~/types/user";
 
 export const authenticator = new Authenticator<SessionUser>();
+
+export const isUntappdUser = (user: SessionUser) => {
+  return !!user.untappdId && !!user.untappdAccessToken;
+};
+
+const commitSessionUser = async (request: Request, user: SessionUser) => {
+  const session = await getSession(request.headers.get("Cookie"));
+  session.set("user", user);
+
+  const sessionCookie = await commitSession(session);
+
+  throw redirect("/", {
+    headers: {
+      "Set-Cookie": sessionCookie,
+    },
+  });
+};
 
 const APP_URL = process.env.APP_URL;
 invariant(APP_URL, "APP_URL must be set in .env");
@@ -51,36 +57,13 @@ authenticator.use(
       },
     },
     async ({ email, request }) => {
-      let dbUser = await db
-        .select()
-        .from(usersTable)
-        .where(eq(usersTable.email, email))
-        .then((rows) => rows[0]);
-
-      if (!dbUser) {
-        dbUser = await db
-          .insert(usersTable)
-          .values({ email })
-          .returning()
-          .then((rows) => rows[0]);
-      }
-
-      const user: SessionUser = {
-        id: dbUser.id,
-        email: dbUser.email,
-        activeSessionId: dbUser.activeSessionId ?? undefined,
+      const user = await findOrCreateUserByEmail(email);
+      const sessionUser = {
+        id: user.id,
+        email: user.email,
       };
 
-      const session = await getSession(request.headers.get("Cookie"));
-      session.set("user", user);
-
-      const sessionCookie = await commitSession(session);
-
-      throw redirect("/", {
-        headers: {
-          "Set-Cookie": sessionCookie,
-        },
-      });
+      return await commitSessionUser(request, sessionUser);
     }
   ),
   "TOTP"
@@ -102,43 +85,17 @@ authenticator.use(
       const { untappdId, email, firstName, lastName, avatar } = profile;
       const fullName = `${firstName} ${lastName}`;
 
-      let dbUser = await db
-        .select()
-        .from(usersTable)
-        .where(eq(usersTable.email, email))
-        .then((rows) => rows[0]);
-
-      if (!dbUser) {
-        dbUser = await db
-          .insert(usersTable)
-          .values({
-            untappdId: untappdId,
-            email: email,
-          })
-          .returning()
-          .then((rows) => rows[0]);
-      }
-
-      const user: SessionUser = {
-        id: dbUser.id,
-        email: dbUser.email,
+      const user = await findOrCreateUserByEmail(email, untappdId);
+      const sessionUser = {
+        id: user.id,
+        email: user.email,
         untappdId,
         untappdAccessToken: accessToken,
         name: fullName,
         avatar,
-        activeSessionId: undefined,
       };
 
-      const session = await getSession(request.headers.get("cookie"));
-      session.set("user", user);
-
-      const sessionCookie = await commitSession(session);
-
-      throw redirect("/", {
-        headers: {
-          "Set-Cookie": sessionCookie,
-        },
-      });
+      return await commitSessionUser(request, sessionUser);
     }
   ),
   "Untappd"

@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "574820bd-c406-4a4f-a6e7-069c244c8ce3",
+  "id": "ce1f12be-bbbc-48ef-9deb-f475b894a02b",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "beers": {
@@ -172,7 +172,18 @@
           "default": "CURRENT_TIMESTAMP"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "unique_beer_rating": {
+          "name": "unique_beer_rating",
+          "columns": [
+            "session_id",
+            "beer_id",
+            "user_id",
+            "criterion_id"
+          ],
+          "isUnique": true
+        }
+      },
       "foreignKeys": {
         "ratings_session_id_sessions_id_fk": {
           "name": "ratings_session_id_sessions_id_fk",
@@ -277,8 +288,8 @@
           "autoincrement": false,
           "default": "'waiting'"
         },
-        "added_at": {
-          "name": "added_at",
+        "created_at": {
+          "name": "created_at",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
@@ -489,7 +500,16 @@
           "autoincrement": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "custom_name": {
+          "name": "custom_name",
+          "columns": [
+            "session_id",
+            "user_id"
+          ],
+          "isUnique": true
+        }
+      },
       "foreignKeys": {
         "session_users_session_id_sessions_id_fk": {
           "name": "session_users_session_id_sessions_id_fk",
@@ -620,6 +640,14 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true,
+          "autoincrement": false,
+          "default": "CURRENT_TIMESTAMP"
+        },
+        "last_updated_at": {
+          "name": "last_updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
           "autoincrement": false,
           "default": "CURRENT_TIMESTAMP"
         }

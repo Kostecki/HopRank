@@ -1,27 +1,24 @@
 import { redirect, useLoaderData } from "react-router";
-import { inArray } from "drizzle-orm";
+import { count, eq } from "drizzle-orm";
 import { Paper, Tabs, Text } from "@mantine/core";
-
-import { userSessionGet } from "~/auth/users.server";
-import { db } from "~/database/config.server";
-import { sessionsTable, usersTable } from "~/database/schema.server";
-import {
-  getSessions,
-  getSessionLastActivity,
-  getBeersCountPerSession,
-  getRatings,
-} from "~/database/helpers";
 
 import NewSession from "~/components/NewSession";
 import SessionsTable from "~/components/SessionsTable";
 
+import { userSessionGet } from "~/auth/users.server";
+import { db } from "~/database/config.server";
+import {
+  criteria,
+  sessionBeers,
+  sessions,
+  sessionState,
+  sessionUsers,
+} from "~/database/schema.server";
+
 import { getPageTitle } from "~/utils/utils";
 
 import type { Route } from "./+types";
-
-// Timeout rules
-const SESSION_MIN_AGE_HOURS = 6;
-const SESSION_INACTIVITY_TIMEOUT_HOURS = 6;
+import { SessionStatus } from "~/types/session";
 
 export function meta({}: Route.MetaArgs) {
   return [{ title: getPageTitle("Smagninger") }];
@@ -29,93 +26,64 @@ export function meta({}: Route.MetaArgs) {
 
 export async function loader({ request }: Route.LoaderArgs) {
   const user = await userSessionGet(request);
-
-  // Don't show sessions if user is not logged in
   if (!user) {
-    return redirect("/");
+    return redirect("/auth/login");
   }
 
-  // Redirect to active session if user has one
-  if (user.activeSessionId) {
-    return redirect("/sessions/" + user.activeSessionId);
-  }
+  const allCriteria = await db.select().from(criteria);
 
-  // Fetch data from database
-  const allSessions = await getSessions();
-  const activityMap = await getSessionLastActivity();
-  const beersCountMap = await getBeersCountPerSession();
-  const ratings = await getRatings();
+  const allSessions = await db.select().from(sessions);
+  const sessionSummaries = await Promise.all(
+    allSessions.map(async (session) => {
+      const [sessionBase, sessionDetails, userCountResult, beerCountResult] =
+        await Promise.all([
+          db.query.sessions.findFirst({
+            where: eq(sessions.id, session.id),
+          }),
+          db.query.sessionState.findFirst({
+            where: eq(sessionState.sessionId, session.id),
+          }),
+          db
+            .select({ count: count() })
+            .from(sessionUsers)
+            .where(eq(sessionUsers.sessionId, session.id)),
+          db
+            .select({ count: count() })
+            .from(sessionBeers)
+            .where(eq(sessionBeers.sessionId, session.id)),
+        ]);
 
-  const now = new Date();
-  const staleSessionIds: number[] = [];
+      console.log("sessionBase", sessionBase);
+      console.log("sessionDetails", sessionDetails);
+      console.log("userCountResult", userCountResult);
+      console.log("beerCountResult", beerCountResult);
 
-  const sessions = allSessions.map((session) => {
-    const lastActivity = activityMap.get(session.id);
-    const fallbackActivityTime = lastActivity || new Date(session.createdAt);
+      return {
+        id: session.id,
+        name: session.name,
+        participants: userCountResult[0].count ?? 0,
+        beers: beerCountResult[0].count ?? 0,
+        status: sessionDetails?.status,
+        createdAt: sessionBase?.createdAt,
+        createdBy: sessionBase?.createdBy,
+      };
+    })
+  );
 
-    const createdAgoHours =
-      (now.getTime() - new Date(session.createdAt).getTime()) / 1000 / 60 / 60;
-    const lastActivityAgoHours =
-      (now.getTime() - new Date(fallbackActivityTime).getTime()) /
-      1000 /
-      60 /
-      60;
-
-    const isStale =
-      createdAgoHours >= SESSION_MIN_AGE_HOURS &&
-      lastActivityAgoHours >= SESSION_INACTIVITY_TIMEOUT_HOURS;
-
-    if (isStale && session.active) {
-      staleSessionIds.push(session.id);
-    }
-
-    return {
-      ...session,
-      beersCount: beersCountMap.get(session.id) || 0,
-    };
-  });
-
-  if (staleSessionIds.length > 0) {
-    // Close session
-    await db
-      .update(sessionsTable)
-      .set({ active: false })
-      .where(inArray(sessionsTable.id, staleSessionIds));
-
-    // Remove closed session from users active session
-    await db
-      .update(usersTable)
-      .set({ activeSessionId: null })
-      .where(inArray(usersTable.activeSessionId, staleSessionIds));
-  }
-
-  const staleSessionIdSet = new Set(staleSessionIds);
-  const sessionsWithStatus = sessions.map((session) => ({
-    ...session,
-    status:
-      !session.active || staleSessionIdSet.has(session.id)
-        ? "inactive"
-        : "active",
-  }));
-
-  return { sessions: sessionsWithStatus, ratings };
+  return {
+    criteria: allCriteria,
+    activeSessions: sessionSummaries.filter(
+      (session) => session.status === SessionStatus.active
+    ),
+    finishedSessions: sessionSummaries.filter(
+      (session) => session.status === SessionStatus.finished
+    ),
+  };
 }
 
 export default function Sessions() {
-  const { sessions, ratings } = useLoaderData<typeof loader>();
-
-  const activeSessions = sessions
-    .filter((session) => session.status === "active")
-    .sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
-  const inactiveSessions = sessions
-    .filter((session) => session.status === "inactive")
-    .sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
+  const { criteria, activeSessions, finishedSessions } =
+    useLoaderData<typeof loader>();
 
   return (
     <Paper p="md" radius="md" withBorder>
@@ -142,11 +110,11 @@ export default function Sessions() {
             Se tidligere smagninger
           </Text>
 
-          <SessionsTable sessions={inactiveSessions} mode="inactive" />
+          <SessionsTable sessions={finishedSessions} mode="finished" />
         </Tabs.Panel>
       </Tabs>
 
-      <NewSession mt={30} ratings={ratings} />
+      <NewSession mt={30} criteria={criteria} />
     </Paper>
   );
 }

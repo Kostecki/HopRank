@@ -5,12 +5,12 @@ import { Button, Modal, Stack } from "@mantine/core";
 
 import BeerMultiSelect from "../BeerMultiSelect";
 
-import type { SelectBeer } from "~/database/schema.types";
 import type { BeerOption } from "~/types/misc";
+import type { RatedBeers } from "~/types/session";
 
 type InputProps = {
   children: React.ReactNode;
-  sessionBeers?: SelectBeer[];
+  sessionBeers?: RatedBeers[];
 };
 
 const ModalAddBeersContext = createContext<() => void>(() => {});
@@ -48,9 +48,9 @@ export default function ModalAddBeers({ children, sessionBeers }: InputProps) {
     const formData = new FormData();
     formData.append("beers", JSON.stringify(selectedBeers));
 
-    await fetcher.submit(formData, {
+    fetcher.submit(formData, {
       method: "POST",
-      action: `/sessions/${sessionId}/add`,
+      action: `/api/sessions/${sessionId}/add`,
     });
 
     setSelectedBeers([]);

@@ -31,6 +31,7 @@ CREATE TABLE `ratings` (
 	FOREIGN KEY (`criterion_id`) REFERENCES `criteria`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
+CREATE UNIQUE INDEX `unique_beer_rating` ON `ratings` (`session_id`,`beer_id`,`user_id`,`criterion_id`);--> statement-breakpoint
 CREATE TABLE `session_beers` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`session_id` integer,
@@ -38,7 +39,7 @@ CREATE TABLE `session_beers` (
 	`added_by_user_id` integer,
 	`order` integer,
 	`status` text DEFAULT 'waiting',
-	`added_at` text DEFAULT CURRENT_TIMESTAMP NOT NULL,
+	`created_at` text DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	FOREIGN KEY (`session_id`) REFERENCES `sessions`(`id`) ON UPDATE no action ON DELETE no action,
 	FOREIGN KEY (`beer_id`) REFERENCES `beers`(`id`) ON UPDATE no action ON DELETE no action,
 	FOREIGN KEY (`added_by_user_id`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE no action
@@ -70,6 +71,7 @@ CREATE TABLE `session_users` (
 	FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
+CREATE UNIQUE INDEX `custom_name` ON `session_users` (`session_id`,`user_id`);--> statement-breakpoint
 CREATE TABLE `sessions` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`name` text NOT NULL,
@@ -84,7 +86,8 @@ CREATE TABLE `users` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`untappd_id` integer,
 	`email` text NOT NULL,
-	`created_at` text DEFAULT CURRENT_TIMESTAMP NOT NULL
+	`created_at` text DEFAULT CURRENT_TIMESTAMP NOT NULL,
+	`last_updated_at` text DEFAULT CURRENT_TIMESTAMP
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `users_email_unique` ON `users` (`email`);

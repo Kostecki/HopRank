@@ -17,13 +17,14 @@ import {
 } from "@mantine/core";
 import { useDebouncedValue } from "@mantine/hooks";
 
-import type { SelectBeer } from "~/database/schema.types";
+import type { SelectBeers } from "~/database/schema.types";
 import type { BeerOption } from "~/types/misc";
+import type { RatedBeers } from "~/types/session";
 
 type InputProps = {
   selectedBeers: BeerOption[];
   setSelectedBeers: (value: BeerOption[]) => void;
-  sessionBeers?: SelectBeer[];
+  sessionBeers?: SelectBeers[] | RatedBeers[];
 } & BoxProps;
 
 const getSelectedPills = (
@@ -44,7 +45,7 @@ const getSelectedPills = (
 const getComboboxOptions = (
   options: BeerOption[],
   selectedBeers: BeerOption[],
-  sessionBeers?: SelectBeer[]
+  sessionBeers?: SelectBeers[] | RatedBeers[]
 ) => {
   return options.map((option) => {
     const isSelected = selectedBeers.some(
@@ -104,9 +105,9 @@ export default function BeerMultiSelect({
       setSelectedBeers([...selectedBeers, selectedBeer]);
     }
 
-    setSearchTerm("");
-    combobox.closeDropdown();
-    inputRef.current?.blur();
+    // setSearchTerm("");
+    // combobox.closeDropdown();
+    // inputRef.current?.blur();
   };
 
   const handleValueRemove = (val: string) => {

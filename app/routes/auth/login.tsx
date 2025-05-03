@@ -7,7 +7,7 @@ import LoginForm from "~/components/auth/LoginForm";
 
 import { getPageTitle } from "~/utils/utils";
 
-import type { Route } from "../+types";
+import type { Route } from "./+types/login";
 
 export const meta: MetaFunction = () => {
   return [{ title: getPageTitle("Log ind") }];

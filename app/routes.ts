@@ -9,28 +9,39 @@ import {
 export default [
   layout("routes/layout.tsx", [
     index("routes/home.tsx"),
-
     ...prefix("sessions", [
       index("routes/sessions/index.tsx"),
-      route("create", "routes/sessions/actions/create.ts"),
-      route("vote", "routes/sessions/actions/vote.ts"),
-      route("leave", "routes/sessions/actions/leave.ts"),
-      route(":sessionId", "routes/sessions/$sessionId/index.tsx"),
-      route(":sessionId/add", "routes/sessions/$sessionId/actions/add.ts"),
-      route(":sessionId/join", "routes/sessions/$sessionId/actions/join.ts"),
+      ...prefix(":sessionId", [
+        index("routes/sessions/sessionId.tsx"),
+        route("view", "routes/sessions/readOnly.tsx"),
+      ]),
     ]),
   ]),
   layout("routes/auth/layout.tsx", [
     ...prefix("auth", [
       index("routes/auth/index.ts"),
-      route("login", "routes/auth/login/index.tsx"),
+      route("login", "routes/auth/login.tsx"),
       route("logout", "routes/auth/logout.ts"),
       route("untappd", "routes/auth/untappd/index.ts"),
       route("untappd/callback", "routes/auth/untappd/callback.ts"),
-      route("totp", "routes/auth/totp/index.tsx"),
+      route("totp", "routes/auth/totp.tsx"),
     ]),
   ]),
   ...prefix("api", [
+    ...prefix("sessions", [
+      index("routes/api/sessions/sessions.ts"),
+      route("unique-name", "routes/api/sessions/uniqueName.ts"),
+      ...prefix(":sessionId", [
+        route("add", "routes/api/sessions/session/add.ts"),
+        route("beers", "routes/api/sessions/session/beers.ts"),
+        route("current", "routes/api/sessions/session/current.ts"),
+        route("join", "routes/api/sessions/session/join.ts"),
+        route("leave", "routes/api/sessions/session/leave.ts"),
+        route("progress", "routes/api/sessions/session/progress.ts"),
+        route("remove/:beerId", "routes/api/sessions/session/remove.ts"),
+        route("vote", "routes/api/sessions/session/vote.ts"),
+      ]),
+    ]),
     ...prefix("untappd", [
       route("beers", "routes/api/untappd/search.ts"),
       route("beer/:beerId", "routes/api/untappd/$beerId.ts"),

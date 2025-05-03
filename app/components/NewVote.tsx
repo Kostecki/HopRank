@@ -19,37 +19,32 @@ import {
 import { useForm } from "@mantine/form";
 import { useDebouncedValue } from "@mantine/hooks";
 
-import type { SessionUser } from "~/auth/auth.server";
-
 import RatingSlider from "./RatingSlider";
+import FriendsSearch from "./FriendsSearch";
+
+import { useGeolocation } from "~/hooks/useGeolocation";
 
 import { sliderConf } from "~/utils/utils";
 import { calculateVoteScore } from "~/utils/score";
 import servingStyles from "~/servingStyles.json";
 
-import type {
-  SelectBeer,
-  SelectRating,
-  SelectSession,
-  SelectVote,
-} from "~/database/schema.types";
-import FriendsSearch from "./FriendsSearch";
-import { useGeolocation } from "~/hooks/useGeolocation";
+import type { SessionCriterion, SessionProgress } from "~/types/session";
+import type { SessionUser } from "~/types/user";
+
+const CHECKIN_ENABLED = Boolean(
+  JSON.parse(import.meta.env.VITE_UNTAPPD_CHECKIN)
+);
 
 type InputProps = {
-  ratings: SelectRating[];
-  beer: SelectBeer;
   user: SessionUser;
-  votes: SelectVote[];
-  sessionDetails?: SelectSession;
+  session: SessionProgress;
+  sessionCriteria: SessionCriterion[];
 };
 
 export default function NewVote({
   user,
-  ratings,
-  beer,
-  votes,
-  sessionDetails,
+  session,
+  sessionCriteria,
 }: InputProps) {
   const fetcher = useFetcher();
   const { sessionId } = useParams();
@@ -64,46 +59,37 @@ export default function NewVote({
 
   const { location, requestLocation } = useGeolocation();
 
-  const getValue = (id: number) => {
-    const vote = votes.find(
-      (v) =>
-        v.beerId === beer.id &&
-        v.sessionId === Number(sessionId) &&
-        v.userId === user.id
-    );
-
-    const value = vote?.vote[id - 1]?.rating ?? defaultValue;
-
-    return value;
-  };
+  const participantsUntappdIds = session?.users
+    .map((user) => user.untappdId)
+    .filter((id): id is number => id !== undefined);
 
   const form = useForm({
-    initialValues: ratings.reduce((acc, key) => {
-      acc[key.name] = getValue(key.id);
+    initialValues: sessionCriteria.reduce((acc, key) => {
+      acc[key.name] =
+        session.currentBeer?.userRatings?.[key.id] ?? defaultValue;
       return acc;
     }, {} as Record<string, number>),
   });
 
-  const handleSubmit = async (values: typeof form.values) => {
+  const handleSubmit = (values: typeof form.values) => {
     const vote = {
       sessionId: Number(sessionId),
       userId: user.id,
-      id: beer.id,
-      untappdBeerId: beer.untappdBeerId,
+      beerId: session.currentBeer?.beerId,
+      untappdBeerId: session.currentBeer?.untappdBeerId,
       ratings: Object.entries(values).map(([name, rating]) => ({
+        id: sessionCriteria.find((r) => r.name === name)?.id,
         name,
         rating,
-        weight: ratings.find((r) => r.name === name)?.weight ?? 1,
       })),
     };
-    console.log("vote", vote);
 
     const formData = new FormData();
     formData.append("vote", JSON.stringify(vote));
 
-    await fetcher.submit(formData, {
+    fetcher.submit(formData, {
       method: "POST",
-      action: "/sessions/vote",
+      action: `/api/sessions/${sessionId}/vote`,
     });
 
     form.reset();
@@ -113,7 +99,7 @@ export default function NewVote({
       const geolng = Number(location?.lng.toFixed(4));
 
       const checkin = {
-        bid: beer.untappdBeerId,
+        bid: session.currentBeer?.untappdBeerId,
         rating: calculatedTotalScore,
         geolat,
         geolng,
@@ -124,11 +110,13 @@ export default function NewVote({
         gmt_offset: 2,
         shout: comment,
       };
+
+      console.log("new checkin", checkin);
     }
   };
 
   const calculatedTotalScore = useMemo(() => {
-    return calculateVoteScore(form.values, ratings);
+    return calculateVoteScore(form.values, sessionCriteria);
   }, [form.values]);
   const [debouncedTotalScore] = useDebouncedValue(calculatedTotalScore, 200);
 
@@ -142,19 +130,19 @@ export default function NewVote({
     <Paper withBorder radius="md" p="md" pt="lg" mt={-10}>
       <form onSubmit={form.onSubmit(handleSubmit)}>
         <Stack>
-          {ratings.map((type) => (
+          {sessionCriteria.map((criterion) => (
             <RatingSlider
-              key={type.id}
+              key={criterion.id}
               form={form}
-              name={type.name}
-              label={type.name}
+              name={criterion.name}
+              label={criterion.name}
             />
           ))}
         </Stack>
 
         <Divider my="lg" opacity={0.75} />
 
-        {user.untappdId && (
+        {user.untappdId && user.untappdAccessToken && CHECKIN_ENABLED && (
           <>
             <Grid align="center" gutter="xs">
               <Grid.Col span={10}>
@@ -214,7 +202,8 @@ export default function NewVote({
                 mt="sm"
                 value={selectedFriends}
                 onChange={setSelectedFriends}
-                priorityUserIds={sessionDetails?.users.untappdUserIds}
+                untappdAccessToken={user.untappdAccessToken}
+                priorityUserIds={participantsUntappdIds}
               />
 
               <Select
