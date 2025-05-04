@@ -2,6 +2,7 @@ import { drizzle } from "drizzle-orm/better-sqlite3";
 import { migrate } from "drizzle-orm/better-sqlite3/migrator";
 import Database from "better-sqlite3";
 import invariant from "tiny-invariant";
+
 import {
   beers,
   criteria,
@@ -15,6 +16,8 @@ import {
   sessionUsers,
   users,
 } from "./schema.server";
+
+import seedDatabase from "./seed";
 
 const DATABASE_PATH = process.env.DATABASE_PATH;
 const MIGRATIONS_PATH = process.env.MIGRATIONS_PATH;
@@ -41,6 +44,8 @@ const setupDatabase = async () => {
   migrate(db, {
     migrationsFolder: MIGRATIONS_PATH,
   });
+
+  await seedDatabase();
 };
 
 setupDatabase().catch((error) => {
