@@ -3,34 +3,56 @@ import {
   Button,
   Divider,
   Group,
+  LoadingOverlay,
   Paper,
   SimpleGrid,
   Stack,
   Text,
 } from "@mantine/core";
+import { useEffect, useState } from "react";
+import type { RatedBeers } from "~/types/session";
+import type { ScrapedBeer } from "~/types/untappd";
 
-import { calculateSingleTotalScore } from "~/utils/score";
-import { createLink } from "~/utils/untappd";
+import { createBeerLink } from "~/utils/untappd";
 import { displayScore } from "~/utils/utils";
 
-import type { SelectBeer, SelectVote } from "~/database/schema.types";
-
 type InputProps = {
-  beer: SelectBeer;
-  votes: SelectVote[];
-  untappdInfo: any;
+  beer: RatedBeers;
 };
 
-export function BeerCardDetails({ beer, votes, untappdInfo }: InputProps) {
-  const { untappdBeerId } = beer;
+export function BeerCardDetails({ beer }: InputProps) {
+  const { untappdBeerId, criteriaBreakdown } = beer;
 
-  const totalScores = calculateSingleTotalScore(votes);
+  const [fetching, setFetching] = useState(true);
+  const [beerDetails, setBeerDetails] = useState<ScrapedBeer>();
+
+  useEffect(() => {
+    const fetchBeerDetails = async () => {
+      setFetching(true);
+
+      const beerDetails = await fetch(`/api/untappd/beer/${untappdBeerId}`);
+      const data = (await beerDetails.json()) as ScrapedBeer;
+
+      setTimeout(() => {
+        setBeerDetails(data);
+        setFetching(false);
+      }, 2000);
+    };
+
+    fetchBeerDetails();
+  }, []);
 
   return (
     <Paper withBorder radius="md" p="md" pt="lg" mt={-10}>
-      <Box px="sm">
+      <Box px="sm" pos="relative">
+        <LoadingOverlay
+          visible={fetching}
+          zIndex={1000}
+          overlayProps={{ radius: "sm", blur: 2 }}
+          loaderProps={{ color: "slateIndigo" }}
+        />
         <SimpleGrid cols={3}>
-          {totalScores.map(({ name, score }) => (
+          {criteriaBreakdown.map(({ name, averageScore: score }) => (
             <Stack gap={0} align="center" key={name}>
               <Text fw={400}>{name}</Text>
               <Text fw="bold">{displayScore(score)}</Text>
@@ -40,55 +62,53 @@ export function BeerCardDetails({ beer, votes, untappdInfo }: InputProps) {
 
         <Divider opacity={0.3} my="md" />
 
-        <Group justify="space-between">
-          <Stack gap={0}>
+        <SimpleGrid cols={3}>
+          <Box>
             <Text ta="center" fw={400}>
-              ABV
+              Checkins
             </Text>
             <Text ta="center" fw="bold">
-              {untappdInfo?.abv}%
+              {beerDetails?.checkins.total.toLocaleString("da-DK") ?? "-"}
             </Text>
-          </Stack>
-          <Stack gap={0}>
-            <Text ta="center" fw={400}>
-              Total
-            </Text>
-            <Text ta="center" fw="bold">
-              {untappdInfo?.checkins.total.toLocaleString("da-DK")}
-            </Text>
-          </Stack>
-          <Stack gap={0}>
+          </Box>
+          <Box>
             <Text ta="center" fw={400}>
               Unkikke
             </Text>
             <Text ta="center" fw="bold">
-              {untappdInfo?.checkins.unique.toLocaleString("da-DK")}
+              {beerDetails?.checkins.unique.toLocaleString("da-DK") ?? "-"}
             </Text>
-          </Stack>
-          <Stack gap={0}>
+          </Box>
+          <Box>
             <Text ta="center" fw={400}>
               Rating
             </Text>
             <Text ta="center" fw="bold">
-              {(
-                Math.round(parseFloat(untappdInfo?.rating.value) * 100) / 100
-              ).toLocaleString("da-DK")}{" "}
-              ({untappdInfo?.rating.count.toLocaleString("da-DK")})
+              {beerDetails?.rating.value ? (
+                <>
+                  {(
+                    Math.round(
+                      parseFloat(beerDetails.rating.value.toString()) * 100
+                    ) / 100
+                  ).toLocaleString("da-DK")}{" "}
+                  ({beerDetails?.rating.count.toLocaleString("da-DK")})
+                </>
+              ) : (
+                "-"
+              )}
             </Text>
-          </Stack>
-        </Group>
+          </Box>
+        </SimpleGrid>
       </Box>
-
-      <Divider opacity={0.3} my="md" />
 
       <Button
         variant="light"
         component="a"
-        href={createLink(untappdBeerId)}
+        href={createBeerLink(untappdBeerId)}
         target="_blank"
-        color="slateIndigo"
+        color="untappd"
         fullWidth
-        mt="xs"
+        mt="xl"
       >
         Åben i Untappd
       </Button>

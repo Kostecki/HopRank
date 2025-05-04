@@ -1,1 +1,0 @@
-ALTER TABLE `ratings` DROP COLUMN `default`;

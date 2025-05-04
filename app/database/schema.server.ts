@@ -1,108 +1,153 @@
-import { sql } from "drizzle-orm";
-import { int, real, sqliteTable, text, unique } from "drizzle-orm/sqlite-core";
+import { relations, SQL, sql } from "drizzle-orm";
+import {
+  integer,
+  sqliteTable,
+  text,
+  unique,
+  uniqueIndex,
+  type AnySQLiteColumn,
+} from "drizzle-orm/sqlite-core";
+import { SessionBeerStatus, SessionStatus } from "~/types/session";
 
-type Vote = {
-  name: string;
-  rating: number;
-  weight: number;
-};
+export function lower(email: AnySQLiteColumn): SQL {
+  return sql`lower(${email})`;
+}
 
-export const ratingsTable = sqliteTable("ratings", {
-  id: int().primaryKey({ autoIncrement: true }),
-  name: text("name").notNull(),
-  description: text("description").notNull(),
-  weight: real().notNull().default(1),
+export const users = sqliteTable("users", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  untappdId: integer("untappd_id"),
+  email: text("email").notNull().unique(),
   createdAt: text("created_at")
     .notNull()
     .default(sql`CURRENT_TIMESTAMP`),
-  updatedAt: text("updated_at")
-    .notNull()
-    .default(sql`(CURRENT_TIMESTAMP)`)
-    .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+  lastUpdatedAt: text("last_updated_at")
+    .default(sql`CURRENT_TIMESTAMP`)
+    .$onUpdate(() => sql`CURRENT_TIMESTAMP`),
 });
 
-export const sessionsTable = sqliteTable("sessions", {
-  id: int().primaryKey({ autoIncrement: true }),
-  name: text("name").notNull().unique(),
-  active: int({ mode: "boolean" }).notNull().default(true),
-  createdAt: text("created_at")
-    .notNull()
-    .default(sql`CURRENT_TIMESTAMP`),
-  updatedAt: text("updated_at")
-    .notNull()
-    .default(sql`(CURRENT_TIMESTAMP)`)
-    .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
-});
-
-export const votesTable = sqliteTable(
-  "votes",
+export const sessions = sqliteTable(
+  "sessions",
   {
-    id: int().primaryKey({ autoIncrement: true }),
-    sessionId: int("session_id")
-      .notNull()
-      .references(() => sessionsTable.id),
-    userId: int("user_id")
-      .notNull()
-      .references(() => usersTable.id),
-    beerId: int("beer_id")
-      .notNull()
-      .references(() => beersTable.id),
-    vote: text("vote", { mode: "json" }).$type<Vote[]>().notNull(),
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    name: text("name").notNull(),
+    joinCode: text("join_code").notNull().unique(),
+    createdBy: integer("created_by").references(() => users.id),
     createdAt: text("created_at")
       .notNull()
       .default(sql`CURRENT_TIMESTAMP`),
-    updatedAt: text("updated_at")
+  },
+  (table) => [uniqueIndex("unique_session_name").on(lower(table.name))]
+);
+
+export const sessionUsers = sqliteTable(
+  "session_users",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    sessionId: integer("session_id").references(() => sessions.id),
+    active: integer({ mode: "boolean" }).notNull().default(false),
+    userId: integer("user_id")
       .notNull()
-      .default(sql`(CURRENT_TIMESTAMP)`)
-      .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+      .references(() => users.id),
+  },
+  (table) => [unique("custom_name").on(table.sessionId, table.userId)]
+);
+
+export const beers = sqliteTable("beers", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  untappdBeerId: integer("untappd_beer_id").unique().notNull(),
+  name: text("name").notNull(),
+  breweryName: text("brewery_name").notNull(),
+  style: text("style").notNull(),
+  label: text("label").notNull(),
+  createdAt: text("created_at")
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
+  lastUpdatedAt: text("last_updated_at").$onUpdate(
+    () => sql`(CURRENT_TIMESTAMP)`
+  ),
+});
+
+export const sessionBeers = sqliteTable("session_beers", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  sessionId: integer("session_id").references(() => sessions.id),
+  beerId: integer("beer_id").references(() => beers.id),
+  addedByUserId: integer("added_by_user_id").references(() => users.id),
+  order: integer("order"),
+  status: text("status").notNull().default(SessionBeerStatus.waiting),
+  createdAt: text("created_at")
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const criteria = sqliteTable("criteria", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  name: text("name").unique().notNull(),
+  description: text("description").notNull(),
+  weight: integer("weight").notNull(),
+});
+
+export const sessionCriteria = sqliteTable("session_criteria", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  sessionId: integer("session_id").references(() => sessions.id),
+  criterionId: integer("criterion_id").references(() => criteria.id),
+});
+
+export const ratings = sqliteTable(
+  "ratings",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    sessionId: integer("session_id").references(() => sessions.id),
+    beerId: integer("beer_id").references(() => beers.id),
+    userId: integer("user_id").references(() => users.id),
+    criterionId: integer("criterion_id").references(() => criteria.id),
+    score: integer("score").notNull(),
+    createdAt: text("created_at")
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => [
-    unique("uniqueSessionUserBeer").on(
+    unique("unique_beer_rating").on(
       table.sessionId,
+      table.beerId,
       table.userId,
-      table.beerId
+      table.criterionId
     ),
   ]
 );
 
-export const beersTable = sqliteTable(
-  "beers",
-  {
-    id: int().primaryKey({ autoIncrement: true }),
-    addedBy: int("added_by")
-      .notNull()
-      .references(() => usersTable.id),
-    sessionId: int("session_id")
-      .notNull()
-      .references(() => sessionsTable.id),
-    untappdBeerId: int("untappd_beer_id").notNull(),
-    name: text("name").notNull(),
-    style: text("style").notNull(),
-    breweryName: text("brewery_name").notNull(),
-    label: text("label").notNull(),
-    createdAt: text("created_at")
-      .notNull()
-      .default(sql`CURRENT_TIMESTAMP`),
-    updatedAt: text("updated_at")
-      .notNull()
-      .default(sql`(CURRENT_TIMESTAMP)`)
-      .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
-  },
-  (table) => [
-    unique("uniqueSessionBeer").on(table.sessionId, table.untappdBeerId),
-  ]
-);
-
-export const usersTable = sqliteTable("users", {
-  id: int().primaryKey({ autoIncrement: true }),
-  untappdId: int("untappd_id").unique(),
-  email: text("email").notNull().unique(),
-  activeSessionId: int("active_session_id").references(() => sessionsTable.id),
-  createdAt: text("created_at")
-    .notNull()
-    .default(sql`CURRENT_TIMESTAMP`),
-  updatedAt: text("updated_at")
-    .notNull()
-    .default(sql`(CURRENT_TIMESTAMP)`)
-    .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+export const sessionState = sqliteTable("session_state", {
+  sessionId: integer("session_id")
+    .primaryKey()
+    .references(() => sessions.id),
+  currentBeerId: integer("current_beer_id").references(() => beers.id),
+  currentBeerOrder: integer("current_beer_order"),
+  status: text("status").notNull().default(SessionStatus.active),
+  lastUpdatedAt: text("last_updated_at")
+    .default(sql`CURRENT_TIMESTAMP`)
+    .$onUpdate(() => sql`CURRENT_TIMESTAMP`),
 });
+
+// Relations
+export const sessionUsersRelations = relations(sessionUsers, ({ one }) => ({
+  user: one(users, {
+    fields: [sessionUsers.userId],
+    references: [users.id],
+  }),
+}));
+
+export const sessionBeersRelations = relations(sessionBeers, ({ one }) => ({
+  beer: one(beers, {
+    fields: [sessionBeers.beerId],
+    references: [beers.id],
+  }),
+}));
+
+export const sessionCriteriaRelations = relations(
+  sessionCriteria,
+  ({ one }) => ({
+    criterion: one(criteria, {
+      fields: [sessionCriteria.criterionId],
+      references: [criteria.id],
+    }),
+  })
+);

@@ -6,7 +6,7 @@ import { getMagicLinkEmail } from "~/utils/email";
 const SMTP_FROM = process.env.SMTP_FROM;
 invariant(SMTP_FROM, "SMTP_FROM must be set in .env");
 
-export async function sendMagicLinkEmail({
+export const sendMagicLinkEmail = async ({
   email,
   code,
   magicLink,
@@ -14,7 +14,7 @@ export async function sendMagicLinkEmail({
   email: string;
   code: string;
   magicLink: string;
-}) {
+}) => {
   let transporter: nodemailer.Transporter;
 
   if (process.env.NODE_ENV !== "production") {
@@ -69,4 +69,4 @@ export async function sendMagicLinkEmail({
     console.error("Failed to send email:", error);
     throw new Error("Noget gik galt ved afsendelse af login-email. Prøv igen.");
   }
-}
+};

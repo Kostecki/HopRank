@@ -4,11 +4,19 @@ import { Button, Flex, Pagination, Table } from "@mantine/core";
 
 import dayjs from "~/utils/dayjs";
 
-import { type SelectSession } from "~/database/schema.types";
+type Session = {
+  id: number;
+  name: string;
+  joinCode: string | undefined;
+  participants: number;
+  beers: number;
+  status: string | undefined;
+  createdAt: string | undefined;
+};
 
 type InputProps = {
-  sessions: SelectSession[];
-  mode: "active" | "inactive";
+  sessions: Session[];
+  mode: "active" | "finished";
 };
 
 const perPage = 10;
@@ -24,7 +32,11 @@ export default function SessionsTable({ sessions, mode }: InputProps) {
   const end = start + perPage;
   const paginatedSessions = sessions.slice(start, end);
 
-  const formatDate = (date: string) => {
+  const stateActive = mode === "active";
+
+  const formatDate = (date: string | undefined) => {
+    if (!date) return "-";
+
     const d = dayjs(date);
     if (d.isSame(dayjs(), "day")) {
       return d.format("HH:mm");
@@ -40,36 +52,46 @@ export default function SessionsTable({ sessions, mode }: InputProps) {
   const handleActiveSubmit = (sessionId: number) => {
     fetcher.submit(new FormData(), {
       method: "POST",
-      action: `/sessions/${sessionId}/join`,
+      action: `/api/sessions/${sessionId}/join`,
     });
   };
 
-  const handleInactiveClick = (sessionId: number) => {
-    navigate(`/sessions/${sessionId}`);
+  const handleFinishedClick = (sessionId: number) => {
+    navigate(`/sessions/${sessionId}/view`);
+  };
+
+  const handleRowClick = (sessionId: number) => {
+    if (stateActive) {
+      handleActiveSubmit(sessionId);
+    } else {
+      handleFinishedClick(sessionId);
+    }
   };
 
   const rows = paginatedSessions.map((session) => (
     <Table.Tr
       key={session.id}
-      onClick={() =>
-        mode === "active"
-          ? handleActiveSubmit(session.id)
-          : handleInactiveClick(session.id)
-      }
+      onClick={() => handleRowClick(session.id)}
       style={{ cursor: "pointer" }}
     >
       <Table.Td tt="capitalize">{session.name}</Table.Td>
 
-      {mode === "active" ? (
-        <Table.Td ta="center">{session.users.totalCount}</Table.Td>
+      {stateActive && (
+        <Table.Td ta="center" lts={2}>
+          {session.joinCode}
+        </Table.Td>
+      )}
+
+      {stateActive ? (
+        <Table.Td ta="center">{session.participants}</Table.Td>
       ) : (
         <Table.Td ta="center">{formatDate(session.createdAt)}</Table.Td>
       )}
 
-      <Table.Td ta="center">{session.beersCount}</Table.Td>
+      <Table.Td ta="center">{session.beers}</Table.Td>
 
       <Table.Td ta="right">
-        {mode === "active" ? (
+        {stateActive ? (
           <Button
             variant="filled"
             size="xs"
@@ -86,7 +108,7 @@ export default function SessionsTable({ sessions, mode }: InputProps) {
             variant="filled"
             size="xs"
             color="slateIndigo"
-            onClick={() => handleInactiveClick(session.id)}
+            onClick={() => handleFinishedClick(session.id)}
           >
             Vis
           </Button>
@@ -98,7 +120,7 @@ export default function SessionsTable({ sessions, mode }: InputProps) {
   const emptyRow = (
     <Table.Tr>
       <Table.Td colSpan={4} ta="center" c="dimmed" pt="md" fs="italic">
-        {mode === "active"
+        {stateActive
           ? "Ingen aktive smagninger"
           : "Ingen afsluttede smagninger"}
       </Table.Td>
@@ -111,11 +133,12 @@ export default function SessionsTable({ sessions, mode }: InputProps) {
         <Table.Thead>
           <Table.Tr>
             <Table.Th>Smagning</Table.Th>
+            {stateActive && <Table.Th ta="center">Pinkode</Table.Th>}
             <Table.Th ta="center">
-              {mode === "active" ? "Deltagere" : "Oprettet"}
+              {stateActive ? "Deltagere" : "Oprettet"}
             </Table.Th>
             <Table.Th ta="center">Øl</Table.Th>
-            <Table.Td ta="center"></Table.Td>
+            <Table.Th ta="center"></Table.Th>
           </Table.Tr>
         </Table.Thead>
 

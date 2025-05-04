@@ -1,6 +1,11 @@
+import { Link } from "react-router";
+import { useRevalidator } from "react-router";
 import {
   Avatar,
   Burger,
+  Button,
+  CopyButton,
+  Divider,
   Group,
   Menu,
   Paper,
@@ -10,34 +15,42 @@ import {
 } from "@mantine/core";
 import { IconBeer, IconLogout, IconUsers } from "@tabler/icons-react";
 
-import { getBeersVotedByAllUsers } from "~/utils/votes";
+import { useSocket } from "~/hooks/useSocket";
+import { useDebouncedSocketEvent } from "~/hooks/useDebouncedSocketEvent";
 
-import type { SessionUser } from "~/auth/auth.server";
-import type {
-  SelectBeer,
-  SelectSession,
-  SelectVote,
-} from "~/database/schema.types";
+import { createProfileLink } from "~/utils/untappd";
+
+import type { SessionUser } from "~/types/user";
+import { SessionStatus, type SessionProgress } from "~/types/session";
 
 type InputProps = {
-  user: SessionUser;
+  user: SessionUser | null;
+  session: SessionProgress | null;
   mobileOpened: boolean;
   desktopOpened: boolean;
   toggleMobile: () => void;
   toggleDesktop: () => void;
-  sessionDetails?: SelectSession;
-  sessionBeers?: SelectBeer[];
-  sessionVotes?: SelectVote[];
 };
 
 const User = ({ user }: { user: SessionUser }) => {
-  const { email, name, avatar } = user;
+  const { email, untappd } = user;
   const firstLetter = email.slice(0, 1).toUpperCase();
+
+  const socket = useSocket();
 
   return (
     <Menu shadow="md" width="auto" withArrow>
       <Menu.Target>
-        <Avatar src={avatar} style={{ cursor: "pointer" }}>
+        <Avatar
+          src={untappd?.avatar}
+          radius="100%"
+          size="md"
+          style={{
+            cursor: "pointer",
+            boxShadow: socket?.connected ? "0 0 0 1.5px #4caf50" : undefined,
+            transition: "box-shadow 0.2s ease-in-out",
+          }}
+        >
           {firstLetter}
         </Avatar>
       </Menu.Target>
@@ -46,9 +59,9 @@ const User = ({ user }: { user: SessionUser }) => {
         <Menu.Label>
           <Stack gap={0}>
             <Text fw={500} size="sm" c="slateIndigo">
-              {name ?? email}
+              {untappd?.name ?? email}
             </Text>
-            {name && (
+            {untappd?.name && (
               <Text c="dimmed" fw={500} size="xs" fs="italic">
                 {email}
               </Text>
@@ -56,6 +69,16 @@ const User = ({ user }: { user: SessionUser }) => {
           </Stack>
         </Menu.Label>
         <Menu.Divider />
+        {untappd?.username && (
+          <Menu.Item
+            component={Link}
+            to={createProfileLink(untappd?.username)}
+            target="_blank"
+            leftSection={<IconBeer size={16} />}
+          >
+            Untappd
+          </Menu.Item>
+        )}
         <Menu.Item
           component="a"
           href="/auth/logout"
@@ -70,31 +93,28 @@ const User = ({ user }: { user: SessionUser }) => {
 
 export function Header({
   user,
+  session,
   mobileOpened,
   desktopOpened,
   toggleMobile,
   toggleDesktop,
-  sessionDetails,
-  sessionBeers,
-  sessionVotes,
 }: InputProps) {
   const theme = useMantineTheme();
-
   const slateIndigo = theme.colors.slateIndigo[6];
 
-  const activeSession = sessionDetails?.active;
-  const uniqueVoterCount = new Set(sessionVotes?.map((vote) => vote.userId))
-    .size;
-  const ratedBeersCount = getBeersVotedByAllUsers(
-    sessionVotes,
-    sessionDetails?.users.totalCount
+  const { revalidate } = useRevalidator();
+
+  useDebouncedSocketEvent(
+    ["session:users-changed"],
+    () => revalidate(),
+    session?.sessionId
   );
 
   return (
     <Paper shadow="md" h="100%">
       <Group justify="space-between" px="md" pt="sm">
         <Group gap="sm">
-          {sessionDetails && (
+          {session && (
             <>
               <Group gap="xs" mr="xs">
                 <Burger
@@ -113,18 +133,27 @@ export function Header({
               <Group gap="8">
                 <IconUsers color={slateIndigo} size={20} />
                 <Text c="slateIndigo" fw={600}>
-                  {activeSession
-                    ? sessionDetails.users.totalCount
-                    : uniqueVoterCount}
+                  {/* TODO: show users in old session when viewing old session */}
+                  {session.users.length}
                 </Text>
               </Group>
               <Group gap="5">
                 <IconBeer color={slateIndigo} size={20} />
                 <Text c="slateIndigo" fw={600}>
-                  {activeSession
-                    ? `${ratedBeersCount ?? 0} / ${sessionBeers?.length ?? 0}`
-                    : sessionBeers?.length}
+                  {session.status === SessionStatus.active
+                    ? `${session.beersRatedCount} / ${session.beersTotalCount}`
+                    : session.beersTotalCount}
                 </Text>
+              </Group>
+              <Divider orientation="vertical" mx={5} />
+              <Group gap="5">
+                <CopyButton value={session.joinCode}>
+                  {({ copied, copy }) => (
+                    <Button color="slateIndigo" variant="light" onClick={copy}>
+                      {copied ? "Kopieret" : session.joinCode}
+                    </Button>
+                  )}
+                </CopyButton>
               </Group>
             </>
           )}

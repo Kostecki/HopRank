@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Box,
   Chip,
@@ -10,44 +10,57 @@ import {
   Text,
 } from "@mantine/core";
 
-import type { SelectRating } from "~/database/schema.types";
+import type { SelectCriteria } from "~/database/schema.types";
+
+import { criteriaGroups } from "./NewSession";
 
 type InputProps = {
-  ratings: SelectRating[];
+  criteria: SelectCriteria[];
+  activeCriteria: number[];
+  setActiveCriteria: React.Dispatch<React.SetStateAction<number[]>>;
 };
 
-const ratingGroups = [
-  {
-    id: "simple",
-    name: "Simpel",
-    active: [1, 2, 3],
-  },
-  {
-    id: "extended",
-    name: "Udvidet",
-    active: [1, 2, 3, 4, 5],
-  },
-];
-
-export default function SelectRatings({ ratings }: InputProps) {
+export default function SelectCriteria({
+  criteria,
+  activeCriteria,
+  setActiveCriteria,
+}: InputProps) {
   const [value, setValue] = useState("simple");
-  const [activeRatings, setActiveRatings] = useState<number[]>(() => {
-    const group = ratingGroups.find((group) => group.id === "simple");
-    return group?.active ?? [];
-  });
 
   const handleGroupChange = (groupId: string) => {
     setValue(groupId);
 
-    const group = ratingGroups.find((group) => group.id === groupId);
+    const group = criteriaGroups.find((group) => group.id === groupId);
     if (group) {
-      setActiveRatings(group.active);
+      setActiveCriteria(group.active);
     }
   };
 
+  useEffect(() => {
+    if (activeCriteria.length === 0) {
+      setValue("");
+      return;
+    }
+
+    const matchedGroup = criteriaGroups.find((group) => {
+      return (
+        group.active.length === activeCriteria.length &&
+        group.active.every((id) => activeCriteria.includes(id))
+      );
+    });
+
+    if (matchedGroup) {
+      setValue(matchedGroup.id);
+    } else {
+      setValue("custom");
+    }
+  }, [activeCriteria]);
+
   return (
     <>
-      <Text fw="bold">Smagnings-kriterier</Text>
+      <Text fw="bold" mt="xs">
+        Smagnings-kriterier
+      </Text>
       <Text size="sm" c="dimmed" fs="italic">
         Vælg hvilke kriterier øllene skal bedømmes efter
       </Text>
@@ -55,7 +68,7 @@ export default function SelectRatings({ ratings }: InputProps) {
       <Box my="xs">
         <Chip.Group multiple={false} value={value} onChange={handleGroupChange}>
           <Group gap="xs">
-            {ratingGroups.map((group) => (
+            {criteriaGroups.map((group) => (
               <Chip
                 key={group.id}
                 value={group.id}
@@ -78,35 +91,20 @@ export default function SelectRatings({ ratings }: InputProps) {
       <Divider opacity={0.3} />
 
       <Stack mt="md" gap="xs">
-        {ratings.map((rating) => (
+        {criteria.map((criteria) => (
           <Switch
-            key={rating.id}
-            checked={activeRatings.includes(rating.id)}
+            key={criteria.id}
+            checked={activeCriteria.includes(criteria.id)}
             onChange={(event) => {
               const checked = event.currentTarget.checked;
-              setActiveRatings((prev) => {
-                const next = checked
-                  ? [...prev, rating.id]
-                  : prev.filter((id) => id !== rating.id);
-
-                const matchedGroup = ratingGroups.find((group) => {
-                  return (
-                    group.active.length === next.length &&
-                    group.active.every((id) => next.includes(id))
-                  );
-                });
-
-                if (matchedGroup) {
-                  setValue(matchedGroup.id);
-                } else {
-                  setValue("custom");
-                }
-
-                return next;
-              });
+              setActiveCriteria((prev) =>
+                checked
+                  ? [...prev, criteria.id]
+                  : prev.filter((id) => id !== criteria.id)
+              );
             }}
-            label={rating.name}
-            description={rating.description}
+            label={criteria.name}
+            description={criteria.description}
             color="slateIndigo"
           />
         ))}

@@ -1,33 +1,40 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useFetcher, useParams } from "react-router";
 import { Button, Paper, Text } from "@mantine/core";
 
 import BeerMultiSelect from "./BeerMultiSelect";
 
-import type { SelectBeer } from "~/database/schema.types";
 import type { BeerOption } from "~/types/misc";
+import type { SelectBeers } from "~/database/schema.types";
 
-type InputProps = {
-  sessionBeers?: SelectBeer[];
-};
-
-export default function EmptySession({ sessionBeers }: InputProps) {
+export default function EmptySession() {
   const { sessionId } = useParams();
+  const [sessionBeers, setSessionBeers] = useState<SelectBeers[]>([]);
   const [selectedBeers, setSelectedBeers] = useState<BeerOption[]>([]);
 
   const fetcher = useFetcher();
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     const formData = new FormData();
     formData.append("beers", JSON.stringify(selectedBeers));
 
-    await fetcher.submit(formData, {
+    fetcher.submit(formData, {
       method: "POST",
-      action: `/sessions/${sessionId}/add`,
+      action: `/api/sessions/${sessionId}/add`,
     });
 
     setSelectedBeers([]);
   };
+
+  useEffect(() => {
+    const fetchBeers = async () => {
+      const response = await fetch(`/api/sessions/${sessionId}/list-beers`);
+      const beersList = await response.json();
+      setSessionBeers(beersList);
+    };
+
+    fetchBeers();
+  }, [sessionId]);
 
   return (
     <Paper p="md" radius="md" withBorder mt={64}>

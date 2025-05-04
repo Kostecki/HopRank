@@ -1,27 +1,27 @@
-import { redirect, useLoaderData } from "react-router";
-import { inArray } from "drizzle-orm";
-import { Paper, Tabs, Text } from "@mantine/core";
-
-import { userSessionGet } from "~/auth/users.server";
-import { db } from "~/database/config.server";
-import { sessionsTable, usersTable } from "~/database/schema.server";
-import {
-  getSessions,
-  getSessionLastActivity,
-  getBeersCountPerSession,
-  getRatings,
-} from "~/database/helpers";
+import { redirect, useLoaderData, useRevalidator } from "react-router";
+import { and, count, eq } from "drizzle-orm";
+import { Paper, Tabs } from "@mantine/core";
 
 import NewSession from "~/components/NewSession";
 import SessionsTable from "~/components/SessionsTable";
+import SessionPinInput from "~/components/SessionPinInput";
+
+import { userSessionGet } from "~/auth/users.server";
+import { db } from "~/database/config.server";
+import {
+  criteria,
+  sessionBeers,
+  sessions,
+  sessionState,
+  sessionUsers,
+} from "~/database/schema.server";
+
+import { useDebouncedSocketEvent } from "~/hooks/useDebouncedSocketEvent";
 
 import { getPageTitle } from "~/utils/utils";
 
 import type { Route } from "./+types";
-
-// Timeout rules
-const SESSION_MIN_AGE_HOURS = 6;
-const SESSION_INACTIVITY_TIMEOUT_HOURS = 6;
+import { SessionStatus } from "~/types/session";
 
 export function meta({}: Route.MetaArgs) {
   return [{ title: getPageTitle("Smagninger") }];
@@ -29,96 +29,107 @@ export function meta({}: Route.MetaArgs) {
 
 export async function loader({ request }: Route.LoaderArgs) {
   const user = await userSessionGet(request);
-
-  // Don't show sessions if user is not logged in
   if (!user) {
-    return redirect("/");
+    return redirect("/auth/login");
   }
 
-  // Redirect to active session if user has one
-  if (user.activeSessionId) {
-    return redirect("/sessions/" + user.activeSessionId);
+  const allCriteria = await db.select().from(criteria);
+
+  const createdSessions = await db
+    .select()
+    .from(sessions)
+    .where(eq(sessions.createdBy, user.id));
+
+  const joined = await db
+    .select()
+    .from(sessionUsers)
+    .innerJoin(sessions, eq(sessionUsers.sessionId, sessions.id))
+    .where(eq(sessionUsers.userId, user.id));
+
+  const sessionMap = new Map<number, typeof sessions.$inferSelect>();
+  for (const s of [...createdSessions, ...joined.map((j) => j.sessions)]) {
+    sessionMap.set(s.id, s);
   }
+  const allSessions = Array.from(sessionMap.values());
 
-  // Fetch data from database
-  const allSessions = await getSessions();
-  const activityMap = await getSessionLastActivity();
-  const beersCountMap = await getBeersCountPerSession();
-  const ratings = await getRatings();
-
-  const now = new Date();
-  const staleSessionIds: number[] = [];
-
-  const sessions = allSessions.map((session) => {
-    const lastActivity = activityMap.get(session.id);
-    const fallbackActivityTime = lastActivity || new Date(session.createdAt);
-
-    const createdAgoHours =
-      (now.getTime() - new Date(session.createdAt).getTime()) / 1000 / 60 / 60;
-    const lastActivityAgoHours =
-      (now.getTime() - new Date(fallbackActivityTime).getTime()) /
-      1000 /
-      60 /
-      60;
-
-    const isStale =
-      createdAgoHours >= SESSION_MIN_AGE_HOURS &&
-      lastActivityAgoHours >= SESSION_INACTIVITY_TIMEOUT_HOURS;
-
-    if (isStale && session.active) {
-      staleSessionIds.push(session.id);
-    }
-
-    return {
-      ...session,
-      beersCount: beersCountMap.get(session.id) || 0,
-    };
+  const activeEntry = await db.query.sessionUsers.findFirst({
+    where: eq(sessionUsers.userId, user.id),
   });
 
-  if (staleSessionIds.length > 0) {
-    // Close session
-    await db
-      .update(sessionsTable)
-      .set({ active: false })
-      .where(inArray(sessionsTable.id, staleSessionIds));
+  const sessionSummaries = await Promise.all(
+    allSessions.map(async (session) => {
+      const [state, participantCount, beerCount] = await Promise.all([
+        db.query.sessionState.findFirst({
+          where: eq(sessionState.sessionId, session.id),
+        }),
+        db
+          .select({ count: count() })
+          .from(sessionUsers)
+          .where(
+            and(
+              eq(sessionUsers.sessionId, session.id),
+              eq(sessionUsers.active, true)
+            )
+          ),
 
-    // Remove closed session from users active session
-    await db
-      .update(usersTable)
-      .set({ activeSessionId: null })
-      .where(inArray(usersTable.activeSessionId, staleSessionIds));
-  }
+        db
+          .select({ count: count() })
+          .from(sessionBeers)
+          .where(eq(sessionBeers.sessionId, session.id)),
+      ]);
 
-  const staleSessionIdSet = new Set(staleSessionIds);
-  const sessionsWithStatus = sessions.map((session) => ({
-    ...session,
-    status:
-      !session.active || staleSessionIdSet.has(session.id)
-        ? "inactive"
-        : "active",
-  }));
+      return {
+        id: session.id,
+        name: session.name,
+        joinCode: session.joinCode,
+        participants: participantCount[0].count ?? 0,
+        beers: beerCount[0].count ?? 0,
+        status: state?.status,
+        createdAt: session.createdAt,
+        createdBy: session.createdBy,
+      };
+    })
+  );
 
-  return { sessions: sessionsWithStatus, ratings };
+  return {
+    criteria: allCriteria,
+    sessionSummaries,
+  };
 }
 
 export default function Sessions() {
-  const { sessions, ratings } = useLoaderData<typeof loader>();
+  const { criteria, sessionSummaries } = useLoaderData<typeof loader>();
+  const { revalidate } = useRevalidator();
 
-  const activeSessions = sessions
-    .filter((session) => session.status === "active")
-    .sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
-  const inactiveSessions = sessions
-    .filter((session) => session.status === "inactive")
-    .sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
+  const activeUserSessionIds = sessionSummaries
+    .filter((s) => s.status === SessionStatus.active)
+    .map((s) => s.id);
+
+  useDebouncedSocketEvent(
+    [
+      "sessions:created",
+      "sessions:deleted",
+      "sessions:users-changed",
+      "sessions:beer-changed",
+    ],
+    (payload: { sessionId: number }) => {
+      if (activeUserSessionIds.includes(payload.sessionId)) {
+        revalidate();
+      }
+    }
+  );
+
+  const activeSessions = sessionSummaries.filter(
+    (s) => s.status === SessionStatus.active
+  );
+  const finishedSessions = sessionSummaries.filter(
+    (s) => s.status === SessionStatus.finished
+  );
 
   return (
     <Paper p="md" radius="md" withBorder>
+      <SessionPinInput mt="sm" mb="xl" />
+
       <Tabs defaultValue="active" color="slateIndigo">
         <Tabs.List mb="sm" grow justify="center">
           <Tabs.Tab value="active" fw="bold">
@@ -130,23 +141,17 @@ export default function Sessions() {
         </Tabs.List>
 
         <Tabs.Panel value="active">
-          <Text c="dimmed" size="sm" fs="italic">
-            Vælg en smagning for at deltage
-          </Text>
-
-          <SessionsTable sessions={activeSessions} mode="active" />
+          {activeSessions.length > 0 && (
+            <SessionsTable sessions={activeSessions} mode="active" />
+          )}
         </Tabs.Panel>
 
         <Tabs.Panel value="past">
-          <Text c="dimmed" size="sm" fs="italic">
-            Se tidligere smagninger
-          </Text>
-
-          <SessionsTable sessions={inactiveSessions} mode="inactive" />
+          <SessionsTable sessions={finishedSessions} mode="finished" />
         </Tabs.Panel>
       </Tabs>
 
-      <NewSession mt={30} ratings={ratings} />
+      <NewSession mt={30} criteria={criteria} />
     </Paper>
   );
 }
