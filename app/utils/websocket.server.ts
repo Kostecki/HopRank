@@ -1,4 +1,4 @@
-import { io } from "../../socket.server";
+import { io } from "~/socket.server";
 import type { GlobalEvent, SessionEvent } from "~/types/websocket";
 
 export const emitSessionEvent = (
