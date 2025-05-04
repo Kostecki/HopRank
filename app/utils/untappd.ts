@@ -4,6 +4,10 @@
  * @param untappdBeerId - The ID of the beer on Untappd (as a number or string).
  * @returns The full URL to the beer's page on Untappd.
  */
-export const createLink = (untappdBeerId: number | string): string => {
+export const createBeerLink = (untappdBeerId: number | string): string => {
   return `https://untappd.com/beer/${untappdBeerId}`;
+};
+
+export const createProfileLink = (username: string) => {
+  return `https://untappd.com/user/${username}`;
 };

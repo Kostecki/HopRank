@@ -1,6 +1,5 @@
 import { data } from "react-router";
 import { redirectWithSuccess } from "remix-toast";
-import { createNameId } from "mnemonic-id";
 
 import { db } from "~/database/config.server";
 import {
@@ -12,13 +11,15 @@ import {
 import { userSessionGet } from "~/auth/users.server";
 
 import { addBeersToSession } from "~/database/utils/addBeersToSession.server";
+import { emitGlobalEvent } from "~/utils/websocket.server";
 
 import type { Route } from "./+types/sessions";
-
-const MAX_ATTEMPTS = 10;
+import { generateJoinCode } from "~/utils/utils";
+import { eq } from "drizzle-orm";
 
 export async function action({ request }: Route.ActionArgs) {
   const formData = await request.formData();
+  const sessionName = formData.get("name");
   const beersJson = formData.get("beers");
   const criteriaJson = formData.get("criteria");
 
@@ -29,37 +30,36 @@ export async function action({ request }: Route.ActionArgs) {
     return data({ message: "User not authenticated" }, { status: 401 });
   }
 
-  let session;
-  let attempts = 0;
+  // Step unique join code
+  let joinCode = generateJoinCode();
+  let exists = true;
+  while (exists) {
+    const existingSession = await db
+      .select()
+      .from(sessions)
+      .where(eq(sessions.joinCode, joinCode))
+      .execute();
 
-  while (attempts < MAX_ATTEMPTS) {
-    const name = createNameId();
-
-    try {
-      const [createdSession] = await db
-        .insert(sessions)
-        .values({ name, createdBy: userId })
-        .returning();
-
-      session = createdSession;
-      break;
-    } catch (error: any) {
-      if (error.code === "SQLITE_CONSTRAINT_UNIQUE") {
-        attempts++;
-        continue;
-      }
-
-      console.error("Unexpected DB error while creating session:", error);
-      return data(
-        { message: "Kunne ikke oprette smagningen. Prøv igen senere." },
-        { status: 500 }
-      );
+    if (existingSession.length === 0) {
+      exists = false;
+    } else {
+      joinCode = generateJoinCode();
     }
   }
 
-  if (!session) {
+  let session;
+  try {
+    const name = String(sessionName);
+    const [createdSession] = await db
+      .insert(sessions)
+      .values({ name, createdBy: userId, joinCode })
+      .returning();
+
+    session = createdSession;
+  } catch (error: any) {
+    console.error("Unexpected DB error while creating session:", error);
     return data(
-      { message: "Kunne ikke finde et unikt navn til smagningen." },
+      { message: "Kunne ikke oprette smagningen. Prøv igen senere." },
       { status: 500 }
     );
   }
@@ -103,6 +103,8 @@ export async function action({ request }: Route.ActionArgs) {
     if (Array.isArray(beersInput) && beersInput.length > 0) {
       await addBeersToSession(session.id, beersInput, userId);
     }
+
+    emitGlobalEvent("sessions:created");
 
     return redirectWithSuccess(`/sessions/${session.id}`, "Smagning oprettet");
   } catch (error) {

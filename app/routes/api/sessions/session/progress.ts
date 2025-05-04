@@ -1,5 +1,5 @@
 import { data } from "react-router";
-import { eq, inArray } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 
 import { db } from "~/database/config.server";
 import {
@@ -24,7 +24,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 
   const [
     state,
-    sessionUsersRow,
+    activeSessionUsers,
     sessionCriteriaRows,
     sessionBeerRows,
     allRatings,
@@ -34,7 +34,10 @@ export async function loader({ request, params }: Route.LoaderArgs) {
       where: eq(sessionState.sessionId, sessionId),
     }),
     db.query.sessionUsers.findMany({
-      where: eq(sessionUsers.sessionId, sessionId),
+      where: and(
+        eq(sessionUsers.sessionId, sessionId),
+        eq(sessionUsers.active, true)
+      ),
     }),
     db.query.sessionCriteria.findMany({
       where: eq(sessionCriteria.sessionId, sessionId),
@@ -52,24 +55,17 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     }),
   ]);
 
-  /*
-    Manual join sessionUsers and users to get user details.
-    Drizzle doesn't want to ¯\_(ツ)_/¯
-  */
-  const sessionUserRows = await db.query.sessionUsers.findMany({
-    where: eq(sessionUsers.sessionId, sessionId),
-  });
-  const userIds = sessionUserRows.map((su) => su.userId);
+  if (!session) {
+    return data({ message: "Session not found" }, { status: 404 });
+  }
+
+  const userIds = activeSessionUsers.map((su) => su.userId);
   const usersForSession = await db.query.users.findMany({
     where: inArray(
       users.id,
       userIds.filter((id): id is number => id !== null)
     ),
   });
-
-  if (!session) {
-    return data({ message: "Session not found" }, { status: 404 });
-  }
 
   const sessionBeerRowsNotEmpty = sessionBeerRows.filter(
     (sb): sb is typeof sb & { beer: NonNullable<typeof sb.beer> } =>
@@ -95,7 +91,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
       sb.status !== SessionBeerStatus.rated
   );
 
-  const expectedVotes = sessionUsersRow.length;
+  const expectedVotes = activeSessionUsers.length;
   const currentBeerVotes = allRatings.filter(
     (r) => r.beerId === state?.currentBeerId
   );
@@ -129,7 +125,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
         );
         const avg =
           scores.reduce((sum, rating) => sum + rating.score, 0) /
-          (sessionUsersRow.length || 1);
+          (scores.length || 1);
 
         totalWeighted += avg * criterion.weight;
         totalWeight += criterion.weight;
@@ -144,6 +140,10 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 
       const averageScore = totalWeight > 0 ? totalWeighted / totalWeight : 0;
 
+      const uniqueVoters = new Set(
+        allRatings.filter((r) => r.beerId === beer.id).map((r) => r.userId)
+      ).size;
+
       return {
         beerId: beer.id,
         untappdBeerId: beer.untappdBeerId,
@@ -155,32 +155,36 @@ export async function loader({ request, params }: Route.LoaderArgs) {
         averageScore,
         criteriaBreakdown,
         addedByUserId,
+        votesCount: uniqueVoters,
       };
     })
     .sort((a, b) => b.averageScore - a.averageScore);
 
+  const currentBeerData = currentBeerRow?.beer
+    ? {
+        beerId: currentBeerRow.beer.id,
+        untappdBeerId: currentBeerRow.beer.untappdBeerId,
+        name: currentBeerRow.beer.name,
+        breweryName: currentBeerRow.beer.breweryName,
+        style: currentBeerRow.beer.style,
+        label: currentBeerRow.beer.label,
+        order: state?.currentBeerOrder ?? 0,
+        currentVoteCount: uniqueUserVotes,
+        totalPossibleVoteCount: expectedVotes,
+        userRatings: userRatingsById,
+      }
+    : null;
+
   return data({
     sessionId,
-    sessionName: session?.name,
+    sessionName: session.name,
     status: state?.status,
+    joinCode: session.joinCode,
     beersTotalCount: sessionBeerRowsNotEmpty.length,
     beersRatedCount: ratedBeers.length,
     users: usersForSession,
     sessionCriteria: criteriaList,
-    currentBeer: currentBeerRow?.beer
-      ? {
-          beerId: currentBeerRow.beer.id,
-          untappdBeerId: currentBeerRow.beer.untappdBeerId,
-          name: currentBeerRow.beer.name,
-          breweryName: currentBeerRow.beer.breweryName,
-          style: currentBeerRow.beer.style,
-          label: currentBeerRow.beer.label,
-          order: state?.currentBeerOrder ?? 0,
-          currentVoteCount: uniqueUserVotes,
-          totalPossibleVoteCount: expectedVotes,
-          userRatings: userRatingsById,
-        }
-      : null,
+    currentBeer: currentBeerData,
     ratedBeers,
   });
 }

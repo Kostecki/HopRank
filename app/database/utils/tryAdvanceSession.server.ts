@@ -21,7 +21,10 @@ export const tryAdvanceSession = async (sessionId: number) => {
 
   const [users, criteriaList, submittedRatings] = await Promise.all([
     db.query.sessionUsers.findMany({
-      where: eq(sessionUsers.sessionId, sessionId),
+      where: and(
+        eq(sessionUsers.sessionId, sessionId),
+        eq(sessionUsers.active, true)
+      ),
     }),
     db.query.sessionCriteria.findMany({
       where: eq(sessionCriteria.sessionId, sessionId),

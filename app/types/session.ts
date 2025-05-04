@@ -36,11 +36,12 @@ export type CurrentBeer = {
 export type SessionProgress = {
   sessionId: number;
   sessionName: string;
-  users: SessionUser[];
-  sessionCriteria: SessionCriteria[];
+  status: string | null | undefined;
+  joinCode: string;
   beersTotalCount: number;
   beersRatedCount: number;
-  status: string | null | undefined;
+  users: SessionUser[];
+  sessionCriteria: SessionCriteria[];
   currentBeer: CurrentBeer | null;
   ratedBeers: RatedBeers[];
 };

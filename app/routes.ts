@@ -30,11 +30,11 @@ export default [
   ...prefix("api", [
     ...prefix("sessions", [
       index("routes/api/sessions/sessions.ts"),
+      route("join/:joinCode", "routes/api/sessions/session/joinByCode.ts"),
       route("unique-name", "routes/api/sessions/uniqueName.ts"),
       ...prefix(":sessionId", [
         route("add", "routes/api/sessions/session/add.ts"),
-        route("beers", "routes/api/sessions/session/beers.ts"),
-        route("current", "routes/api/sessions/session/current.ts"),
+        route("list-beers", "routes/api/sessions/session/listBeers.ts"),
         route("join", "routes/api/sessions/session/join.ts"),
         route("leave", "routes/api/sessions/session/leave.ts"),
         route("progress", "routes/api/sessions/session/progress.ts"),

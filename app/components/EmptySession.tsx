@@ -28,7 +28,7 @@ export default function EmptySession() {
 
   useEffect(() => {
     const fetchBeers = async () => {
-      const response = await fetch(`/api/sessions/${sessionId}/beers`);
+      const response = await fetch(`/api/sessions/${sessionId}/list-beers`);
       const beersList = await response.json();
       setSessionBeers(beersList);
     };

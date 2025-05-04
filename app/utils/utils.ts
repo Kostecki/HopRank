@@ -88,3 +88,21 @@ export const extractSessionId = (inputParam: string) => {
 
   return sessionId;
 };
+
+/**
+ * Generates a random join code consisting of 5 alphanumeric characters.
+ * The code is composed of uppercase letters (A-Z) and digits (0-9).
+ *
+ * @returns A randomly generated join code.
+ */
+export const generateJoinCode = () => {
+  const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  const length = 5;
+
+  let result = "";
+  for (let i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() * characters.length));
+  }
+
+  return result;
+};

@@ -1,9 +1,10 @@
-import { redirect, useLoaderData } from "react-router";
-import { count, eq } from "drizzle-orm";
-import { Paper, Tabs, Text } from "@mantine/core";
+import { redirect, useLoaderData, useRevalidator } from "react-router";
+import { and, count, eq } from "drizzle-orm";
+import { Paper, Tabs } from "@mantine/core";
 
 import NewSession from "~/components/NewSession";
 import SessionsTable from "~/components/SessionsTable";
+import SessionPinInput from "~/components/SessionPinInput";
 
 import { userSessionGet } from "~/auth/users.server";
 import { db } from "~/database/config.server";
@@ -14,6 +15,8 @@ import {
   sessionState,
   sessionUsers,
 } from "~/database/schema.server";
+
+import { useDebouncedSocketEvent } from "~/hooks/useDebouncedSocketEvent";
 
 import { getPageTitle } from "~/utils/utils";
 
@@ -32,61 +35,101 @@ export async function loader({ request }: Route.LoaderArgs) {
 
   const allCriteria = await db.select().from(criteria);
 
-  const allSessions = await db.select().from(sessions);
+  const createdSessions = await db
+    .select()
+    .from(sessions)
+    .where(eq(sessions.createdBy, user.id));
+
+  const joined = await db
+    .select()
+    .from(sessionUsers)
+    .innerJoin(sessions, eq(sessionUsers.sessionId, sessions.id))
+    .where(eq(sessionUsers.userId, user.id));
+
+  const sessionMap = new Map<number, typeof sessions.$inferSelect>();
+  for (const s of [...createdSessions, ...joined.map((j) => j.sessions)]) {
+    sessionMap.set(s.id, s);
+  }
+  const allSessions = Array.from(sessionMap.values());
+
+  const activeEntry = await db.query.sessionUsers.findFirst({
+    where: eq(sessionUsers.userId, user.id),
+  });
+
   const sessionSummaries = await Promise.all(
     allSessions.map(async (session) => {
-      const [sessionBase, sessionDetails, userCountResult, beerCountResult] =
-        await Promise.all([
-          db.query.sessions.findFirst({
-            where: eq(sessions.id, session.id),
-          }),
-          db.query.sessionState.findFirst({
-            where: eq(sessionState.sessionId, session.id),
-          }),
-          db
-            .select({ count: count() })
-            .from(sessionUsers)
-            .where(eq(sessionUsers.sessionId, session.id)),
-          db
-            .select({ count: count() })
-            .from(sessionBeers)
-            .where(eq(sessionBeers.sessionId, session.id)),
-        ]);
+      const [state, participantCount, beerCount] = await Promise.all([
+        db.query.sessionState.findFirst({
+          where: eq(sessionState.sessionId, session.id),
+        }),
+        db
+          .select({ count: count() })
+          .from(sessionUsers)
+          .where(
+            and(
+              eq(sessionUsers.sessionId, session.id),
+              eq(sessionUsers.active, true)
+            )
+          ),
 
-      console.log("sessionBase", sessionBase);
-      console.log("sessionDetails", sessionDetails);
-      console.log("userCountResult", userCountResult);
-      console.log("beerCountResult", beerCountResult);
+        db
+          .select({ count: count() })
+          .from(sessionBeers)
+          .where(eq(sessionBeers.sessionId, session.id)),
+      ]);
 
       return {
         id: session.id,
         name: session.name,
-        participants: userCountResult[0].count ?? 0,
-        beers: beerCountResult[0].count ?? 0,
-        status: sessionDetails?.status,
-        createdAt: sessionBase?.createdAt,
-        createdBy: sessionBase?.createdBy,
+        joinCode: session.joinCode,
+        participants: participantCount[0].count ?? 0,
+        beers: beerCount[0].count ?? 0,
+        status: state?.status,
+        createdAt: session.createdAt,
+        createdBy: session.createdBy,
       };
     })
   );
 
   return {
     criteria: allCriteria,
-    activeSessions: sessionSummaries.filter(
-      (session) => session.status === SessionStatus.active
-    ),
-    finishedSessions: sessionSummaries.filter(
-      (session) => session.status === SessionStatus.finished
-    ),
+    sessionSummaries,
   };
 }
 
 export default function Sessions() {
-  const { criteria, activeSessions, finishedSessions } =
-    useLoaderData<typeof loader>();
+  const { criteria, sessionSummaries } = useLoaderData<typeof loader>();
+  const { revalidate } = useRevalidator();
+
+  const activeUserSessionIds = sessionSummaries
+    .filter((s) => s.status === SessionStatus.active)
+    .map((s) => s.id);
+
+  useDebouncedSocketEvent(
+    [
+      "sessions:created",
+      "sessions:deleted",
+      "sessions:users-changed",
+      "sessions:beer-changed",
+    ],
+    (payload: { sessionId: number }) => {
+      if (activeUserSessionIds.includes(payload.sessionId)) {
+        revalidate();
+      }
+    }
+  );
+
+  const activeSessions = sessionSummaries.filter(
+    (s) => s.status === SessionStatus.active
+  );
+  const finishedSessions = sessionSummaries.filter(
+    (s) => s.status === SessionStatus.finished
+  );
 
   return (
     <Paper p="md" radius="md" withBorder>
+      <SessionPinInput mt="sm" mb="xl" />
+
       <Tabs defaultValue="active" color="slateIndigo">
         <Tabs.List mb="sm" grow justify="center">
           <Tabs.Tab value="active" fw="bold">
@@ -98,18 +141,12 @@ export default function Sessions() {
         </Tabs.List>
 
         <Tabs.Panel value="active">
-          <Text c="dimmed" size="sm" fs="italic">
-            Vælg en smagning for at deltage
-          </Text>
-
-          <SessionsTable sessions={activeSessions} mode="active" />
+          {activeSessions.length > 0 && (
+            <SessionsTable sessions={activeSessions} mode="active" />
+          )}
         </Tabs.Panel>
 
         <Tabs.Panel value="past">
-          <Text c="dimmed" size="sm" fs="italic">
-            Se tidligere smagninger
-          </Text>
-
           <SessionsTable sessions={finishedSessions} mode="finished" />
         </Tabs.Panel>
       </Tabs>

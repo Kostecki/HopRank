@@ -5,7 +5,7 @@ import { extractSessionId } from "~/utils/utils";
 import { db } from "~/database/config.server";
 import { sessionBeers } from "~/database/schema.server";
 
-import type { Route } from "./+types/beers";
+import type { Route } from "./+types/listBeers";
 
 export async function loader({ params }: Route.LoaderArgs) {
   if (params.sessionId && params.sessionId !== "undefined") {

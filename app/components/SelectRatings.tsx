@@ -58,7 +58,9 @@ export default function SelectCriteria({
 
   return (
     <>
-      <Text fw="bold">Smagnings-kriterier</Text>
+      <Text fw="bold" mt="xs">
+        Smagnings-kriterier
+      </Text>
       <Text size="sm" c="dimmed" fs="italic">
         Vælg hvilke kriterier øllene skal bedømmes efter
       </Text>

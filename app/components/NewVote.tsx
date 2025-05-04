@@ -60,7 +60,7 @@ export default function NewVote({
   const { location, requestLocation } = useGeolocation();
 
   const participantsUntappdIds = session?.users
-    .map((user) => user.untappdId)
+    .map((user) => user.untappd?.id)
     .filter((id): id is number => id !== undefined);
 
   const form = useForm({
@@ -142,7 +142,7 @@ export default function NewVote({
 
         <Divider my="lg" opacity={0.75} />
 
-        {user.untappdId && user.untappdAccessToken && CHECKIN_ENABLED && (
+        {user.untappd?.id && user.untappd.accessToken && CHECKIN_ENABLED && (
           <>
             <Grid align="center" gutter="xs">
               <Grid.Col span={10}>
@@ -202,7 +202,7 @@ export default function NewVote({
                 mt="sm"
                 value={selectedFriends}
                 onChange={setSelectedFriends}
-                untappdAccessToken={user.untappdAccessToken}
+                untappdAccessToken={user.untappd.accessToken}
                 priorityUserIds={participantsUntappdIds}
               />
 

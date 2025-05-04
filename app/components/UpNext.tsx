@@ -3,7 +3,7 @@ import { Anchor, Box, type BoxProps } from "@mantine/core";
 import { BeerCard } from "./BeerCard";
 import NewVote from "./NewVote";
 
-import { createLink } from "~/utils/untappd";
+import { createBeerLink } from "~/utils/untappd";
 
 import type { SessionCriterion, SessionProgress } from "~/types/session";
 import type { SessionUser } from "~/types/user";
@@ -29,7 +29,7 @@ export default function UpNext({
       <Anchor
         href={
           session.currentBeer
-            ? createLink(session.currentBeer.untappdBeerId)
+            ? createBeerLink(session.currentBeer.untappdBeerId)
             : "#"
         }
         target="_blank"

@@ -7,6 +7,7 @@ import dayjs from "~/utils/dayjs";
 type Session = {
   id: number;
   name: string;
+  joinCode: string | undefined;
   participants: number;
   beers: number;
   status: string | undefined;
@@ -30,6 +31,8 @@ export default function SessionsTable({ sessions, mode }: InputProps) {
   const start = (page - 1) * perPage;
   const end = start + perPage;
   const paginatedSessions = sessions.slice(start, end);
+
+  const stateActive = mode === "active";
 
   const formatDate = (date: string | undefined) => {
     if (!date) return "-";
@@ -58,7 +61,7 @@ export default function SessionsTable({ sessions, mode }: InputProps) {
   };
 
   const handleRowClick = (sessionId: number) => {
-    if (mode === "active") {
+    if (stateActive) {
       handleActiveSubmit(sessionId);
     } else {
       handleFinishedClick(sessionId);
@@ -73,7 +76,13 @@ export default function SessionsTable({ sessions, mode }: InputProps) {
     >
       <Table.Td tt="capitalize">{session.name}</Table.Td>
 
-      {mode === "active" ? (
+      {stateActive && (
+        <Table.Td ta="center" lts={2}>
+          {session.joinCode}
+        </Table.Td>
+      )}
+
+      {stateActive ? (
         <Table.Td ta="center">{session.participants}</Table.Td>
       ) : (
         <Table.Td ta="center">{formatDate(session.createdAt)}</Table.Td>
@@ -82,7 +91,7 @@ export default function SessionsTable({ sessions, mode }: InputProps) {
       <Table.Td ta="center">{session.beers}</Table.Td>
 
       <Table.Td ta="right">
-        {mode === "active" ? (
+        {stateActive ? (
           <Button
             variant="filled"
             size="xs"
@@ -111,7 +120,7 @@ export default function SessionsTable({ sessions, mode }: InputProps) {
   const emptyRow = (
     <Table.Tr>
       <Table.Td colSpan={4} ta="center" c="dimmed" pt="md" fs="italic">
-        {mode === "active"
+        {stateActive
           ? "Ingen aktive smagninger"
           : "Ingen afsluttede smagninger"}
       </Table.Td>
@@ -124,8 +133,9 @@ export default function SessionsTable({ sessions, mode }: InputProps) {
         <Table.Thead>
           <Table.Tr>
             <Table.Th>Smagning</Table.Th>
+            {stateActive && <Table.Th ta="center">Pinkode</Table.Th>}
             <Table.Th ta="center">
-              {mode === "active" ? "Deltagere" : "Oprettet"}
+              {stateActive ? "Deltagere" : "Oprettet"}
             </Table.Th>
             <Table.Th ta="center">Øl</Table.Th>
             <Table.Th ta="center"></Table.Th>

@@ -13,7 +13,7 @@ import { useEffect, useState } from "react";
 import type { RatedBeers } from "~/types/session";
 import type { ScrapedBeer } from "~/types/untappd";
 
-import { createLink } from "~/utils/untappd";
+import { createBeerLink } from "~/utils/untappd";
 import { displayScore } from "~/utils/utils";
 
 type InputProps = {
@@ -104,7 +104,7 @@ export function BeerCardDetails({ beer }: InputProps) {
       <Button
         variant="light"
         component="a"
-        href={createLink(untappdBeerId)}
+        href={createBeerLink(untappdBeerId)}
         target="_blank"
         color="untappd"
         fullWidth

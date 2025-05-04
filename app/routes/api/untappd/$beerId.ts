@@ -1,6 +1,6 @@
 import * as cheerio from "cheerio";
 
-import { createLink } from "~/utils/untappd";
+import { createBeerLink } from "~/utils/untappd";
 
 import type { ScrapedBeer } from "~/types/untappd";
 import type { Route } from "./+types/$beerId";
@@ -39,7 +39,7 @@ export async function loader({ params }: Route.LoaderArgs) {
 
   // Otherwise, start a new fetch
   const fetchPromise = (async () => {
-    const $ = await cheerio.fromURL(createLink(beerId));
+    const $ = await cheerio.fromURL(createBeerLink(beerId));
 
     const iosUrl = $('meta[property="al:ios:url"]').attr("content");
     const idCheck = iosUrl?.replace("untappd://beer/", "");

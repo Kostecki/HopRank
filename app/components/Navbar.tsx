@@ -138,7 +138,7 @@ export default function Navbar({
               </Group>
 
               <Divider opacity={0.5} my="xs" />
-              {usersBeers.length && (
+              {usersBeers.length > 0 && (
                 <List spacing="xs" size="sm" center>
                   {usersBeers?.map((beer) => (
                     <ListItem key={beer.beerId} beer={beer} />

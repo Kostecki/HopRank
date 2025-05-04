@@ -6,6 +6,7 @@ import { removeBeersFromSession } from "~/database/utils/removeBeersFromSession.
 import { extractSessionId } from "~/utils/utils";
 
 import type { Route } from "./+types/remove";
+import { emitGlobalEvent, emitSessionEvent } from "~/utils/websocket.server";
 
 export async function loader({ request, params }: Route.LoaderArgs) {
   const sessionId = extractSessionId(params.sessionId);
@@ -22,6 +23,11 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 
   try {
     await removeBeersFromSession(sessionId, [beerId], user.id);
+
+    emitSessionEvent(sessionId, "session:beer-changed");
+    emitGlobalEvent("sessions:beer-changed", {
+      sessionId,
+    });
 
     return data({ success: true });
   } catch (error) {

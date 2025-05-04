@@ -6,6 +6,7 @@ import { db } from "~/database/config.server";
 import { ratings, sessionState } from "~/database/schema.server";
 
 import { extractSessionId } from "~/utils/utils";
+import { emitSessionEvent } from "~/utils/websocket.server";
 import { tryAdvanceSession } from "~/database/utils/tryAdvanceSession.server";
 import { bumpLastUpdatedAt } from "~/database/utils/bumpLastUpdatedAt.server";
 
@@ -84,6 +85,8 @@ export async function action({ request, params }: Route.ActionArgs) {
 
   await bumpLastUpdatedAt(sessionId);
   await tryAdvanceSession(sessionId);
+
+  emitSessionEvent(sessionId, "session:vote");
 
   return data({ success: true });
 }

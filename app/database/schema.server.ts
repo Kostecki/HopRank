@@ -30,6 +30,7 @@ export const sessions = sqliteTable(
   {
     id: integer("id").primaryKey({ autoIncrement: true }),
     name: text("name").notNull(),
+    joinCode: text("join_code").notNull().unique(),
     createdBy: integer("created_by").references(() => users.id),
     createdAt: text("created_at")
       .notNull()
@@ -43,6 +44,7 @@ export const sessionUsers = sqliteTable(
   {
     id: integer("id").primaryKey({ autoIncrement: true }),
     sessionId: integer("session_id").references(() => sessions.id),
+    active: integer({ mode: "boolean" }).notNull().default(false),
     userId: integer("user_id")
       .notNull()
       .references(() => users.id),

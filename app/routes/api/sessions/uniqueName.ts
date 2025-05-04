@@ -30,8 +30,6 @@ export async function action({ request }: Route.ActionArgs) {
     if (typeof inputName === "string" && inputName.trim() !== "") {
       name = String(inputName);
 
-      console.log("Checking name:", name);
-
       const existing = await db.query.sessions.findFirst({
         where: eq(sessions.name, name).append(sql` COLLATE NOCASE`),
       });

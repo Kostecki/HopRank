@@ -33,7 +33,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   }
 
   const beersResponse = await fetch(
-    `${origin}/api/sessions/${sessionId}/beers`
+    `${origin}/api/sessions/${sessionId}/list-beers`
   );
   const sessionBeers =
     (await beersResponse.json()) as SelectSessionBeersWithBeer[];

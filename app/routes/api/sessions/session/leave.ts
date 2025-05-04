@@ -6,6 +6,7 @@ import { sessionUsers } from "~/database/schema.server";
 import { db } from "~/database/config.server";
 
 import { extractSessionId } from "~/utils/utils";
+import { emitGlobalEvent, emitSessionEvent } from "~/utils/websocket.server";
 import { tryAdvanceSession } from "~/database/utils/tryAdvanceSession.server";
 
 import type { Route } from "./+types/leave";
@@ -20,7 +21,8 @@ export async function action({ request, params }: Route.ActionArgs) {
 
   try {
     await db
-      .delete(sessionUsers)
+      .update(sessionUsers)
+      .set({ active: false })
       .where(
         and(
           eq(sessionUsers.sessionId, sessionId),
@@ -30,7 +32,12 @@ export async function action({ request, params }: Route.ActionArgs) {
 
     await tryAdvanceSession(sessionId);
 
-    return redirect("/sessions");
+    emitSessionEvent(sessionId, "session:users-changed");
+    emitGlobalEvent("sessions:users-changed", {
+      sessionId,
+    });
+
+    return redirect(`/`);
   } catch (error) {
     console.error("Error leaving session:", error);
 

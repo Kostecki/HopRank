@@ -14,7 +14,7 @@ import type { SessionUser } from "~/types/user";
 export const authenticator = new Authenticator<SessionUser>();
 
 export const isUntappdUser = (user: SessionUser) => {
-  return !!user.untappdId && !!user.untappdAccessToken;
+  return !!user.untappd;
 };
 
 const commitSessionUser = async (request: Request, user: SessionUser) => {
@@ -82,17 +82,21 @@ authenticator.use(
       callbackURL: `${APP_URL}/auth/untappd/callback`,
     },
     async ({ profile, accessToken, request }) => {
-      const { untappdId, email, firstName, lastName, avatar } = profile;
+      const { untappdId, email, firstName, lastName, userName, avatar } =
+        profile;
       const fullName = `${firstName} ${lastName}`;
 
       const user = await findOrCreateUserByEmail(email, untappdId);
       const sessionUser = {
         id: user.id,
         email: user.email,
-        untappdId,
-        untappdAccessToken: accessToken,
-        name: fullName,
-        avatar,
+        untappd: {
+          id: untappdId,
+          username: userName,
+          accessToken,
+          name: fullName,
+          avatar,
+        },
       };
 
       return await commitSessionUser(request, sessionUser);

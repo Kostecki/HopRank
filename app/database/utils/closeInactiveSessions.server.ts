@@ -3,20 +3,23 @@ import { and, eq, inArray, lt } from "drizzle-orm";
 import { db } from "../config.server";
 import { sessions, sessionState } from "../schema.server";
 
+import dayjs from "~/utils/dayjs";
+
 import { SessionStatus } from "~/types/session";
 
-const MAX_SESSION_AGE_MS = 12 * 60 * 60 * 1000; // 12 hours
-const RECENT_ACTIVITY_WINDOW_MS = 1 * 60 * 60 * 1000; // 1 hour
+const MAX_SESSION_AGE = Number(process.env.MAX_SESSION_AGE) || 12;
+const MAX_SESSION_IDLE_TIME = Number(process.env.MAX_SESSION_IDLE_TIME) || 1;
 
 /**
  * Closes sessions that are more than 12 hours old and have had no activity in the last hour.
  */
 export const closeInactiveSessions = async () => {
-  const now = Date.now();
-  const sessionAgeCutoff = new Date(now - MAX_SESSION_AGE_MS).toISOString();
-  const recentActivityCutoff = new Date(
-    now - RECENT_ACTIVITY_WINDOW_MS
-  ).toISOString();
+  const sessionAgeCutoff = dayjs()
+    .subtract(MAX_SESSION_AGE, "hour")
+    .toISOString();
+  const recentActivityCutoff = dayjs()
+    .subtract(MAX_SESSION_IDLE_TIME, "hour")
+    .toISOString();
 
   // Get all active sessions older than 12 hours
   const oldActiveSessions = await db.query.sessions.findMany({

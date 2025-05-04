@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { Accordion } from "@mantine/core";
-import { redirect, useLoaderData } from "react-router";
+import { redirect, useLoaderData, useRevalidator } from "react-router";
 
 import { userSessionGet } from "~/auth/users.server";
 import { db } from "~/database/config.server";
@@ -11,7 +11,9 @@ import UpNext from "~/components/UpNext";
 import { BeerCard } from "~/components/BeerCard";
 import { BeerCardDetails } from "~/components/BeerCardDetails";
 
-import { extractSessionId, getPageTitle } from "~/utils/utils";
+import { useDebouncedSocketEvent } from "~/hooks/useDebouncedSocketEvent";
+
+import { extractSessionId, getPageTitle, wait } from "~/utils/utils";
 
 import type { Route } from "./+types/index";
 import { SessionStatus, type SessionProgress } from "~/types/session";
@@ -77,12 +79,26 @@ export default function Session() {
   const { user, sessionProgress, sessionCriteriaSimple } =
     useLoaderData<typeof loader>();
 
+  const { revalidate } = useRevalidator();
+
   const topThreeBeerIds = sessionProgress.ratedBeers.map((beer) => beer.beerId);
 
   // An active session that has yet to have beers added
   const emptySession =
     sessionProgress.status === SessionStatus.active &&
-    sessionProgress.ratedBeers.length === 0;
+    sessionProgress.ratedBeers.length === 0 &&
+    sessionProgress.currentBeer === null;
+
+  useDebouncedSocketEvent(
+    [
+      "sessions:created",
+      "session:users-changed",
+      "session:beer-changed",
+      "session:vote",
+    ],
+    async () => revalidate(),
+    sessionProgress.sessionId
+  );
 
   return (
     <>

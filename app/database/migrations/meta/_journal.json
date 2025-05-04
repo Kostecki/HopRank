@@ -36,6 +36,20 @@
       "when": 1746282937244,
       "tag": "0004_acoustic_satana",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1746358355282,
+      "tag": "0005_rapid_scarlet_witch",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1746374070001,
+      "tag": "0006_luxuriant_princess_powerful",
+      "breakpoints": true
     }
   ]
 }

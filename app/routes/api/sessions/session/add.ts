@@ -6,6 +6,7 @@ import { addBeersToSession } from "~/database/utils/addBeersToSession.server";
 import { extractSessionId } from "~/utils/utils";
 
 import type { Route } from "./+types/add";
+import { emitGlobalEvent, emitSessionEvent } from "~/utils/websocket.server";
 
 export async function action({ request, params }: Route.ActionArgs) {
   const sessionId = extractSessionId(params.sessionId);
@@ -26,6 +27,11 @@ export async function action({ request, params }: Route.ActionArgs) {
 
   try {
     await addBeersToSession(sessionId, beerInputs, user.id);
+
+    emitSessionEvent(sessionId, "session:beer-changed");
+    emitGlobalEvent("sessions:beer-changed", {
+      sessionId,
+    });
 
     return data({ success: true });
   } catch (error) {

@@ -32,6 +32,8 @@ import {
   showWarningToast,
 } from "./utils/toasts";
 
+import { SocketProvider } from "./context/SocketContext";
+
 import { useUmamiIdentify } from "./hooks/umami";
 
 import { theme } from "theme";
@@ -133,7 +135,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <body style={{ backgroundColor: "#FBFBFB" }}>
         <MantineProvider theme={theme}>
           {children}
-
           <Notifications zIndex={1000} />
         </MantineProvider>
         <ScrollRestoration />
@@ -147,7 +148,11 @@ export default function App() {
   const { user } = useLoaderData<typeof loader>();
   useUmamiIdentify(user?.email);
 
-  return <Outlet />;
+  return (
+    <SocketProvider>
+      <Outlet />
+    </SocketProvider>
+  );
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
