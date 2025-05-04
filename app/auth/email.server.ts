@@ -54,7 +54,7 @@ export const sendMagicLinkEmail = async ({
     const info = await transporter.sendMail({
       from: SMTP_FROM,
       to: email,
-      subject: "Din HopRank login-kode ✨",
+      subject: "🍻 Din HopRank login-kode 🍻",
       text: `Din login-kode er: ${code}\nMagic Link: ${magicLink}`,
       html: getMagicLinkEmail(code, magicLink),
     });
