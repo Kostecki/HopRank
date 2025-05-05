@@ -8,7 +8,7 @@ invariant(WS_URL, "VITE_WS_URL must be set in .env");
 export const SocketContext = createContext<Socket | null>(null);
 
 export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
-  const socket = useMemo(() => io(WS_URL), []);
+  const socket = useMemo(() => io(WS_URL, { path: "/ws" }), []);
 
   return (
     <SocketContext.Provider value={socket}>{children}</SocketContext.Provider>
