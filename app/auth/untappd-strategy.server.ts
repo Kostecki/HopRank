@@ -29,6 +29,7 @@ export class UntappdStrategy<User> extends OAuth2Strategy<User> {
         clientSecret: options.clientSecret,
         redirectURI: options.callbackURL,
       },
+      // biome-ignore lint/suspicious/noExplicitAny: Untappd 🤷‍♂️
       verify as any
     );
 
@@ -67,6 +68,7 @@ export class UntappdStrategy<User> extends OAuth2Strategy<User> {
       extraParams,
       profile,
       request,
+      // biome-ignore lint/suspicious/noExplicitAny: Untappd 🤷‍♂️
     } as any);
 
     return user;
@@ -97,7 +99,7 @@ export class UntappdStrategy<User> extends OAuth2Strategy<User> {
     const json = await response.json();
 
     if (!json.response?.access_token) {
-      throw new Error(`Untappd token response missing access_token`);
+      throw new Error("Untappd token response missing access_token");
     }
 
     return {
@@ -124,7 +126,7 @@ export class UntappdStrategy<User> extends OAuth2Strategy<User> {
     const user = json.response?.user;
 
     if (!user) {
-      throw new Error(`Invalid Untappd user response`);
+      throw new Error("Invalid Untappd user response");
     }
 
     return {

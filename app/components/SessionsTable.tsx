@@ -138,7 +138,7 @@ export default function SessionsTable({ sessions, mode }: InputProps) {
               {stateActive ? "Deltagere" : "Oprettet"}
             </Table.Th>
             <Table.Th ta="center">Øl</Table.Th>
-            <Table.Th ta="center"></Table.Th>
+            <Table.Th ta="center" />
           </Table.Tr>
         </Table.Thead>
 

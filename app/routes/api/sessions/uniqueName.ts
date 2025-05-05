@@ -14,6 +14,14 @@ const titleCaseName = (name: string) => {
     .join("-");
 };
 
+const checkIfNameExists = async (name: string) => {
+  const existing = await db.query.sessions.findFirst({
+    where: eq(sessions.name, name).append(sql` COLLATE NOCASE`),
+  });
+
+  return !!existing;
+};
+
 export async function action({ request }: Route.ActionArgs) {
   let name: string | null = null;
 
@@ -30,9 +38,7 @@ export async function action({ request }: Route.ActionArgs) {
     if (typeof inputName === "string" && inputName.trim() !== "") {
       name = String(inputName);
 
-      const existing = await db.query.sessions.findFirst({
-        where: eq(sessions.name, name).append(sql` COLLATE NOCASE`),
-      });
+      const existing = await checkIfNameExists(name);
 
       return data({ name, unique: !existing });
     }
@@ -42,11 +48,7 @@ export async function action({ request }: Route.ActionArgs) {
   let exists = true;
   while (exists) {
     name = titleCaseName(createNameId());
-
-    const existing = await db.query.sessions.findFirst({
-      where: eq(sessions.name, name).append(sql` COLLATE NOCASE`),
-    });
-    exists = !!existing;
+    exists = await checkIfNameExists(name);
   }
 
   return data({ name, unique: true });

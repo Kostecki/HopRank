@@ -125,8 +125,8 @@ export default function FriendsSearch({
       const sorted = sortFriends(all, priorityUserIds);
       setFriends(sorted);
       setFiltered(sorted);
-    } catch (e) {
-      if ((e as any).name !== "AbortError") console.error(e);
+    } catch (error) {
+      console.error("Failed to load friends", error);
     } finally {
       setLoading(false);
     }

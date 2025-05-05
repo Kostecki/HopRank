@@ -1,12 +1,11 @@
-export type GlobalEvent =
-  | "sessions:created"
-  | "sessions:deleted"
-  | "sessions:users-changed"
-  | "sessions:beer-changed";
+export type SocketEventMap = {
+  "session:users-changed": undefined;
+  "session:beer-changed": undefined;
+  "session:vote": undefined;
+  "sessions:created": { sessionId: number };
+  "sessions:deleted": { sessionId: number };
+  "sessions:users-changed": { sessionId: number };
+  "sessions:beer-changed": { sessionId: number };
+};
 
-export type SessionEvent =
-  | "session:users-changed"
-  | "session:vote"
-  | "session:beer-changed";
-
-export type SocketEvent = GlobalEvent | SessionEvent;
+export type SocketEvent = keyof SocketEventMap;

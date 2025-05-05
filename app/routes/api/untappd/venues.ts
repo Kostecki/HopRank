@@ -1,3 +1,4 @@
+import type { UntappdVenue } from "~/types/untappd";
 import type { Route } from "./+types/venues";
 import { userSessionGet } from "~/auth/users.server";
 
@@ -12,7 +13,8 @@ export async function loader({ request }: Route.LoaderArgs) {
     throw new Response("Missing latitude or longitude", { status: 400 });
   }
 
-  const { untappdAccessToken: accessToken } = await userSessionGet(request);
+  const session = await userSessionGet(request);
+  const accessToken = session?.untappd?.accessToken;
   if (!accessToken) {
     throw new Response("Missing access token", { status: 401 });
   }
@@ -29,8 +31,10 @@ export async function loader({ request }: Route.LoaderArgs) {
 
   const { response: data } = await response.json();
 
+  console.log("Venues data:", data);
+
   const untappdAtHome = data.recent.items.find(
-    (venue: any) => venue.venue_id === UNTAPPD_AT_HOME_VENUE_ID
+    (venue: UntappdVenue) => venue.venue_id === UNTAPPD_AT_HOME_VENUE_ID
   );
   const venues = [untappdAtHome, ...data.foursquare.items];
 

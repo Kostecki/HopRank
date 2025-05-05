@@ -23,7 +23,7 @@ import { getPageTitle } from "~/utils/utils";
 import type { Route } from "./+types";
 import { SessionStatus } from "~/types/session";
 
-export function meta({}: Route.MetaArgs) {
+export function meta() {
   return [{ title: getPageTitle("Smagninger") }];
 }
 
@@ -51,10 +51,6 @@ export async function loader({ request }: Route.LoaderArgs) {
     sessionMap.set(s.id, s);
   }
   const allSessions = Array.from(sessionMap.values());
-
-  const activeEntry = await db.query.sessionUsers.findFirst({
-    where: eq(sessionUsers.userId, user.id),
-  });
 
   const sessionSummaries = await Promise.all(
     allSessions.map(async (session) => {

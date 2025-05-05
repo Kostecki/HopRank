@@ -4,11 +4,11 @@ import { useSocket } from "./useSocket";
 
 import { onSessionEvent } from "~/utils/websocket";
 
-import type { SocketEvent } from "~/types/websocket";
+import type { SocketEvent, SocketEventMap } from "~/types/websocket";
 
-export const useDebouncedSocketEvent = (
-  event: SocketEvent | SocketEvent[],
-  handler: (...args: any[]) => void,
+export const useDebouncedSocketEvent = <K extends SocketEvent>(
+  event: K | K[],
+  handler: (payload: SocketEventMap[K]) => void,
   sessionId?: number | string,
   debounceMs = 100
 ) => {
@@ -27,12 +27,14 @@ export const useDebouncedSocketEvent = (
     const cleanups = events.map((e) =>
       onSessionEvent(socket, e, async (...args) => {
         await new Promise((r) => setTimeout(r, debounceMs));
-        handler(...args);
+        handler(args[0] as SocketEventMap[typeof e]);
       })
     );
 
     return () => {
-      cleanups.forEach((c) => c());
+      for (const callback of cleanups) {
+        callback();
+      }
 
       if (needsSession && sessionId) {
         socket.emit("leave-session", sessionId);

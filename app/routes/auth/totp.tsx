@@ -94,7 +94,7 @@ export default function VerifyLogin() {
     if (code.length === 6) {
       fetcher.submit({ code }, { method: "post" });
     }
-  }, [code]);
+  }, [code, fetcher.submit]);
 
   return (
     <TOTPVerify

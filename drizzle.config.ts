@@ -9,6 +9,6 @@ export default defineConfig({
   schema: "./app/database/schema.server.ts",
   dialect: "sqlite",
   dbCredentials: {
-    url: DATABASE_PATH!,
+    url: DATABASE_PATH,
   },
 });

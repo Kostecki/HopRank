@@ -11,7 +11,8 @@
     "typecheck": "react-router typegen && tsc",
     "generate": "drizzle-kit generate",
     "migrate": "drizzle-kit migrate",
-    "studio": "drizzle-kit studio"
+    "studio": "drizzle-kit studio",
+    "lint": "biome lint ."
   },
   "dependencies": {
     "@mantine/core": "^7.17.4",
@@ -44,6 +45,7 @@
     "tiny-invariant": "^1.3.3"
   },
   "devDependencies": {
+    "@biomejs/biome": "1.9.4",
     "@react-router/dev": "^7.5.0",
     "@types/better-sqlite3": "^7.6.13",
     "@types/mjml": "^4.7.4",

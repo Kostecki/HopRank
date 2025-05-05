@@ -37,7 +37,7 @@ export async function action({ request, params }: Route.ActionArgs) {
       sessionId,
     });
 
-    return redirect(`/`);
+    return redirect("/");
   } catch (error) {
     console.error("Error leaving session:", error);
 

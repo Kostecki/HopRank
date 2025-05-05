@@ -5,7 +5,6 @@ import {
   sessionCriteria,
   sessions,
   sessionState,
-  sessionUsers,
 } from "~/database/schema.server";
 import { userSessionGet } from "~/auth/users.server";
 
@@ -46,7 +45,7 @@ export async function action({ request }: Route.ActionArgs) {
     }
   }
 
-  let session;
+  let session = undefined;
   try {
     const name = String(sessionName);
     const [createdSession] = await db
@@ -55,7 +54,7 @@ export async function action({ request }: Route.ActionArgs) {
       .returning();
 
     session = createdSession;
-  } catch (error: any) {
+  } catch (error) {
     console.error("Unexpected DB error while creating session:", error);
     return data(
       { message: "Kunne ikke oprette smagningen. Prøv igen senere." },

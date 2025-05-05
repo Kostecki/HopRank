@@ -15,9 +15,9 @@ export async function loader({ request }: Route.LoaderArgs) {
 
   if (user) {
     return redirect("/sessions");
-  } else {
-    return redirect("/auth/login");
   }
+
+  return redirect("/auth/login");
 }
 
 export default function Home() {

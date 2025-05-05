@@ -99,7 +99,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         defer
         src="https://umami.israndom.win/script.js"
         data-website-id="05e5f7ee-6b31-48ad-b853-994f11cd2291"
-      ></script>
+      />
     );
   };
 

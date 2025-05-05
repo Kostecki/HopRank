@@ -1,4 +1,4 @@
-import { relations, SQL, sql } from "drizzle-orm";
+import { relations, type SQL, sql } from "drizzle-orm";
 import {
   integer,
   sqliteTable,

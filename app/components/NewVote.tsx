@@ -52,7 +52,7 @@ export default function NewVote({
   const [enableUntappdCheckin, setEnableUntappdCheckin] = useState(false);
   const [selectedServingStyle, setSelectedServingStyle] = useState("1");
   const [selectedFriends, setSelectedFriends] = useState<string[]>([]);
-  const [selectedLocation, setSelectedLocation] = useState<string>("");
+  const [selectedLocation] = useState<string>("");
   const [comment, setComment] = useState<string>("");
 
   const { defaultValue } = sliderConf();
@@ -103,10 +103,10 @@ export default function NewVote({
         rating: calculatedTotalScore,
         geolat,
         geolng,
-        checkin_tags: selectedFriends.map((friend) => parseInt(friend)),
+        checkin_tags: selectedFriends.map((friend) => Number.parseInt(friend)),
         foursquare_id: selectedLocation,
         timezone: "Europe/Copenhagen",
-        container_id: parseInt(selectedServingStyle),
+        container_id: Number.parseInt(selectedServingStyle),
         gmt_offset: 2,
         shout: comment,
       };
@@ -117,7 +117,7 @@ export default function NewVote({
 
   const calculatedTotalScore = useMemo(() => {
     return calculateVoteScore(form.values, sessionCriteria);
-  }, [form.values]);
+  }, [form.values, sessionCriteria]);
   const [debouncedTotalScore] = useDebouncedValue(calculatedTotalScore, 200);
 
   useEffect(() => {
@@ -162,7 +162,7 @@ export default function NewVote({
               </Grid.Col>
               <Grid.Col span={2}>
                 <Text size="xl" ta="center">
-                  {isNaN(debouncedTotalScore)
+                  {Number.isNaN(debouncedTotalScore)
                     ? "0.00"
                     : debouncedTotalScore.toFixed(2)}
                 </Text>

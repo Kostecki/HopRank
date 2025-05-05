@@ -82,7 +82,7 @@ export const displayScore = (score: number | undefined): string => {
 export const extractSessionId = (inputParam: string) => {
   const sessionId = Number(inputParam);
 
-  if (!inputParam || isNaN(sessionId)) {
+  if (!inputParam || Number.isNaN(sessionId)) {
     throw data({ message: "Invalid session ID" }, { status: 400 });
   }
 

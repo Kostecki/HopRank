@@ -1,5 +1,5 @@
 import { Server } from "socket.io";
-import { createServer } from "http";
+import { createServer } from "node:http";
 
 const httpServer = createServer();
 export const io = new Server(httpServer, {
@@ -19,5 +19,6 @@ if (!process.env.VITE) {
   httpServer.listen(PORT, () => {
     console.log();
     console.log(`WebSocket server listening on port ${PORT}`);
+    console.log();
   });
 }

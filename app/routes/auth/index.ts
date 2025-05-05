@@ -7,7 +7,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   if (user) {
     return redirect("/");
-  } else {
-    return redirect("/auth/login");
   }
+
+  return redirect("/auth/login");
 }

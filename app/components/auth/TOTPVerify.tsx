@@ -13,7 +13,7 @@ import type { FetcherWithComponents } from "react-router";
 type InputProps = {
   code: string;
   setCode: (code: string) => void;
-  fetcher: FetcherWithComponents<any>;
+  fetcher: FetcherWithComponents<unknown>;
   errors?: string | null | undefined;
 };
 

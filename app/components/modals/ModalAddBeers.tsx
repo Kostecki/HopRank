@@ -1,7 +1,7 @@
 import { createContext, useContext, useState } from "react";
 import { useFetcher, useParams } from "react-router";
 import { useDisclosure } from "@mantine/hooks";
-import { Button, Modal, Stack } from "@mantine/core";
+import { Box, Button, Modal, Stack } from "@mantine/core";
 
 import BeerMultiSelect from "../BeerMultiSelect";
 
@@ -23,7 +23,7 @@ export function ModalAddBeersTrigger({
   const open = useContext(ModalAddBeersContext);
 
   return (
-    <div
+    <Box
       onClick={(e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -31,7 +31,7 @@ export function ModalAddBeersTrigger({
       }}
     >
       {children}
-    </div>
+    </Box>
   );
 }
 

@@ -123,7 +123,7 @@ export default function BeerMultiSelect({
     if (debouncedSearchTerm.trim() && combobox.dropdownOpened) {
       searchFetcher.load(`/api/untappd/beers?q=${debouncedSearchTerm}`);
     }
-  }, [debouncedSearchTerm]);
+  }, [debouncedSearchTerm, combobox.dropdownOpened, searchFetcher.load]);
 
   const options = searchFetcher.data || [];
   const isLoading =

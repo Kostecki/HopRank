@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useFetcher } from "react-router";
 import {
   ActionIcon,
@@ -57,23 +57,25 @@ export default function NewSession({ criteria, ...props }: InputProps) {
     });
   };
 
-  const fetchName = async (name?: string) => {
-    const formData = new FormData();
-    if (name) formData.append("name", name);
+  const fetchName = useCallback(
+    async (name?: string) => {
+      const formData = new FormData();
+      if (name) formData.append("name", name);
 
-    uniqueNameFetcher.submit(formData, {
-      method: "POST",
-      action: "/api/sessions/unique-name",
-    });
-  };
+      uniqueNameFetcher.submit(formData, {
+        method: "POST",
+        action: "/api/sessions/unique-name",
+      });
+    },
+    [uniqueNameFetcher.submit]
+  );
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSessionName(e.currentTarget.value);
   };
-
   useEffect(() => {
     fetchName();
-  }, []);
+  }, [fetchName]);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -83,7 +85,7 @@ export default function NewSession({ criteria, ...props }: InputProps) {
     }, 300);
 
     return () => clearTimeout(timeout);
-  }, [sessionName]);
+  }, [sessionName, fetchName]);
 
   useEffect(() => {
     if (uniqueNameFetcher.data?.name && uniqueNameFetcher.data?.unique) {

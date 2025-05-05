@@ -5,7 +5,7 @@ import type { SocketEvent } from "~/types/websocket";
 export const onSessionEvent = (
   socket: Socket,
   event: SocketEvent,
-  handler: (...args: any[]) => void
+  handler: (...args: unknown[]) => void
 ) => {
   socket.on(event, handler);
 

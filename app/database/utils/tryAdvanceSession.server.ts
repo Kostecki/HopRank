@@ -15,7 +15,7 @@ export const tryAdvanceSession = async (sessionId: number) => {
     where: eq(sessionState.sessionId, sessionId),
   });
 
-  if (!state || state.status !== SessionStatus.active) {
+  if (!state || state.status !== SessionStatus.active || !state.currentBeerId) {
     return;
   }
 
@@ -32,7 +32,7 @@ export const tryAdvanceSession = async (sessionId: number) => {
     db.query.ratings.findMany({
       where: and(
         eq(ratings.sessionId, sessionId),
-        eq(ratings.beerId, state.currentBeerId!)
+        eq(ratings.beerId, state.currentBeerId)
       ),
     }),
   ]);

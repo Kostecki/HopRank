@@ -2,7 +2,6 @@ import {
   Box,
   Button,
   Divider,
-  Group,
   LoadingOverlay,
   Paper,
   SimpleGrid,
@@ -40,7 +39,7 @@ export function BeerCardDetails({ beer }: InputProps) {
     };
 
     fetchBeerDetails();
-  }, []);
+  }, [untappdBeerId]);
 
   return (
     <Paper withBorder radius="md" p="md" pt="lg" mt={-10}>
@@ -88,7 +87,8 @@ export function BeerCardDetails({ beer }: InputProps) {
                 <>
                   {(
                     Math.round(
-                      parseFloat(beerDetails.rating.value.toString()) * 100
+                      Number.parseFloat(beerDetails.rating.value.toString()) *
+                        100
                     ) / 100
                   ).toLocaleString("da-DK")}{" "}
                   ({beerDetails?.rating.count.toLocaleString("da-DK")})

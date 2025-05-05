@@ -1,5 +1,5 @@
 import { createContext, useMemo } from "react";
-import { io, Socket } from "socket.io-client";
+import { io, type Socket } from "socket.io-client";
 import invariant from "tiny-invariant";
 
 const WS_URL = import.meta.env.VITE_WS_URL;

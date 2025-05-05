@@ -98,3 +98,45 @@ export type UntappdFriendsResponse = {
     };
   };
 };
+
+export type UntappdVenue = {
+  recent_date: string;
+  venue_id: number;
+  venue_name: string;
+  is_custom_venue: number;
+  distance: number;
+  primary_category: string;
+  categories: {
+    count: number;
+    items: {
+      category_key: string;
+      category_name_en: string;
+      category_name: string;
+      category_id: string;
+      is_primary: boolean;
+    }[];
+  };
+  visit_count: number;
+  venue_icon: {
+    sm: string;
+    md: string;
+    lg: string;
+  };
+  location: {
+    venue_address: string;
+    venue_city: string;
+    venue_state: string;
+    venue_country: string;
+    lat: number;
+    lng: number;
+  };
+  contact: {
+    twitter: string;
+    venue_url: string;
+  };
+  foursquare: {
+    foursquare_id: string;
+    foursquare_url: string;
+  };
+  is_verified: boolean;
+};

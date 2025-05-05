@@ -13,12 +13,12 @@ import { BeerCardDetails } from "~/components/BeerCardDetails";
 
 import { useDebouncedSocketEvent } from "~/hooks/useDebouncedSocketEvent";
 
-import { extractSessionId, getPageTitle, wait } from "~/utils/utils";
+import { extractSessionId, getPageTitle } from "~/utils/utils";
 
 import type { Route } from "./+types/index";
 import { SessionStatus, type SessionProgress } from "~/types/session";
 
-export function meta({}: Route.MetaArgs) {
+export function meta() {
   return [{ title: getPageTitle("Smagning") }];
 }
 

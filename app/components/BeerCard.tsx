@@ -11,7 +11,7 @@ import {
 
 import { displayScore } from "~/utils/utils";
 
-import { type RatedBeers, type SessionProgress } from "~/types/session";
+import type { RatedBeers, SessionProgress } from "~/types/session";
 
 type InputProps = {
   session: SessionProgress;
