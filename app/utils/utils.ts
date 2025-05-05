@@ -96,7 +96,7 @@ export const extractSessionId = (inputParam: string) => {
  * @returns A randomly generated join code.
  */
 export const generateJoinCode = () => {
-  const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  const characters = "ABCDEFGHJKLMNOPQRSTUVWXYZ0123456789";
   const length = 5;
 
   let result = "";
