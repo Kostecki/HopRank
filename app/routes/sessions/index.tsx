@@ -129,7 +129,7 @@ export default function Sessions() {
 
   return (
     <Paper p="md" radius="md" withBorder>
-      <SessionPinInput mt="sm" mb="xl" />
+      <SessionPinInput mt="md" mb={50} />
 
       <Tabs defaultValue="active" color="slateIndigo">
         <Tabs.List mb="sm" grow justify="center">
@@ -142,9 +142,7 @@ export default function Sessions() {
         </Tabs.List>
 
         <Tabs.Panel value="active">
-          {activeSessions.length > 0 && (
-            <SessionsTable sessions={activeSessions} mode="active" />
-          )}
+          <SessionsTable sessions={activeSessions} mode="active" />
         </Tabs.Panel>
 
         <Tabs.Panel value="past">

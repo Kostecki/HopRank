@@ -22,6 +22,7 @@ import { createProfileLink } from "~/utils/untappd";
 
 import type { SessionUser } from "~/types/user";
 import { SessionStatus, type SessionProgress } from "~/types/session";
+import { useEffect, useState } from "react";
 
 type InputProps = {
   user: SessionUser | null;
@@ -36,7 +37,22 @@ const User = ({ user }: { user: SessionUser }) => {
   const { email, untappd } = user;
   const firstLetter = email.slice(0, 1).toUpperCase();
 
+  const [connected, setConnected] = useState(false);
+
   const socket = useSocket();
+
+  useEffect(() => {
+    if (socket) {
+      setConnected(socket.connected);
+      socket.on("connect", () => setConnected(true));
+      socket.on("disconnect", () => setConnected(false));
+
+      return () => {
+        socket.off("connect", () => setConnected(true));
+        socket.off("disconnect", () => setConnected(false));
+      };
+    }
+  }, [socket]);
 
   return (
     <Menu shadow="md" width="auto" withArrow>
@@ -47,7 +63,7 @@ const User = ({ user }: { user: SessionUser }) => {
           size="md"
           style={{
             cursor: "pointer",
-            boxShadow: socket?.connected ? "0 0 0 1.5px #4caf50" : undefined,
+            boxShadow: connected ? "0 0 0 1.5px #4caf50" : undefined,
             transition: "box-shadow 0.2s ease-in-out",
           }}
         >
