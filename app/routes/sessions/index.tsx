@@ -113,7 +113,8 @@ export default function Sessions() {
       "sessions:beer-changed",
     ],
     (payload: { sessionId: number }) => {
-      if (activeUserSessionIds.includes(payload.sessionId)) {
+      // Revalidate if event is global or if the sessionId is in the active sessions
+      if (!payload || activeUserSessionIds.includes(payload.sessionId)) {
         revalidate();
       }
     }
