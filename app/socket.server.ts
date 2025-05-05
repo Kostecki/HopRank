@@ -13,13 +13,7 @@ io.on("connection", (socket) => {
 });
 
 if (!process.env.VITE) {
-  let PORT = 4000;
-
-  const WS_URL = import.meta.env.VITE_WS_URL;
-  if (WS_URL) {
-    const url = new URL(WS_URL);
-    PORT = Number(url.port);
-  }
+  const PORT = Number(process.env.WS_PORT) || 4000;
 
   httpServer.listen(PORT, () => {
     console.log();
