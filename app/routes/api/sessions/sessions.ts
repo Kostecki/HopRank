@@ -15,6 +15,7 @@ import { emitGlobalEvent } from "~/utils/websocket.server";
 import type { Route } from "./+types/sessions";
 import { generateJoinCode } from "~/utils/utils";
 import { eq } from "drizzle-orm";
+import { joinSessionById } from "~/database/utils/joinSessionById.server";
 
 export async function action({ request }: Route.ActionArgs) {
   const formData = await request.formData();
@@ -29,7 +30,6 @@ export async function action({ request }: Route.ActionArgs) {
     return data({ message: "User not authenticated" }, { status: 401 });
   }
 
-  // Step unique join code
   let joinCode = generateJoinCode();
   let exists = true;
   while (exists) {
@@ -88,7 +88,7 @@ export async function action({ request }: Route.ActionArgs) {
   }
 
   try {
-    await db.insert(sessionUsers).values({
+    await joinSessionById({
       sessionId: session.id,
       userId,
     });
