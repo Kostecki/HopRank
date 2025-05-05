@@ -145,7 +145,10 @@ export function Header({
                     : session.beersTotalCount}
                 </Text>
               </Group>
-              <Divider orientation="vertical" mx={5} />
+              <Divider orientation="vertical" />
+              <Text c="slateIndigo" fw={600}>
+                {session.sessionName}
+              </Text>
               <Group gap="5">
                 <CopyButton value={session.joinCode}>
                   {({ copied, copy }) => (
