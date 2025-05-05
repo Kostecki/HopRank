@@ -10,7 +10,7 @@ export const useDebouncedSocketEvent = (
   event: SocketEvent | SocketEvent[],
   handler: (...args: any[]) => void,
   sessionId?: number | string,
-  debounceMs = 150
+  debounceMs = 100
 ) => {
   const socket = useSocket();
 
