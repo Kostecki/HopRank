@@ -1,5 +1,4 @@
-import { data } from "react-router";
-import { redirectWithSuccess } from "remix-toast";
+import { data, redirect } from "react-router";
 
 import { db } from "~/database/config.server";
 import {
@@ -106,7 +105,7 @@ export async function action({ request }: Route.ActionArgs) {
 
     emitGlobalEvent("sessions:created");
 
-    return redirectWithSuccess(`/sessions/${session.id}`, "Smagning oprettet");
+    return redirect(`/sessions/${session.id}`);
   } catch (error) {
     console.error("Error post-creation (join/add beers):", error);
 
