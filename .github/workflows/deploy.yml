@@ -48,7 +48,7 @@ jobs:
           sbom: false
           build-args: |
             VITE_LOCALES=${{ vars.VITE_LOCALE }}
-            VITE_TS=${{ vars.VITE_TS }}
+            VITE_TZ=${{ vars.VITE_TZ }}
             VITE_WS_URL=${{ vars.VITE_WS_URL }}
             VITE_ALGOLIA_APP_ID=${{ vars.VITE_ALGOLIA_APP_ID }}
             VITE_ALGOLIA_API_KEY=${{ vars.VITE_ALGOLIA_API_KEY }}
