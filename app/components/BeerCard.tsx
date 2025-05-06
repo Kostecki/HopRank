@@ -1,4 +1,5 @@
 import {
+  Box,
   Card,
   Flex,
   Grid,
@@ -8,7 +9,7 @@ import {
   Text,
   Title,
 } from "@mantine/core";
-
+import { IconCheck } from "@tabler/icons-react";
 import { displayScore } from "~/utils/utils";
 
 import type { RatedBeers, SessionProgress } from "~/types/session";
@@ -22,6 +23,7 @@ type InputProps = {
 const gold = "#ffd700";
 const silver = "#c0c0c0";
 const bronze = "#8c6239";
+const green = "#6EBC48";
 
 export function BeerCard({ session, beer, topThreeIds }: InputProps) {
   const isRatedBeer = !!beer;
@@ -36,6 +38,34 @@ export function BeerCard({ session, beer, topThreeIds }: InputProps) {
     if (position === -1) return null; // not top 3
 
     return [gold, silver, bronze][position];
+  };
+
+  const RenderHadAlreadyHad = () => {
+    if (
+      session.currentBeer &&
+      session.currentBeer.beerId === beerId &&
+      session.currentBeer.userHadBeer
+    ) {
+      return (
+        <Box
+          style={{
+            position: "absolute",
+            top: 0,
+            right: 0,
+            background: green,
+            width: 28,
+            height: 28,
+            clipPath: "polygon(100% 0, 100% 100%, 0 0)",
+            display: "flex",
+            justifyContent: "flex-end",
+            alignItems: "flex-start",
+            padding: 2.5,
+          }}
+        >
+          <IconCheck color="white" size={12} stroke={3.5} />
+        </Box>
+      );
+    }
   };
 
   const RenderScore = () => {
@@ -81,6 +111,7 @@ export function BeerCard({ session, beer, topThreeIds }: InputProps) {
   return (
     <Card
       shadow="sm"
+      pos="relative"
       p="xs"
       style={{
         ...(getMedalColor()
@@ -90,6 +121,7 @@ export function BeerCard({ session, beer, topThreeIds }: InputProps) {
       }}
       withBorder
     >
+      <RenderHadAlreadyHad />
       <Grid justify="space-between" align="center">
         <Grid.Col span={3} p="sm">
           <Image src={label} alt={name} radius="md" mah={65} w="auto" />

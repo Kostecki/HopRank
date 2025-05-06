@@ -31,6 +31,7 @@ export type CurrentBeer = {
   currentVoteCount: number;
   totalPossibleVoteCount: number;
   userRatings: Record<number, number>;
+  userHadBeer?: boolean;
 };
 
 export type SessionProgress = {

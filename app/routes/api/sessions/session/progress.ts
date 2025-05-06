@@ -14,6 +14,7 @@ import {
 import { userSessionGet } from "~/auth/users.server";
 
 import { extractSessionId } from "~/utils/utils";
+import { getBeerInfo } from "~/utils/untappd";
 
 import type { Route } from "./+types/progress";
 import { SessionBeerStatus } from "~/types/session";
@@ -171,9 +172,21 @@ export async function loader({ request, params }: Route.LoaderArgs) {
         order: state?.currentBeerOrder ?? 0,
         currentVoteCount: uniqueUserVotes,
         totalPossibleVoteCount: expectedVotes,
-        userRatings: userRatingsById,
+        userRatings: user ? userRatingsById : undefined,
+        userHadBeer: false,
       }
     : null;
+
+  // Check if the current beer has already been checked in by the user
+  let userHadBeer = undefined;
+  if (currentBeerData && user?.untappd) {
+    const beerInfo = await getBeerInfo(
+      currentBeerData.untappdBeerId,
+      user.untappd.accessToken
+    );
+
+    userHadBeer = beerInfo.stats.user_count > 0;
+  }
 
   return data({
     sessionId,
@@ -184,7 +197,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     beersRatedCount: ratedBeers.length,
     users: usersForSession,
     sessionCriteria: criteriaList,
-    currentBeer: currentBeerData,
+    currentBeer: { ...currentBeerData, userHadBeer },
     ratedBeers,
   });
 }

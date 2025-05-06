@@ -11,3 +11,17 @@ export const createBeerLink = (untappdBeerId: number | string): string => {
 export const createProfileLink = (username: string) => {
   return `https://untappd.com/user/${username}`;
 };
+
+export const getBeerInfo = async (beerId: number, accessToken: string) => {
+  const response = await fetch(
+    `https://api.untappd.com/v4/beer/info/${beerId}?access_token=${accessToken}&compact=true`
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch beer info");
+  }
+
+  const data = await response.json();
+
+  return data.response.beer;
+};

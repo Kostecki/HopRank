@@ -37,6 +37,7 @@ export default function UpNext({
       >
         <BeerCard session={session} />
       </Anchor>
+
       <NewVote
         user={user}
         session={session}
