@@ -11,6 +11,8 @@ export const meta: MetaFunction = () => {
 export const loader: LoaderFunction = async ({ request }) => {
   console.log("Untappd callback loader", request);
 
+  const isDev = import.meta.env.DEV;
+
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
 
@@ -18,25 +20,21 @@ export const loader: LoaderFunction = async ({ request }) => {
     return redirect("/auth/login");
   }
 
-  // Option 1: Use a custom query param to indicate dev
-  const isDev = import.meta.env.DEV;
-  console.log("isDev", isDev);
-
-  // Option 2: Check Referer header for localhost
   const referer = request.headers.get("referer") || "";
-  console.log("referer", referer);
   const cameFromLocalhost = referer.includes("localhost");
+
+  const isAlreadyOnLocalhost =
+    url.hostname === "localhost" || url.hostname === "127.0.0.1";
+
+  console.log("referer", referer);
   console.log("cameFromLocalhost", cameFromLocalhost);
+  console.log("isAlreadyOnLocalhost", isAlreadyOnLocalhost);
 
-  if (isDev || cameFromLocalhost) {
-    console.log("Came from localhost, redirecting to localhost");
-    // Forward to localhost with the code
+  if (cameFromLocalhost && !isAlreadyOnLocalhost && isDev) {
     const localhostURL = new URL("http://localhost:5173/auth/untappd/callback");
-    console.log("localhostURL", localhostURL);
     localhostURL.searchParams.set("code", code);
-    console.log("localhostURL with code", localhostURL);
 
-    console.log("Redirecting to localhost");
+    console.log("Redirecting to localhost:", localhostURL.toString());
     return redirect(localhostURL.toString());
   }
 
