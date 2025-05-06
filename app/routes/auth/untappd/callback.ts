@@ -9,6 +9,8 @@ export const meta: MetaFunction = () => {
 };
 
 export const loader: LoaderFunction = ({ request }) => {
+  console.log("Untappd callback loader", request);
+
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
 
