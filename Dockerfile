@@ -4,7 +4,7 @@ FROM node:23-slim AS base
 RUN npm install -g pnpm
 
 # -----------------------------------
-# Install development dependencies
+# Install dependencies
 FROM base AS deps
 WORKDIR /app
 
@@ -13,12 +13,13 @@ COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
 
 # -----------------------------------
-# Build the app (frontend + backend)
+# Build the app (frontend + backend + cron)
 FROM deps AS build
 WORKDIR /app
 
-# Copy app source folder
+# Copy app source
 COPY app/ ./app
+COPY cron.ts ./
 
 # Copy config files
 COPY public/ ./public
@@ -44,7 +45,7 @@ ENV VITE_ALGOLIA_API_KEY=$VITE_ALGOLIA_API_KEY
 ARG VITE_UNTAPPD_CHECKIN
 ENV VITE_UNTAPPD_CHECKIN=$VITE_UNTAPPD_CHECKIN
 
-# Build the frontend + backend
+# Build the frontend + backend + cron
 RUN pnpm run build
 
 # -----------------------------------
@@ -59,11 +60,11 @@ RUN pnpm install --prod --frozen-lockfile
 # Final runtime image
 FROM node:23-alpine AS runner
 
-RUN apk add tzdata
+RUN apk add --no-cache tzdata tini
 
 WORKDIR /app
 
-# Copy only runtime artifacts
+# Copy runtime artifacts
 COPY --from=prod-deps /app/node_modules ./node_modules
 COPY --from=build /app/build ./build
 COPY --from=build /app/public ./public
@@ -73,17 +74,16 @@ COPY package.json pnpm-lock.yaml ./
 # Rebuild native modules for Alpine/musl
 RUN npm rebuild better-sqlite3
 
-# Cleanup and install tini
-RUN apk add --no-cache tini \
-  && npm cache clean --force \
+# Cleanup
+RUN npm cache clean --force \
   && rm -rf /root/.npm /root/.pnpm-store /tmp/*
 
-# Setup tini for correct signal handling
+# Setup tini for signal handling
 ENTRYPOINT ["/sbin/tini", "--"]
 
-# Expose app port
+# Expose app ports
 EXPOSE 3000
 EXPOSE 4000
 
-# Start the app
-CMD ["npm", "start"]
+# Start the web server + cron job concurrently
+CMD ["pnpm", "start"]
