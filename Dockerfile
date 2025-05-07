@@ -86,4 +86,4 @@ EXPOSE 3000
 EXPOSE 4000
 
 # Start the web server + cron job concurrently
-CMD ["pnpm", "start"]
+CMD ["npm", "start"]
