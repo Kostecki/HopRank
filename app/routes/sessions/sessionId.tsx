@@ -83,11 +83,15 @@ export default function Session() {
 
   const topThreeBeerIds = sessionProgress.ratedBeers.map((beer) => beer.beerId);
 
+  const hasCurrentBeer =
+    sessionProgress.currentBeer &&
+    Object.keys(sessionProgress.currentBeer).length !== 0;
+
   // An active session that has yet to have beers added
   const emptySession =
     sessionProgress.status === SessionStatus.active &&
     sessionProgress.ratedBeers.length === 0 &&
-    sessionProgress.currentBeer === null;
+    !hasCurrentBeer;
 
   useDebouncedSocketEvent(
     [
@@ -104,7 +108,7 @@ export default function Session() {
     <>
       {emptySession && <EmptySession />}
 
-      {sessionProgress.currentBeer && (
+      {hasCurrentBeer && (
         <UpNext
           user={user}
           session={sessionProgress}
