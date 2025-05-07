@@ -60,7 +60,8 @@ RUN pnpm install --prod --frozen-lockfile
 # Final runtime image
 FROM node:23-alpine AS runner
 
-RUN apk add --no-cache tzdata tini
+RUN apk add --no-cache tzdata tini && \
+  npm install -g pnpm
 
 WORKDIR /app
 
@@ -72,11 +73,10 @@ COPY --from=build /app/app/database/migrations ./migrations
 COPY package.json pnpm-lock.yaml ./
 
 # Rebuild native modules for Alpine/musl
-RUN npm rebuild better-sqlite3
+RUN pnpm rebuild better-sqlite3
 
 # Cleanup
-RUN npm cache clean --force \
-  && rm -rf /root/.npm /root/.pnpm-store /tmp/*
+RUN rm -rf /root/.pnpm-store /tmp/*
 
 # Setup tini for signal handling
 ENTRYPOINT ["/sbin/tini", "--"]
@@ -86,4 +86,4 @@ EXPOSE 3000
 EXPOSE 4000
 
 # Start the web server + cron job concurrently
-CMD ["npm", "start"]
+CMD ["pnpm", "start"]
