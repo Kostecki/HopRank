@@ -16,6 +16,8 @@ export function lower(email: AnySQLiteColumn): SQL {
 export const users = sqliteTable("users", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   untappdId: integer("untappd_id"),
+  name: text("name"),
+  username: text("username"),
   email: text("email").notNull().unique(),
   createdAt: text("created_at")
     .notNull()

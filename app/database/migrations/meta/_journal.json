@@ -50,6 +50,20 @@
       "when": 1746374070001,
       "tag": "0006_luxuriant_princess_powerful",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1746561982243,
+      "tag": "0007_wooden_eternals",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1746564274898,
+      "tag": "0008_same_master_chief",
+      "breakpoints": true
     }
   ]
 }

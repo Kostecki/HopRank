@@ -1,4 +1,12 @@
-import type { SessionUser } from "./user";
+export type SessionProgressUser = {
+  id: number;
+  createdAt: string;
+  lastUpdatedAt: string;
+  untappdId?: number;
+  username?: string;
+  email: string;
+  name?: string;
+};
 
 export type SessionCriteria = {
   criterionId: number;
@@ -41,7 +49,7 @@ export type SessionProgress = {
   joinCode: string;
   beersTotalCount: number;
   beersRatedCount: number;
-  users: SessionUser[];
+  users: SessionProgressUser[];
   sessionCriteria: SessionCriteria[];
   currentBeer: CurrentBeer | null;
   ratedBeers: RatedBeers[];

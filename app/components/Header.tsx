@@ -3,9 +3,6 @@ import { useRevalidator } from "react-router";
 import {
   Avatar,
   Burger,
-  Button,
-  CopyButton,
-  Divider,
   Group,
   Menu,
   Paper,
@@ -149,7 +146,6 @@ export function Header({
               <Group gap="8">
                 <IconUsers color={slateIndigo} size={20} />
                 <Text c="slateIndigo" fw={600}>
-                  {/* TODO: show users in old session when viewing old session */}
                   {session.users.length}
                 </Text>
               </Group>
@@ -160,19 +156,6 @@ export function Header({
                     ? `${session.beersRatedCount} / ${session.beersTotalCount}`
                     : session.beersTotalCount}
                 </Text>
-              </Group>
-              <Divider orientation="vertical" />
-              <Text c="slateIndigo" fw={600}>
-                {session.sessionName}
-              </Text>
-              <Group gap="5">
-                <CopyButton value={session.joinCode}>
-                  {({ copied, copy }) => (
-                    <Button color="slateIndigo" variant="light" onClick={copy}>
-                      {copied ? "Kopieret" : session.joinCode}
-                    </Button>
-                  )}
-                </CopyButton>
               </Group>
             </>
           )}

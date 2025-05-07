@@ -4,11 +4,13 @@ import { users } from "../schema.server";
 
 export const findOrCreateUserByEmail = async (
   email: string,
-  untappdId?: number
+  untappdId?: number,
+  username?: string,
+  name?: string
 ) => {
   const insertedUsers = await db
     .insert(users)
-    .values({ email, untappdId })
+    .values({ email, untappdId, username, name })
     .onConflictDoNothing()
     .returning();
 

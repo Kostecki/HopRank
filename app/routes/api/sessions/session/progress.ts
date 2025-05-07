@@ -19,6 +19,21 @@ import { getBeerInfo } from "~/utils/untappd";
 import type { Route } from "./+types/progress";
 import { SessionBeerStatus } from "~/types/session";
 
+const beerInfoCache = new Map<
+  number,
+  Awaited<ReturnType<typeof getBeerInfo>>
+>();
+
+export async function getCachedBeerInfo(beerId: number, accessToken: string) {
+  if (beerInfoCache.has(beerId)) {
+    return beerInfoCache.get(beerId);
+  }
+
+  const data = await getBeerInfo(beerId, accessToken);
+  beerInfoCache.set(beerId, data);
+  return data;
+}
+
 export async function loader({ request, params }: Route.LoaderArgs) {
   const sessionId = extractSessionId(params.sessionId);
   const user = await userSessionGet(request);
@@ -180,12 +195,12 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   // Check if the current beer has already been checked in by the user
   let userHadBeer = undefined;
   if (currentBeerData && user?.untappd) {
-    const beerInfo = await getBeerInfo(
+    const beerInfo = await getCachedBeerInfo(
       currentBeerData.untappdBeerId,
       user.untappd.accessToken
     );
 
-    userHadBeer = beerInfo.stats.user_count > 0;
+    userHadBeer = beerInfo?.stats.user_count > 0 || false;
   }
 
   return data({

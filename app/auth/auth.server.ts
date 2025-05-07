@@ -86,7 +86,12 @@ authenticator.use(
         profile;
       const fullName = `${firstName} ${lastName}`;
 
-      const user = await findOrCreateUserByEmail(email, untappdId);
+      const user = await findOrCreateUserByEmail(
+        email,
+        untappdId,
+        userName,
+        fullName
+      );
       const sessionUser = {
         id: user.id,
         email: user.email,
