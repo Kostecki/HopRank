@@ -41,6 +41,7 @@ export default function NewSession({ criteria, ...props }: InputProps) {
     return group?.active ?? [];
   });
   const [sessionName, setSessionName] = useState("");
+  const [hasTouchedName, setHasTouchedName] = useState(false);
 
   const newSessionFetcher = useFetcher();
   const uniqueNameFetcher = useFetcher();
@@ -72,7 +73,9 @@ export default function NewSession({ criteria, ...props }: InputProps) {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSessionName(e.currentTarget.value);
+    setHasTouchedName(true);
   };
+
   useEffect(() => {
     fetchName();
   }, [fetchName]);
@@ -122,7 +125,7 @@ export default function NewSession({ criteria, ...props }: InputProps) {
               </ActionIcon>
             }
             error={
-              nameIsEmpty
+              hasTouchedName && nameIsEmpty
                 ? "Smagningen skal have et navn"
                 : nameNotUnique
                 ? "Navnet på smagningen skal være unikt"
