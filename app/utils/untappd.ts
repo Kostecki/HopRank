@@ -25,8 +25,6 @@ export const createProfileLink = (username: string) => {
  * @returns The beer information if successful, or null if there was an error.
  */
 export const getBeerInfo = async (beerId: number, accessToken: string) => {
-  console.log("Fetching beer info for ID:", beerId);
-
   try {
     const response = await fetch(
       `https://api.untappd.com/v4/beer/info/${beerId}?access_token=${accessToken}&compact=true`
