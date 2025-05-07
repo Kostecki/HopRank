@@ -33,6 +33,15 @@ export async function loader({ request }: Route.LoaderArgs) {
     return redirect("/auth/login");
   }
 
+  // Check if the user is already in an active session and redirect
+  const currentUserSession = await db.query.sessionUsers.findFirst({
+    where: and(eq(sessionUsers.userId, user.id), eq(sessionUsers.active, true)),
+  });
+  if (currentUserSession) {
+    const sessionId = currentUserSession.sessionId;
+    return redirect(`/sessions/${sessionId}`);
+  }
+
   const allCriteria = await db.select().from(criteria);
 
   const createdSessions = await db
