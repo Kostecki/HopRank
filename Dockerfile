@@ -1,6 +1,6 @@
 # -----------------------------------
 # Base image with pnpm installed
-FROM node:23-slim AS base
+FROM node:24-slim AS base
 RUN npm install -g pnpm
 
 # -----------------------------------
@@ -13,9 +13,8 @@ COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
 
 # -----------------------------------
-# Build the app (frontend + backend + cron)
+# Build the app (frontend + backend)
 FROM deps AS build
-
 WORKDIR /app
 
 # Copy app source
@@ -45,7 +44,7 @@ ENV VITE_ALGOLIA_API_KEY=$VITE_ALGOLIA_API_KEY
 ARG VITE_UNTAPPD_CHECKIN
 ENV VITE_UNTAPPD_CHECKIN=$VITE_UNTAPPD_CHECKIN
 
-# Build the frontend + backend + cron
+# Build the frontend + backend
 RUN pnpm run build
 
 # -----------------------------------
@@ -58,10 +57,9 @@ RUN pnpm install --prod --frozen-lockfile
 
 # -----------------------------------
 # Final runtime image
-FROM node:23-alpine AS runner
+FROM base AS runner
 
-RUN apk add --no-cache tzdata tini && \
-  npm install -g pnpm
+RUN apt-get update && apt-get install -y tzdata tini && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
@@ -72,18 +70,18 @@ COPY --from=build /app/public ./public
 COPY --from=build /app/app/database/migrations ./migrations
 COPY package.json pnpm-lock.yaml ./
 
-# Rebuild native modules for Alpine/musl
+# Rebuild native modules
 RUN pnpm rebuild better-sqlite3
 
 # Cleanup
 RUN rm -rf /root/.pnpm-store /tmp/*
 
 # Setup tini for signal handling
-ENTRYPOINT ["/sbin/tini", "--"]
+ENTRYPOINT ["/usr/bin/tini", "--"]
 
 # Expose app ports
 EXPOSE 3000
 EXPOSE 4000
 
-# Start the web server + cron job concurrently
+# Start the web server
 CMD ["pnpm", "start"]
