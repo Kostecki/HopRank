@@ -1,0 +1,32 @@
+services:
+  hoprank:
+    image: kostecki/hop-rank:latest
+    container_name: hop-rank
+    restart: unless-stopped
+    hostname: hop-rank-docker-tower
+    ports:
+      - "3002:3000"
+      - "4000:4000"
+    environment:
+      APP_URL: ${APP_URL}
+      MAX_SESSION_AGE: ${MAX_SESSION_AGE}
+      MAX_SESSION_IDLE_TIME: ${MAX_SESSION_IDLE_TIME}
+      SESSION_SECRET: ${SESSION_SECRET}
+      TOTP_SECRET: ${TOTP_SECRET}
+      DATABASE_PATH: ${DATABASE_PATH}
+      MIGRATIONS_PATH: ${MIGRATIONS_PATH}
+      WS_PORT: ${WS_PORT}
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASS: ${SMTP_PASS}
+      SMTP_FROM: ${SMTP_FROM}
+      UNTAPPD_CLIENT_ID: ${UNTAPPD_CLIENT_ID}
+      UNTAPPD_CLIENT_SECRET: ${UNTAPPD_CLIENT_SECRET}
+      TZ: ${VITE_TZ}
+    volumes:
+      - hoprank_data:/app/database
+      - /etc/localtime:/etc/localtime:ro
+
+volumes:
+  hoprank_data:
