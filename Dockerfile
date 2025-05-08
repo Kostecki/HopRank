@@ -55,7 +55,6 @@ RUN rm -rf /root/.pnpm-store /tmp/*
 # Setup tini
 ENTRYPOINT ["/usr/bin/tini", "--"]
 
-EXPOSE 3000
-EXPOSE 4000
+EXPOSE 3000 4000
 
 CMD ["pnpm", "start"]
