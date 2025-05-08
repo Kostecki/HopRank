@@ -41,6 +41,8 @@ import "@mantine/core/styles.css";
 import "@mantine/notifications/styles.css";
 import "./app.css";
 
+import { startCron } from "~/utils/cron.server";
+
 import type { Route } from "./+types/root";
 
 export const links: Route.LinksFunction = () => [
@@ -81,6 +83,8 @@ export const links: Route.LinksFunction = () => [
 ];
 
 export async function loader({ request }: LoaderFunctionArgs) {
+  startCron();
+
   const user = await userSessionGet(request);
   const { toast, headers } = await getToast(request);
 

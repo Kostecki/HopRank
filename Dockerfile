@@ -15,11 +15,11 @@ RUN pnpm install --frozen-lockfile
 # -----------------------------------
 # Build the app (frontend + backend + cron)
 FROM deps AS build
+
 WORKDIR /app
 
 # Copy app source
 COPY app/ ./app
-COPY cron.ts ./
 
 # Copy config files
 COPY public/ ./public

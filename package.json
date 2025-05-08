@@ -5,9 +5,7 @@
   "scripts": {
     "build": "react-router build",
     "dev": "react-router dev",
-    "start": "concurrently \"pnpm start:web\" \"pnpm start:cron\"",
-    "start:web": "react-router-serve ./build/server/index.js",
-    "start:cron": "node ./build/cron.js",
+    "start": "react-router-serve ./build/server/index.js",
     "typecheck": "react-router typegen && tsc",
     "generate": "drizzle-kit generate",
     "migrate": "drizzle-kit migrate",
