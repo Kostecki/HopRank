@@ -55,6 +55,9 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --prod --frozen-lockfile
 
+# Rebuild native modules for Node 24-slim inside this stage
+RUN pnpm rebuild better-sqlite3
+
 # -----------------------------------
 # Final runtime image
 FROM base AS runner
@@ -69,9 +72,6 @@ COPY --from=build /app/build ./build
 COPY --from=build /app/public ./public
 COPY --from=build /app/app/database/migrations ./migrations
 COPY package.json pnpm-lock.yaml ./
-
-# Rebuild native modules
-RUN pnpm rebuild better-sqlite3
 
 # Cleanup
 RUN rm -rf /root/.pnpm-store /tmp/*
