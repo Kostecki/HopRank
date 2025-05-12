@@ -1,5 +1,6 @@
 # Base image with pnpm
 FROM node:24-slim AS base
+
 RUN npm install -g pnpm
 
 # Dependencies + Build
@@ -9,11 +10,11 @@ WORKDIR /app
 # Install system deps needed for native modules
 RUN apt-get update && apt-get install -y build-essential python3 && rm -rf /var/lib/apt/lists/*
 
-# Copy files and install all deps
+# Copy manifest and install deps
 COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
 
-# Inject public envs
+# Build-time environment variables
 ARG VITE_LOCALE
 ARG VITE_TZ
 ARG VITE_WS_URL
@@ -33,23 +34,21 @@ RUN pnpm run build
 
 # Production image
 FROM node:24-slim AS runner
-WORKDIR /app
 
 RUN npm install -g pnpm
+RUN apt-get update && apt-get install -y tini tzdata && rm -rf /var/lib/apt/lists/*
 
-# Install tini and tzdata
-RUN apt-get update && apt-get install -y tini tzdata python3 build-essential && rm -rf /var/lib/apt/lists/*
 ENTRYPOINT ["/usr/bin/tini", "--"]
 
-# Copy built app and required files
+WORKDIR /app
+
+# Copy built app and deps
 COPY --from=build /app/build ./build
 COPY --from=build /app/public ./public
 COPY --from=build /app/app/database/migrations ./migrations
 COPY --from=build /app/package.json ./package.json
 COPY --from=build /app/pnpm-lock.yaml ./pnpm-lock.yaml
-
-# Install only prod dependencies on correct architecture
-RUN pnpm install --prod
+COPY --from=build /app/node_modules ./node_modules
 
 EXPOSE 3000
 EXPOSE 4000
