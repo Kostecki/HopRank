@@ -1,4 +1,4 @@
-import invariant from "tiny-invariant";
+import { invariant } from "~/utils/invariant";
 
 import type { AlgoliaBeerResponse } from "~/types/untappd";
 import type { Route } from "./+types/search";

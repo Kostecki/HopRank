@@ -1,5 +1,6 @@
 import { createCookieSessionStorage } from "react-router";
-import invariant from "tiny-invariant";
+
+import { invariant } from "~/utils/invariant";
 
 const maxAge = 60 * 60 * 24; // 24 hours
 

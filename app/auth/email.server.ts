@@ -1,7 +1,7 @@
 import nodemailer from "nodemailer";
-import invariant from "tiny-invariant";
 
 import { getMagicLinkEmail } from "~/utils/email";
+import { invariant } from "~/utils/invariant";
 
 const SMTP_FROM = process.env.SMTP_FROM;
 invariant(SMTP_FROM, "SMTP_FROM must be set in .env");

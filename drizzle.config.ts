@@ -1,5 +1,6 @@
 import { defineConfig } from "drizzle-kit";
-import invariant from "tiny-invariant";
+
+import { invariant } from "~/utils/invariant";
 
 const DATABASE_PATH = process.env.DATABASE_PATH;
 invariant(DATABASE_PATH, "DATABASE_PATH must be set in .env");
