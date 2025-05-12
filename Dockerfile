@@ -38,18 +38,18 @@ WORKDIR /app
 RUN npm install -g pnpm
 
 # Install tini and tzdata
-RUN apt-get update && apt-get install -y tini tzdata && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y tini tzdata python3 build-essential && rm -rf /var/lib/apt/lists/*
 ENTRYPOINT ["/usr/bin/tini", "--"]
 
-# Copy built app and runtime deps
+# Copy built app and required files
 COPY --from=build /app/build ./build
 COPY --from=build /app/public ./public
 COPY --from=build /app/app/database/migrations ./migrations
 COPY --from=build /app/package.json ./package.json
 COPY --from=build /app/pnpm-lock.yaml ./pnpm-lock.yaml
 
-# Copy just prod deps
-COPY --from=build /app/node_modules ./node_modules
+# Install only prod dependencies on correct architecture
+RUN pnpm install --prod
 
 EXPOSE 3000
 EXPOSE 4000
