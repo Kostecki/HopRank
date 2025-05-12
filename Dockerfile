@@ -13,6 +13,21 @@ RUN apt-get update && apt-get install -y build-essential python3 && rm -rf /var/
 COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
 
+# Inject public envs
+ARG VITE_LOCALE
+ARG VITE_TZ
+ARG VITE_WS_URL
+ARG VITE_ALGOLIA_APP_ID
+ARG VITE_ALGOLIA_API_KEY
+ARG VITE_UNTAPPD_CHECKIN
+
+ENV VITE_LOCALE=$VITE_LOCALE
+ENV VITE_TZ=$VITE_TZ
+ENV VITE_WS_URL=$VITE_WS_URL
+ENV VITE_ALGOLIA_APP_ID=$VITE_ALGOLIA_APP_ID
+ENV VITE_ALGOLIA_API_KEY=$VITE_ALGOLIA_API_KEY
+ENV VITE_UNTAPPD_CHECKIN=$VITE_UNTAPPD_CHECKIN
+
 COPY . .
 RUN pnpm run build
 
