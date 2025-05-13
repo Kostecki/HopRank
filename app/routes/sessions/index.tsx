@@ -155,7 +155,7 @@ export default function Sessions() {
         </Tabs.Panel>
       </Tabs>
 
-      <NewSession mt={30} criteria={criteria} />
+      <NewSession criteria={criteria} />
     </Paper>
   );
 }

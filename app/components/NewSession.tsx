@@ -4,6 +4,7 @@ import {
   ActionIcon,
   Box,
   Button,
+  Divider,
   Stack,
   Text,
   TextInput,
@@ -104,6 +105,8 @@ export default function NewSession({ criteria, ...props }: InputProps) {
 
   return (
     <Box {...props}>
+      <Divider opacity={0.5} my="xl" />
+
       <Text fw="bold">Ny smagning</Text>
 
       <Stack mt="xs">
