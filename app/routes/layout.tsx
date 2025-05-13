@@ -1,5 +1,5 @@
 import { Outlet, useLoaderData } from "react-router";
-import { AppShell, Container } from "@mantine/core";
+import { Anchor, AppShell, Container, Text } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 
 import { userSessionGet } from "~/auth/users.server";
@@ -55,6 +55,10 @@ export default function Layout() {
   const [desktopOpened, { toggle: toggleDesktop, close: closeDesktop }] =
     useDisclosure(false);
 
+  const LATEST_COMMIT_HASH = import.meta.env.VITE_LATEST_COMMIT_HASH;
+  const LATEST_COMMIT_MESSAGE = import.meta.env.VITE_LATEST_COMMIT_MESSAGE;
+  const COMMIT_URL = `https://github.com/Kostecki/HopRank/commit/${LATEST_COMMIT_HASH}`;
+
   return (
     <AppShell
       header={{ height: 60 }}
@@ -92,6 +96,16 @@ export default function Layout() {
           <Outlet />
         </Container>
       </AppShell.Main>
+
+      {user.email === "jacob@kostecki.dk" && (
+        <AppShell.Footer withBorder={false} py="sm">
+          <Anchor href={COMMIT_URL} underline="never" target="_blank">
+            <Text ta="center" c="dimmed" size="xs" fs="italic">
+              {LATEST_COMMIT_MESSAGE} ({LATEST_COMMIT_HASH})
+            </Text>
+          </Anchor>
+        </AppShell.Footer>
+      )}
     </AppShell>
   );
 }
