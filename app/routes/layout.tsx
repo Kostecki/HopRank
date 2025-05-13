@@ -101,7 +101,7 @@ export default function Layout() {
         <AppShell.Footer withBorder={false} py="sm">
           <Anchor href={COMMIT_URL} underline="never" target="_blank">
             <Text ta="center" c="dimmed" size="xs" fs="italic">
-              {LATEST_COMMIT_MESSAGE} ({LATEST_COMMIT_HASH})
+              {LATEST_COMMIT_HASH}: {LATEST_COMMIT_MESSAGE}
             </Text>
           </Anchor>
         </AppShell.Footer>
