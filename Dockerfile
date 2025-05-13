@@ -59,31 +59,29 @@ RUN pnpm install --prod --frozen-lockfile
 # Final runtime image
 FROM node:24-slim AS runner
 
-RUN apt install tzdata
+# Install tzdata and tini
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  tzdata tini \
+  && rm -rf /var/lib/apt/lists/*
+
+# Install pnpm globally
 RUN npm install -g pnpm
 
 WORKDIR /app
 
-# Copy only runtime artifacts
-COPY --from=prod-deps /app/node_modules ./node_modules
+# Copy package manifests and install prod dependencies
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --prod --frozen-lockfile
+
+# Copy runtime assets
 COPY --from=build /app/build ./build
 COPY --from=build /app/public ./public
 COPY --from=build /app/app/database/migrations ./migrations
-COPY package.json pnpm-lock.yaml ./
 
-# Rebuild native modules for Alpine/musl
-RUN pnpm rebuild better-sqlite3
-
-# Cleanup and install tini
-RUN apt-get update && apt-get install -y --no-install-recommends \
-  tini \
-  && rm -rf /root/.pnpm-store /tmp/* \
-  && apt-get clean && rm -rf /var/lib/apt/lists/*
-
-# Setup tini for correct signal handling
+# Setup tini
 ENTRYPOINT ["/usr/bin/tini", "--"]
 
-# Expose app port
+# Expose app ports
 EXPOSE 3000
 EXPOSE 4000
 
