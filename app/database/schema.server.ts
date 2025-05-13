@@ -153,3 +153,10 @@ export const sessionCriteriaRelations = relations(
     }),
   })
 );
+
+export const sessionsRelations = relations(sessions, ({ one }) => ({
+  state: one(sessionState, {
+    fields: [sessions.id],
+    references: [sessionState.sessionId],
+  }),
+}));

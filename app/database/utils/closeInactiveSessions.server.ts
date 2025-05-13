@@ -1,4 +1,4 @@
-import { and, eq, inArray, lt } from "drizzle-orm";
+import { inArray, lt } from "drizzle-orm";
 
 import { db } from "../config.server";
 import { sessions, sessionState } from "../schema.server";
@@ -25,17 +25,17 @@ export const closeInactiveSessions = async () => {
   const oldActiveSessions = await db.query.sessions.findMany({
     where: lt(sessions.createdAt, sessionAgeCutoff),
     with: {
-      state: {
-        where: and(
-          eq(sessionState.status, SessionStatus.active),
-          lt(sessionState.lastUpdatedAt, recentActivityCutoff)
-        ),
-      },
+      state: true, // Just fetch the full relation
     },
   });
 
   const staleSessions = oldActiveSessions
-    .filter((s) => s.state)
+    .filter(
+      (s) =>
+        s.state?.status === SessionStatus.active &&
+        s.state.lastUpdatedAt &&
+        s.state.lastUpdatedAt < recentActivityCutoff
+    )
     .map((s) => s.id);
 
   if (staleSessions.length === 0) return;

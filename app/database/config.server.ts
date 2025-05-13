@@ -13,6 +13,7 @@ import {
   sessionCriteria,
   sessionCriteriaRelations,
   sessions,
+  sessionsRelations,
   sessionState,
   sessionUsers,
   users,
@@ -29,6 +30,7 @@ export const db = drizzle(new Database(DATABASE_PATH), {
   schema: {
     users,
     sessions,
+    sessionsRelations,
     sessionUsers,
     beers,
     sessionBeersRelations,
