@@ -1,6 +1,6 @@
 # -----------------------------------
 # Base image with pnpm installed
-FROM node:23-slim AS base
+FROM node:24-slim AS base
 RUN npm install -g pnpm
 
 # -----------------------------------
@@ -57,9 +57,10 @@ RUN pnpm install --prod --frozen-lockfile
 
 # -----------------------------------
 # Final runtime image
-FROM node:23-alpine AS runner
+FROM node:24-slim AS runner
 
-RUN apk add tzdata
+RUN apt install tzdata
+RUN npm install -g pnpm
 
 WORKDIR /app
 
@@ -71,12 +72,13 @@ COPY --from=build /app/app/database/migrations ./migrations
 COPY package.json pnpm-lock.yaml ./
 
 # Rebuild native modules for Alpine/musl
-RUN npm rebuild better-sqlite3
+RUN pnpm rebuild better-sqlite3
 
 # Cleanup and install tini
-RUN apk add --no-cache tini \
-  && npm cache clean --force \
-  && rm -rf /root/.npm /root/.pnpm-store /tmp/*
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  tini \
+  && rm -rf /root/.pnpm-store /tmp/* \
+  && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Setup tini for correct signal handling
 ENTRYPOINT ["/sbin/tini", "--"]
@@ -86,4 +88,4 @@ EXPOSE 3000
 EXPOSE 4000
 
 # Start the app
-CMD ["npm", "start"]
+CMD ["pnpm", "start"]
