@@ -13,10 +13,10 @@
     "lint": "biome lint ."
   },
   "dependencies": {
-    "@mantine/core": "^8.0.0",
-    "@mantine/form": "^8.0.0",
-    "@mantine/hooks": "^8.0.0",
-    "@mantine/notifications": "^8.0.0",
+    "@mantine/core": "^8.0.1",
+    "@mantine/form": "^8.0.1",
+    "@mantine/hooks": "^8.0.1",
+    "@mantine/notifications": "^8.0.1",
     "@mjackson/headers": "^0.10.0",
     "@react-router/node": "^7.6.0",
     "@react-router/serve": "^7.6.0",
@@ -47,7 +47,7 @@
     "@react-router/dev": "^7.6.0",
     "@types/better-sqlite3": "^7.6.13",
     "@types/mjml": "^4.7.4",
-    "@types/node": "^22.15.17",
+    "@types/node": "^22.15.18",
     "@types/node-cron": "^3.0.11",
     "@types/nodemailer": "^6.4.17",
     "@types/react": "^19.1.4",
