@@ -1,7 +1,7 @@
 import { inArray, lt } from "drizzle-orm";
 
 import { db } from "../config.server";
-import { sessions, sessionState } from "../schema.server";
+import { sessions, sessionState, sessionUsers } from "../schema.server";
 
 import dayjs from "~/utils/dayjs";
 
@@ -40,10 +40,17 @@ export const closeInactiveSessions = async () => {
 
   if (staleSessions.length === 0) return;
 
+  // Mark all stale sessions as finished
   await db
     .update(sessionState)
     .set({ status: SessionStatus.finished })
     .where(inArray(sessionState.sessionId, staleSessions));
+
+  // Rmove all users from stale sessions
+  await db
+    .update(sessionUsers)
+    .set({ active: false })
+    .where(inArray(sessionUsers.sessionId, staleSessions));
 
   console.log(`Closed ${staleSessions.length} stale sessions.`);
 };
