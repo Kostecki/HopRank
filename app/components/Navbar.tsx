@@ -152,7 +152,7 @@ export default function Navbar({
   return (
     <>
       {sessionProgress?.status === SessionStatus.active && (
-        <ModalAddBeers sessionBeers={sessionProgress.ratedBeers}>
+        <ModalAddBeers sessionProgress={sessionProgress}>
           <Box>
             <Stack gap="0">
               <Text ta="center" fw={500}>

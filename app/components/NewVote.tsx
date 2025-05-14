@@ -60,7 +60,7 @@ export default function NewVote({
   const { location, requestLocation } = useGeolocation();
 
   const participantsUntappdIds = session?.users
-    .map((user) => user.untappd?.id)
+    .map((user) => user.untappdId)
     .filter((id): id is number => id !== undefined);
 
   const form = useForm({
@@ -148,7 +148,7 @@ export default function NewVote({
               <Grid.Col span={10}>
                 <Stack gap="xs">
                   <Switch
-                    label="Checkin på Untappd"
+                    label="Check-in på Untappd"
                     color="slateIndigo"
                     checked={enableUntappdCheckin}
                     onChange={(event) => {
@@ -156,7 +156,7 @@ export default function NewVote({
                     }}
                   />
                   <Text c="dimmed" size="xs">
-                    Lav et checkin direkte i Untappd sammen med din bedømmelse
+                    Lav et check-in direkte i Untappd sammen med din bedømmelse
                   </Text>
                 </Stack>
               </Grid.Col>
@@ -233,7 +233,7 @@ export default function NewVote({
           loading={fetcher.state === "submitting"}
           mt="lg"
         >
-          Gem Bedømmelse {enableUntappdCheckin && "og Checkin"}
+          Gem Bedømmelse {enableUntappdCheckin && "og Check-in"}
         </Button>
       </form>
     </Paper>

@@ -105,9 +105,7 @@ export default function BeerMultiSelect({
       setSelectedBeers([...selectedBeers, selectedBeer]);
     }
 
-    // setSearchTerm("");
-    // combobox.closeDropdown();
-    // inputRef.current?.blur();
+    setSearchTerm("");
   };
 
   const handleValueRemove = (val: string) => {

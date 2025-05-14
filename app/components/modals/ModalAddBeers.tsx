@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { useFetcher, useParams } from "react-router";
 import { useDisclosure } from "@mantine/hooks";
 import { Box, Button, Modal, Stack } from "@mantine/core";
@@ -6,11 +6,15 @@ import { Box, Button, Modal, Stack } from "@mantine/core";
 import BeerMultiSelect from "../BeerMultiSelect";
 
 import type { BeerOption } from "~/types/misc";
-import type { RatedBeers } from "~/types/session";
+import type { SessionProgress } from "~/types/session";
+import type {
+  SelectBeers,
+  SelectSessionBeersWithBeer,
+} from "~/database/schema.types";
 
 type InputProps = {
   children: React.ReactNode;
-  sessionBeers?: RatedBeers[];
+  sessionProgress?: SessionProgress;
 };
 
 const ModalAddBeersContext = createContext<() => void>(() => {});
@@ -35,9 +39,10 @@ export function ModalAddBeersTrigger({
   );
 }
 
-export default function ModalAddBeers({ children, sessionBeers }: InputProps) {
+export default function ModalAddBeers({ children }: InputProps) {
   const [opened, { open, close }] = useDisclosure(false);
   const [selectedBeers, setSelectedBeers] = useState<BeerOption[]>([]);
+  const [sessionBeers, setSessionBeers] = useState<SelectBeers[]>([]);
 
   const params = useParams();
   const { sessionId } = params;
@@ -56,6 +61,20 @@ export default function ModalAddBeers({ children, sessionBeers }: InputProps) {
     setSelectedBeers([]);
     close();
   };
+
+  useEffect(() => {
+    const fetchBeers = async () => {
+      const response = await fetch(`/api/sessions/${sessionId}/list-beers`);
+      const data = (await response.json()) as SelectSessionBeersWithBeer[];
+
+      const beers = data.map((beer) => beer.beer);
+      setSessionBeers(beers);
+    };
+
+    if (sessionId) {
+      fetchBeers();
+    }
+  }, [sessionId]);
 
   return (
     <ModalAddBeersContext.Provider value={open}>
