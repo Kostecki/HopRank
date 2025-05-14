@@ -1,5 +1,5 @@
 import { Outlet, useLoaderData } from "react-router";
-import { Anchor, AppShell, Container, Text } from "@mantine/core";
+import { AppShell, Container } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 
 import { userSessionGet } from "~/auth/users.server";
@@ -47,17 +47,13 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 }
 
 export default function Layout() {
-  const { sessionId, user, sessionProgress, sessionBeers } =
+  const { user, sessionProgress, sessionBeers } =
     useLoaderData<typeof loader>();
 
   const [mobileOpened, { toggle: toggleMobile, close: closeMobile }] =
     useDisclosure();
   const [desktopOpened, { toggle: toggleDesktop, close: closeDesktop }] =
     useDisclosure(false);
-
-  const LATEST_COMMIT_HASH = import.meta.env.VITE_LATEST_COMMIT_HASH;
-  const LATEST_COMMIT_MESSAGE = import.meta.env.VITE_LATEST_COMMIT_MESSAGE;
-  const COMMIT_URL = `https://github.com/Kostecki/HopRank/commit/${LATEST_COMMIT_HASH}`;
 
   return (
     <AppShell
@@ -79,33 +75,21 @@ export default function Layout() {
         />
       </AppShell.Header>
 
-      {sessionId && (
-        <AppShell.Navbar p="md">
-          <Navbar
-            user={user}
-            sessionProgress={sessionProgress}
-            sessionBeers={sessionBeers}
-            closeMobile={closeMobile}
-            closeDesktop={closeDesktop}
-          />
-        </AppShell.Navbar>
-      )}
+      <AppShell.Navbar p="md">
+        <Navbar
+          user={user}
+          sessionProgress={sessionProgress}
+          sessionBeers={sessionBeers}
+          closeMobile={closeMobile}
+          closeDesktop={closeDesktop}
+        />
+      </AppShell.Navbar>
 
       <AppShell.Main>
         <Container size="xs" mt="md" pb="xs">
           <Outlet />
         </Container>
       </AppShell.Main>
-
-      {user.email === "jacob@kostecki.dk" && (
-        <AppShell.Footer withBorder={false} py="sm">
-          <Anchor href={COMMIT_URL} underline="never" target="_blank">
-            <Text ta="center" c="dimmed" size="xs" fs="italic">
-              {LATEST_COMMIT_HASH}: {LATEST_COMMIT_MESSAGE}
-            </Text>
-          </Anchor>
-        </AppShell.Footer>
-      )}
     </AppShell>
   );
 }

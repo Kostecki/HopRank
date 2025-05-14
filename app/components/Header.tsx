@@ -5,9 +5,11 @@ import {
   Burger,
   Group,
   Menu,
+  MenuDivider,
   Paper,
   Stack,
   Text,
+  Tooltip,
   useMantineTheme,
 } from "@mantine/core";
 import { IconBeer, IconLogout, IconUsers } from "@tabler/icons-react";
@@ -50,6 +52,10 @@ const User = ({ user }: { user: SessionUser }) => {
       };
     }
   }, [socket]);
+
+  const LATEST_COMMIT_HASH = import.meta.env.VITE_LATEST_COMMIT_HASH;
+  const LATEST_COMMIT_MESSAGE = import.meta.env.VITE_LATEST_COMMIT_MESSAGE;
+  const COMMIT_URL = `https://github.com/Kostecki/HopRank/commit/${LATEST_COMMIT_HASH}`;
 
   return (
     <Menu shadow="md" width="auto" withArrow>
@@ -99,6 +105,19 @@ const User = ({ user }: { user: SessionUser }) => {
         >
           Log ud
         </Menu.Item>
+        {user.email === "jacob@kostecki.dk" && (
+          <>
+            <MenuDivider />
+
+            <Menu.Item component={Link} to={COMMIT_URL} target="_blank">
+              <Tooltip label={LATEST_COMMIT_MESSAGE} withArrow position="left">
+                <Text size="xs" c="dimmed" fs="italic" fw={300}>
+                  Latest Commit: {LATEST_COMMIT_HASH}
+                </Text>
+              </Tooltip>
+            </Menu.Item>
+          </>
+        )}
       </Menu.Dropdown>
     </Menu>
   );

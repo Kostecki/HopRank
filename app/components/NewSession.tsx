@@ -47,6 +47,8 @@ export default function NewSession({ criteria, ...props }: InputProps) {
   const newSessionFetcher = useFetcher();
   const uniqueNameFetcher = useFetcher();
 
+  const newSessionLoader = newSessionFetcher.state !== "idle";
+
   const handleSubmit = () => {
     const formData = new FormData();
     formData.append("name", sessionName);
@@ -163,6 +165,7 @@ export default function NewSession({ criteria, ...props }: InputProps) {
           onClick={handleSubmit}
           mt="md"
           disabled={noCriteriaSelected || nameIsEmpty || nameNotUnique}
+          loading={newSessionLoader}
         >
           🍻 Opret ny smagning 🍻
         </Button>
