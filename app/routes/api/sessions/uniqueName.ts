@@ -1,6 +1,6 @@
-import { data } from "react-router";
 import { eq, sql } from "drizzle-orm";
 import { createNameId } from "mnemonic-id";
+import { data } from "react-router";
 
 import { db } from "~/database/config.server";
 import { sessions } from "~/database/schema.server";

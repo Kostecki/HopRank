@@ -1,13 +1,13 @@
-import { data, redirect } from "react-router";
 import { and, eq } from "drizzle-orm";
+import { data, redirect } from "react-router";
 
 import { userSessionGet } from "~/auth/users.server";
-import { sessionUsers } from "~/database/schema.server";
 import { db } from "~/database/config.server";
+import { sessionUsers } from "~/database/schema.server";
 
+import { tryAdvanceSession } from "~/database/utils/tryAdvanceSession.server";
 import { extractSessionId } from "~/utils/utils";
 import { emitGlobalEvent, emitSessionEvent } from "~/utils/websocket.server";
-import { tryAdvanceSession } from "~/database/utils/tryAdvanceSession.server";
 
 import type { Route } from "./+types/leave";
 

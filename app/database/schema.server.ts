@@ -1,11 +1,11 @@
-import { relations, type SQL, sql } from "drizzle-orm";
+import { type SQL, relations, sql } from "drizzle-orm";
 import {
+  type AnySQLiteColumn,
   integer,
   sqliteTable,
   text,
   unique,
   uniqueIndex,
-  type AnySQLiteColumn,
 } from "drizzle-orm/sqlite-core";
 import { SessionBeerStatus, SessionStatus } from "~/types/session";
 

@@ -1,6 +1,6 @@
+import { redirect } from "react-router";
 import { Authenticator } from "remix-auth";
 import { TOTPStrategy } from "remix-auth-totp";
-import { redirect } from "react-router";
 
 import { UntappdStrategy } from "./untappd-strategy.server";
 

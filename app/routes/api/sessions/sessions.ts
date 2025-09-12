@@ -1,20 +1,20 @@
 import { data, redirect } from "react-router";
 
+import { userSessionGet } from "~/auth/users.server";
 import { db } from "~/database/config.server";
 import {
   sessionCriteria,
-  sessions,
   sessionState,
+  sessions,
 } from "~/database/schema.server";
-import { userSessionGet } from "~/auth/users.server";
 
 import { addBeersToSession } from "~/database/utils/addBeersToSession.server";
 import { emitGlobalEvent } from "~/utils/websocket.server";
 
-import type { Route } from "./+types/sessions";
-import { generateJoinCode } from "~/utils/utils";
 import { eq } from "drizzle-orm";
 import { joinSessionById } from "~/database/utils/joinSessionById.server";
+import { generateJoinCode } from "~/utils/utils";
+import type { Route } from "./+types/sessions";
 
 export async function action({ request }: Route.ActionArgs) {
   const formData = await request.formData();
