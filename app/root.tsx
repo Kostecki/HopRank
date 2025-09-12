@@ -83,23 +83,24 @@ export const links: Route.LinksFunction = () => [
 ];
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  startCron();
+	const SRC_URL = process.env.UMAMI_SRC_URL;
+	const WEBSITE_ID = process.env.UMAMI_WEBSITE_ID;
 
   const user = await userSessionGet(request);
   const { toast, headers } = await getToast(request);
 
-  return data({ user, toast }, { headers });
+	return data({ umami: { SRC_URL, WEBSITE_ID }, user, toast }, { headers });
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  const { toast } = useLoaderData<typeof loader>();
+	const { umami, toast } = useLoaderData<typeof loader>();
 
   const UmamiScript = () => {
     const isProd = import.meta.env.PROD;
-    if (!isProd) return null;
+		if (!isProd || !umami.SRC_URL || !umami.WEBSITE_ID) return null;
 
-    const src = "https://umami.israndom.win/script.js";
-    const websiteId = "05e5f7ee-6b31-48ad-b853-994f11cd2291";
+		const src = umami.SRC_URL;
+		const websiteId = umami.WEBSITE_ID;
 
     return <script defer src={src} data-website-id={websiteId} />;
   };
