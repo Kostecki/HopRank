@@ -2,8 +2,8 @@ import dayjs from "dayjs";
 import timezone from "dayjs/plugin/timezone";
 import "dayjs/locale/da";
 
-const LOCALE = import.meta.env.VITE_ALGOLIA_APP_ID || "da";
-const TZ = import.meta.env.TZ || "Europe/Copenhagen";
+const LOCALE = import.meta.env.VITE_LOCALE || "da";
+const TZ = import.meta.env.VITE_TZ || "Europe/Copenhagen";
 
 dayjs.extend(timezone);
 
