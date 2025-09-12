@@ -218,3 +218,5 @@ sketch
 
 # SQLite
 *.db
+
+public/.well-known/appspecific/com.chrome.devtools.json
