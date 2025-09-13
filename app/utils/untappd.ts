@@ -86,7 +86,14 @@ export const checkinBeer = async (
       return { success: false, error: "Failed to check in beer" };
     }
 
-    return { success: true };
+    const checkinId = data.response.checkin_id;
+
+    return {
+      success: true,
+      data: {
+        checkinId,
+      },
+    };
   } catch (error) {
     console.error("Error checking in beer:", error);
     return { success: false, error: "Failed to check in beer" };

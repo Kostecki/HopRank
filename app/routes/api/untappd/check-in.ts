@@ -18,8 +18,6 @@ export async function action({ request }: Route.ActionArgs) {
     );
   }
 
-  console.log("user", user);
-
   const clientId = process.env.UNTAPPD_CLIENT_ID;
   invariant(clientId, "UNTAPPD_CLIENT_ID is not set in environment variables");
 
@@ -28,12 +26,10 @@ export async function action({ request }: Route.ActionArgs) {
   const form = await request.formData();
   const checkin = {
     bid: String(form.get("bid")),
-    rating: String(form.get("rating")),
+    rating: String(form.get("rating") || ""),
     geolat: String(form.get("geolat")),
     geolng: String(form.get("geolng")),
-    checkin_tags: String(form.get("checkin_tags")),
     foursquare_id: String(form.get("foursquare_id")),
-    container_id: String(form.get("container_id")),
     shout: String(form.get("shout") || ""),
     timezone: String(form.get("timezone")),
     gmt_offset: String(form.get("gmt_offset")),

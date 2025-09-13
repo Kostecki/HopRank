@@ -158,9 +158,7 @@ export type Checkin = {
   rating: string;
   geolat: string;
   geolng: string;
-  checkin_tags: string;
   foursquare_id: string;
-  container_id: string;
   shout: string;
   timezone: string;
   gmt_offset: string;

@@ -138,6 +138,7 @@ export default function VenueSearch({
 			>
 				<Combobox.Target>
 					<TextInput
+						label="Lokation"
 						placeholder="Søg efter lokation"
 						value={value}
 						onChange={(event) => {
@@ -154,7 +155,6 @@ export default function VenueSearch({
 								fetchOptions(value);
 							}
 						}}
-						// onBlur={() => combobox.closeDropdown()}
 						rightSection={loading && <Loader size={18} />}
 					/>
 				</Combobox.Target>
