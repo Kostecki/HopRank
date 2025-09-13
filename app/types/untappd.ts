@@ -140,3 +140,28 @@ export type UntappdVenue = {
   };
   is_verified: boolean;
 };
+
+type VenueItem = {
+  value: string;
+  label: string;
+};
+
+type VenueGroup = {
+  label: string;
+  items: VenueItem[];
+};
+
+export type VenuesResponse = [VenueGroup, VenueGroup];
+
+export type Checkin = {
+  bid: string;
+  rating: string;
+  geolat: string;
+  geolng: string;
+  checkin_tags: string;
+  foursquare_id: string;
+  container_id: string;
+  shout: string;
+  timezone: string;
+  gmt_offset: string;
+};

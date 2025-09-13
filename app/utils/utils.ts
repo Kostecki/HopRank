@@ -106,3 +106,10 @@ export const generateJoinCode = () => {
 
   return result;
 };
+
+export const getGmtOffset = () => {
+  const offsetInMinutes = new Date().getTimezoneOffset();
+  const offsetInHours = -offsetInMinutes / 60;
+
+  return offsetInHours;
+};

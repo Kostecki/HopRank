@@ -76,6 +76,7 @@ export async function action({ request, params }: Route.ActionArgs) {
         });
     } catch (error) {
       console.error("Error inserting/updating rating:", error);
+
       return data(
         { message: "Error inserting/updating rating" },
         { status: 500 }
