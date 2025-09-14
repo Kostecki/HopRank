@@ -17,7 +17,7 @@ import type { RatedBeers, SessionProgress } from "~/types/session";
 type InputProps = {
 	session: SessionProgress;
 	beer?: RatedBeers;
-	topThreeIds?: number[];
+	rank?: number;
 };
 
 const gold = "#ffd700";
@@ -25,19 +25,16 @@ const silver = "#c0c0c0";
 const bronze = "#8c6239";
 const green = "#6EBC48";
 
-export function BeerCard({ session, beer, topThreeIds }: InputProps) {
+export function BeerCard({ session, beer, rank }: InputProps) {
 	const isRatedBeer = !!beer;
 
 	const { beerId, label, name, breweryName, style } =
 		beer || session.currentBeer || {};
 
 	const getMedalColor = () => {
-		if (!topThreeIds || !beerId) return null;
+		if (!rank || rank > 3) return null;
 
-		const position = topThreeIds.indexOf(beerId);
-		if (position === -1) return null; // not top 3
-
-		return [gold, silver, bronze][position];
+		return [gold, silver, bronze][rank - 1];
 	};
 
 	const RenderHadAlreadyHad = () => {
@@ -115,7 +112,7 @@ export function BeerCard({ session, beer, topThreeIds }: InputProps) {
 			p="xs"
 			style={{
 				...(getMedalColor()
-					? { borderLeft: `8px solid ${getMedalColor()}` }
+					? { borderBottom: `8px solid ${getMedalColor()}` }
 					: {}),
 				zIndex: 10,
 			}}
@@ -145,6 +142,13 @@ export function BeerCard({ session, beer, topThreeIds }: InputProps) {
 					</Flex>
 				</Grid.Col>
 			</Grid>
+			{rank && rank > 3 && (
+				<Box pos="absolute" top={2} right={5}>
+					<Text size="sm" c="dimmed" fw="lighter" opacity={1}>
+						{rank}
+					</Text>
+				</Box>
+			)}
 		</Card>
 	);
 }

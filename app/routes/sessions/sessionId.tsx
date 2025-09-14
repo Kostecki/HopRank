@@ -81,8 +81,6 @@ export default function Session() {
 
 	const { revalidate } = useRevalidator();
 
-	const topThreeBeerIds = sessionProgress.ratedBeers.map((beer) => beer.beerId);
-
 	const hasCurrentBeer =
 		sessionProgress.currentBeer &&
 		Object.keys(sessionProgress.currentBeer).length !== 0;
@@ -118,15 +116,14 @@ export default function Session() {
 			)}
 
 			<Accordion unstyled chevron={false}>
-				{sessionProgress.ratedBeers.map((beer) => {
+				{sessionProgress.ratedBeers.map((beer, index) => {
 					const { beerId } = beer;
-					const podiumPosition = topThreeBeerIds.indexOf(beerId);
 
 					return (
 						<Accordion.Item
 							value={beerId.toString()}
 							m={0}
-							mb={podiumPosition === 2 ? "26px" : "8px"}
+							mb={index === 2 ? "30px" : "8px"}
 							key={beerId}
 						>
 							<Accordion.Control
@@ -143,7 +140,7 @@ export default function Session() {
 								<BeerCard
 									session={sessionProgress}
 									beer={beer}
-									topThreeIds={topThreeBeerIds}
+									rank={index + 1}
 								/>
 							</Accordion.Control>
 
