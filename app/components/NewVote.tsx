@@ -316,7 +316,7 @@ export default function NewVote({
 									<IconCheck color="#484F65" size={30} />
 								</Avatar>
 
-								<Group ml="xl">
+								<Group ml="xl" gap={3}>
 									<Text>Din bedømmelse er gemt!</Text>
 									<Text size="sm" c="dimmed">
 										Så længe der stadig bliver stemt kan du altid ændre din
@@ -338,7 +338,7 @@ export default function NewVote({
 										<IconCheck color="#484F65" size={30} />
 									</Avatar>
 
-									<Group ml="xl">
+									<Group ml="xl" gap={3}>
 										<Text>Dit check-in er oprettet i Untappd!</Text>
 										<Text size="sm" c="dimmed">
 											Du kan finde det i appen, eller ved at trykke på linket
