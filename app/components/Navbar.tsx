@@ -17,16 +17,14 @@ import {
 	IconPlus,
 	IconTrash,
 } from "@tabler/icons-react";
-import { Link, useFetcher, useNavigate, useRevalidator } from "react-router";
+import { Link, useNavigate } from "react-router";
 
 import ModalAddBeers, { ModalAddBeersTrigger } from "./modals/ModalAddBeers";
 
 import type { SelectSessionBeersWithBeer } from "~/database/schema.types";
-
-import { useDebouncedSocketEvent } from "~/hooks/useDebouncedSocketEvent";
-
 import { createProfileLink } from "~/utils/untappd";
 
+import { useEffect, useState } from "react";
 import {
 	SessionBeerStatus,
 	type SessionProgress,
@@ -50,42 +48,50 @@ export default function Navbar({
 	closeMobile,
 	closeDesktop,
 }: InputProps) {
-	const { revalidate } = useRevalidator();
-
-	const leaveFetcher = useFetcher();
-	const removeFetcher = useFetcher();
-
 	const navigate = useNavigate();
+	const [localSessionBeers, setLocalSessionBeers] = useState(sessionBeers);
 
-	const handleLeaveSession = () => {
+	useEffect(() => {
+		setLocalSessionBeers(sessionBeers);
+	}, [sessionBeers]);
+
+	const handleLeaveSession = async () => {
 		closeMobile();
 		closeDesktop();
 
 		if (sessionProgress) {
 			const sessionId = sessionProgress.sessionId;
-
-			const formData = new FormData();
-			leaveFetcher.submit(formData, {
-				method: "POST",
-				action: `/api/sessions/${sessionId}/leave`,
-			});
+			await fetch(`/api/sessions/${sessionId}/leave`, { method: "POST" });
+			navigate("/sessions");
 		} else {
 			navigate("/sessions");
 		}
 	};
 
-	const handleRemoveBeer = (beerId: number) => {
+	const handleRemoveBeer = async (beerId: number) => {
 		const sessionId = sessionProgress?.sessionId;
 		if (!sessionId) return;
 
-		removeFetcher.submit(null, {
-			action: `/api/sessions/${sessionId}/remove/${beerId}`,
-		});
+		const prevBeers = localSessionBeers;
+		setLocalSessionBeers((prev) => prev.filter((b) => b.beerId !== beerId));
 
-		revalidate();
+		try {
+			const res = await fetch(`/api/sessions/${sessionId}/remove/${beerId}`, {
+				method: "POST",
+			});
+
+			if (!res.ok) {
+				// Rollback if request fails
+				setLocalSessionBeers(prevBeers);
+				console.error("Failed to remove beer");
+			}
+		} catch (err) {
+			setLocalSessionBeers(prevBeers);
+			console.error("Failed to remove beer", err);
+		}
 	};
 
-	const usersBeers = sessionBeers
+	const usersBeers = localSessionBeers
 		.filter((beer) => beer.addedByUserId === user?.id)
 		.sort((a, b) => (b.order ?? 0) - (a.order ?? 0));
 
@@ -115,9 +121,6 @@ export default function Navbar({
 		const {
 			beer: { id, name, breweryName },
 		} = beer;
-		const isRemoving =
-			removeFetcher.state !== "idle" &&
-			removeFetcher.formAction?.endsWith(`/remove/${id}`);
 
 		const isDisabled =
 			beer.status === SessionBeerStatus.rating ||
@@ -138,7 +141,6 @@ export default function Navbar({
 					variant="subtle"
 					color="slateIndigo"
 					onClick={() => handleRemoveBeer(id)}
-					loading={isRemoving}
 					disabled={isDisabled}
 				>
 					<IconTrash style={{ width: "70%", height: "70%" }} stroke={1.5} />
@@ -146,12 +148,6 @@ export default function Navbar({
 			</Flex>
 		);
 	};
-
-	useDebouncedSocketEvent(
-		["session:users-changed"],
-		() => revalidate(),
-		sessionProgress?.sessionId,
-	);
 
 	return (
 		<>
@@ -162,6 +158,7 @@ export default function Navbar({
 							<Text ta="center" fw={500}>
 								{sessionProgress.sessionName}
 							</Text>
+
 							<CopyButton value={sessionProgress.joinCode}>
 								{({ copied, copy }) => (
 									<Tooltip label="Kopier kode" position="bottom">
@@ -171,7 +168,9 @@ export default function Navbar({
 									</Tooltip>
 								)}
 							</CopyButton>
+
 							<Divider my="sm" mb="lg" opacity={0.5} />
+
 							<Button
 								justify="center"
 								variant="default"
@@ -182,6 +181,7 @@ export default function Navbar({
 							>
 								Forlad smagningen
 							</Button>
+
 							<Group mt="xl" justify="space-between">
 								<Text size="md" tt="uppercase">
 									Deltagere
@@ -195,6 +195,7 @@ export default function Navbar({
 									<UserListItem key={user.id} user={user} />
 								))}
 							</List>
+
 							<Group mt="xl" justify="space-between">
 								<Text size="md" tt="uppercase">
 									Dine øl
@@ -206,10 +207,12 @@ export default function Navbar({
 									</ActionIcon>
 								</ModalAddBeersTrigger>
 							</Group>
+
 							<Divider opacity={0.5} mb="md" />
+
 							{usersBeers.length > 0 && (
 								<List spacing="xs" size="sm">
-									{usersBeers?.map((beer) => (
+									{usersBeers.map((beer) => (
 										<ListItem key={beer.beerId} beer={beer} />
 									))}
 								</List>
