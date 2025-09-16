@@ -1,10 +1,14 @@
 import {
+	Avatar,
+	Box,
 	Button,
+	Card,
 	Collapse,
 	Divider,
 	Flex,
 	Grid,
 	Group,
+	LoadingOverlay,
 	Paper,
 	Stack,
 	Switch,
@@ -18,14 +22,13 @@ import { useFetcher, useParams } from "react-router";
 import RatingSlider from "./RatingSlider";
 import VenueSearch from "./VenueSearch";
 
-import { useGeolocation } from "~/hooks/useGeolocation";
-import { calculateVoteScore } from "~/utils/score";
-import { getGmtOffset, isMobileOrTablet, sliderConf } from "~/utils/utils";
-
 import { IconCheck } from "@tabler/icons-react";
+import { useGeolocation } from "~/hooks/useGeolocation";
 import type { SessionCriterion, SessionProgress } from "~/types/session";
 import type { SessionUser } from "~/types/user";
-import { showDangerToast, showSuccessToast } from "~/utils/toasts";
+import { calculateVoteScore } from "~/utils/score";
+import { showDangerToast } from "~/utils/toasts";
+import { getGmtOffset, isMobileOrTablet, sliderConf } from "~/utils/utils";
 
 const CHECKIN_ENABLED = Boolean(
 	JSON.parse(import.meta.env.VITE_UNTAPPD_CHECKIN),
@@ -115,7 +118,6 @@ export default function NewVote({
 				const checkInData = await checkInResponse.json();
 
 				if (checkInResponse.ok && checkInData.success) {
-					showSuccessToast("Check-in successful!");
 					setCheckinId(checkInData.data.checkinId);
 					setEnableUntappdCheckin(false);
 					setComment("");
@@ -124,7 +126,7 @@ export default function NewVote({
 						openInApp();
 					}
 				} else {
-					showDangerToast(checkInData.message, "Check-in failed");
+					showDangerToast("Untappd check-in fejlede");
 				}
 			}
 
@@ -186,50 +188,12 @@ export default function NewVote({
 
 				<Divider my="lg" opacity={0.75} />
 
-				{userHasRated && (
-					<>
-						<Flex align="center">
-							<IconCheck size={120} color="#484F65" />
-							<Group ml="xl" justify="center" gap="xs">
-								<Text>Din bedømmelse er gemt!</Text>
-								<Text c="dimmed" size="sm" ta="center">
-									Så længe der stadig bliver stemt kan du altid ændre din
-									bedømmelse ved at gemme igen.
-								</Text>
-							</Group>
-						</Flex>
-
-						{checkinId && (
-							<>
-								<Divider my="xs" opacity={0.75} />
-
-								<Flex align="center" mt="xl">
-									<IconCheck size={120} color="#484F65" />
-									<Group ml="xl" justify="center" gap="xs">
-										<Text>Dit check-in er oprettet i Untappd!</Text>
-										<Text c="dimmed" size="sm" ta="center">
-											Du kan finde det i appen, eller ved at trykke på linket
-											herunder. Så kommer du direkte til dit check-in.
-										</Text>
-										<Button
-											variant="subtle"
-											color="slateIndigo"
-											onClick={openInApp}
-										>
-											Se check-in i Untappd
-										</Button>
-									</Group>
-								</Flex>
-							</>
-						)}
-					</>
-				)}
-
+				{!userHasRated}
 				{!userHasRated &&
 					user.untappd?.id &&
 					user.untappd.accessToken &&
 					CHECKIN_ENABLED && (
-						<>
+						<Box mb="lg">
 							<Grid align="center" gutter="xs">
 								<Grid.Col span={10}>
 									<Stack gap="xs">
@@ -317,7 +281,7 @@ export default function NewVote({
 									onChange={(event) => setComment(event.currentTarget.value)}
 								/>
 							</Collapse>
-						</>
+						</Box>
 					)}
 
 				<Button
@@ -328,10 +292,74 @@ export default function NewVote({
 					fullWidth
 					type="submit"
 					loading={isSubmitting || voteFetcher.state !== "idle"}
-					mt="lg"
+					mb="lg"
 				>
 					Gem Bedømmelse {enableUntappdCheckin && "og Check-in"}
 				</Button>
+
+				{userHasRated && (
+					<>
+						<Card shadow="xs" radius="md">
+							<LoadingOverlay
+								visible={isSubmitting || voteFetcher.state !== "idle"}
+								zIndex={1000}
+								overlayProps={{ radius: "sm", blur: 2 }}
+								loaderProps={{ color: "slateIndigo" }}
+							/>
+							<Flex align="center">
+								<Avatar
+									color="slateIndigo"
+									variant="outline"
+									size="lg"
+									radius="xl"
+								>
+									<IconCheck color="#484F65" size={30} />
+								</Avatar>
+
+								<Group ml="xl">
+									<Text>Din bedømmelse er gemt!</Text>
+									<Text size="sm" c="dimmed">
+										Så længe der stadig bliver stemt kan du altid ændre din
+										bedømmelse ved at gemme bedømmelsen igen.
+									</Text>
+								</Group>
+							</Flex>
+						</Card>
+
+						{checkinId && (
+							<Card shadow="xs" radius="md" mt="md">
+								<Flex align="center">
+									<Avatar
+										color="slateIndigo"
+										variant="outline"
+										size="lg"
+										radius="xl"
+									>
+										<IconCheck color="#484F65" size={30} />
+									</Avatar>
+
+									<Group ml="xl">
+										<Text>Dit check-in er oprettet i Untappd!</Text>
+										<Text size="sm" c="dimmed">
+											Du kan finde det i appen, eller ved at trykke på linket
+											herunder - så bliver du taget direkte til det.
+										</Text>
+									</Group>
+								</Flex>
+
+								<Button
+									variant="default"
+									color="slateIndigo"
+									fullWidth
+									mt="md"
+									radius="md"
+								>
+									Se check-in i Untappd
+								</Button>
+							</Card>
+						)}
+					</>
+				)}
 			</form>
 		</Paper>
 	);
