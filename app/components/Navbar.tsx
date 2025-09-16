@@ -119,6 +119,10 @@ export default function Navbar({
 			removeFetcher.state !== "idle" &&
 			removeFetcher.formAction?.endsWith(`/remove/${id}`);
 
+		const isDisabled =
+			beer.status === SessionBeerStatus.rating ||
+			beer.status === SessionBeerStatus.rated;
+
 		return (
 			<Flex justify="space-between" pos="relative">
 				<Stack gap={0} mb="sm">
@@ -135,7 +139,7 @@ export default function Navbar({
 					color="slateIndigo"
 					onClick={() => handleRemoveBeer(id)}
 					loading={isRemoving}
-					disabled={beer.status === SessionBeerStatus.rated}
+					disabled={isDisabled}
 				>
 					<IconTrash style={{ width: "70%", height: "70%" }} stroke={1.5} />
 				</ActionIcon>
