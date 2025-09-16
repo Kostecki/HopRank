@@ -1,0 +1,1 @@
+ALTER TABLE `session_users` ADD `last_untappd_checkin_id` integer;
