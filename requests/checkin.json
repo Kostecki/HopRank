@@ -1,0 +1,113 @@
+{
+  "meta": {
+    "code": 200,
+    "response_time": {
+      "time": 0.601,
+      "measure": "seconds"
+    },
+    "init_time": {
+      "time": 0,
+      "measure": "seconds"
+    }
+  },
+  "notifications": {
+    "type": "notifications",
+    "unread_count": {
+      "comments": 0,
+      "toasts": 0,
+      "friends": 0,
+      "messages": 0,
+      "venues": 0,
+      "veunes": 0,
+      "others": 0,
+      "news": 0
+    }
+  },
+  "response": {
+    "result": "success",
+    "checkin_id": 1514032507,
+    "created_at": "Tue, 16 Sep 2025 19:48:54 +0000",
+    "checkin_comment": "",
+    "stats": {
+      "beer": "24th",
+      "beer_month": "1st"
+    },
+    "rating_score": 2.5,
+    "rating": {
+      "result": "success",
+      "rating_method": "insert",
+      "old_score": 0,
+      "new_score": 2.5
+    },
+    "user": {
+      "uid": 6063090,
+      "user_name": "JKostecki",
+      "first_name": "Jacob",
+      "last_name": "Kostecki",
+      "location": "",
+      "url": "",
+      "bio": "",
+      "user_avatar": "https://assets.untappd.com/profile/974031a5b1c7a64ed1ba4824a7399d6c_100x100.jpg",
+      "account_type": "user",
+      "is_private": 0
+    },
+    "beer": {
+      "bid": 6797,
+      "beer_name": "Tuborg Grøn",
+      "beer_label": "https://assets.untappd.com/site/beer_logos/beer-6797_09553_sm.jpeg",
+      "beer_abv": 4.6,
+      "beer_ibu": 18,
+      "beer_slug": "carlsberg-group-tuborg-gron",
+      "beer_description": "Tuborg is a bottom-fermented lager beer, also brewed in Germany at 4.9% and at many other Carlsberg sites all over the world (ABV may vary). It's brewed from lager malt, a slightly roasted, bright type of malt which results in the well-known mild, fresh taste and aroma of flowers and grain. The beer is medium rich and lively with a moderate bitterness in the aftertaste.\r\n \r\n \r\n Also brewed on license in India with 5% ABV.",
+      "is_in_production": 1,
+      "beer_style_id": 39,
+      "beer_style": "Pilsner - Other",
+      "auth_rating": 2.5,
+      "wish_list": false,
+      "beer_active": 1
+    },
+    "brewery": {
+      "brewery_id": 344,
+      "brewery_name": "Carlsberg Group",
+      "brewery_slug": "carlsberg-group",
+      "brewery_page_url": "/CarlsbergGroup",
+      "brewery_label": "https://assets.untappd.com/site/brewery_logos/brewery-CarlsbergBrewery_344.jpeg",
+      "country_name": "Denmark",
+      "country_id": 38,
+      "brewery_active": 1
+    },
+    "venue": [],
+    "recommendations": [],
+    "media": {
+      "is_photo": false,
+      "photo_data": false
+    },
+    "media_allowed": false,
+    "social_settings": {
+      "facebook": 0,
+      "twitter": 0,
+      "foursquare": 0,
+      "instagram_story": 0
+    },
+    "is_custom_time": 0,
+    "fb_share_enabled": false,
+    "source": {
+      "app_name": "HopRank",
+      "app_website": "https://hr.kostecki.dk"
+    },
+    "follow_status": {
+      "is_follow": true,
+      "status": false,
+      "hash": "76a12c857f8911add804f8d40e706b70",
+      "uid": 511879
+    },
+    "promotions": {
+      "count": 0,
+      "items": []
+    },
+    "badges": {
+      "count": 0,
+      "items": []
+    }
+  }
+}
