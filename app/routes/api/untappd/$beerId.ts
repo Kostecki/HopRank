@@ -39,7 +39,14 @@ export async function loader({ params }: Route.LoaderArgs) {
 
   // Otherwise, start a new fetch
   const fetchPromise = (async () => {
-    const $ = await cheerio.fromURL(createBeerLink(beerId));
+    const res = await fetch(createBeerLink(beerId));
+    if (!res.ok) {
+      throw new Error(
+        `Failed to fetch beer page: ${res.status} ${res.statusText}`
+      );
+    }
+    const html = await res.text();
+    const $ = cheerio.load(html);
 
     const iosUrl = $('meta[property="al:ios:url"]').attr("content");
     const idCheck = iosUrl?.replace("untappd://beer/", "");

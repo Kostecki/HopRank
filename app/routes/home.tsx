@@ -1,25 +1,25 @@
 import { Text } from "@mantine/core";
-import { redirect, type MetaFunction } from "react-router";
+import { type MetaFunction, redirect } from "react-router";
 
 import { userSessionGet } from "~/auth/users.server";
 
-import type { Route } from "../+types/root";
 import { getPageTitle } from "~/utils/utils";
+import type { Route } from "../+types/root";
 
 export const meta: MetaFunction = () => {
-  return [{ title: getPageTitle("Log ind") }];
+	return [{ title: getPageTitle("Log ind") }];
 };
 
 export async function loader({ request }: Route.LoaderArgs) {
-  const user = await userSessionGet(request);
+	const user = await userSessionGet(request);
 
-  if (user) {
-    return redirect("/sessions");
-  }
+	if (user) {
+		return redirect("/sessions");
+	}
 
-  return redirect("/auth/login");
+	return redirect("/auth/login");
 }
 
 export default function Home() {
-  return <Text>Redirecting..</Text>;
+	return <Text>Redirecting..</Text>;
 }

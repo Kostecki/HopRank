@@ -1,5 +1,5 @@
-import { data, redirect } from "react-router";
 import { eq } from "drizzle-orm";
+import { data, redirect } from "react-router";
 
 import { userSessionGet } from "~/auth/users.server";
 import { db } from "~/database/config.server";

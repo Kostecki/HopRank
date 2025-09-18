@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useCallback, useState } from "react";
 
 type Location = {
   lat: number;
@@ -10,18 +10,28 @@ type GeolocationOptions = {
   highAccuracy?: boolean;
 };
 
+function roundTo4Decimals(value: number): number {
+  return Math.round(value * 10000) / 10000;
+}
+
 export function useGeolocation(options?: GeolocationOptions) {
   const { fallback = { lat: 55.6761, lng: 12.5683 }, highAccuracy = false } =
     options || {};
 
-  const [location, setLocation] = useState<Location | null>(null);
+  const [location, setLocation] = useState<Location>({
+    lat: roundTo4Decimals(fallback.lat),
+    lng: roundTo4Decimals(fallback.lng),
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const requestLocation = useCallback(() => {
     if (!navigator.geolocation) {
       setError("Geolocation not supported");
-      setLocation(fallback);
+      setLocation({
+        lat: roundTo4Decimals(fallback.lat),
+        lng: roundTo4Decimals(fallback.lng),
+      });
       return;
     }
 
@@ -29,16 +39,27 @@ export function useGeolocation(options?: GeolocationOptions) {
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        setLocation({
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
+        const newLocation = {
+          lat: roundTo4Decimals(position.coords.latitude),
+          lng: roundTo4Decimals(position.coords.longitude),
+        };
+
+        setLocation((prev) => {
+          if (prev.lat === newLocation.lat && prev.lng === newLocation.lng) {
+            return prev;
+          }
+          return newLocation;
         });
+
         setLoading(false);
       },
       (err) => {
         console.error("Geolocation error:", err);
         setError(err.message);
-        setLocation(fallback);
+        setLocation({
+          lat: roundTo4Decimals(fallback.lat),
+          lng: roundTo4Decimals(fallback.lng),
+        });
         setLoading(false);
       },
       {

@@ -5,10 +5,10 @@ import { removeBeersFromSession } from "~/database/utils/removeBeersFromSession.
 
 import { extractSessionId } from "~/utils/utils";
 
-import type { Route } from "./+types/remove";
 import { emitGlobalEvent, emitSessionEvent } from "~/utils/websocket.server";
+import type { Route } from "./+types/remove";
 
-export async function loader({ request, params }: Route.LoaderArgs) {
+export async function action({ request, params }: Route.ActionArgs) {
   const sessionId = extractSessionId(params.sessionId);
   const beerId = Number(params.beerId);
 

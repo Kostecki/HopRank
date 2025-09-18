@@ -106,3 +106,29 @@ export const generateJoinCode = () => {
 
   return result;
 };
+
+/**
+ * Calculates the GMT offset in hours for the current timezone.
+ *
+ * @return {number} The GMT offset in hours (e.g., -5 for GMT-5).
+ */
+export const getGmtOffset = () => {
+  const offsetInMinutes = new Date().getTimezoneOffset();
+  const offsetInHours = -offsetInMinutes / 60;
+
+  return offsetInHours;
+};
+
+/**
+ * Determines if the current device is a mobile or tablet based on the user agent string.
+ *
+ * @return {boolean} True if the device is a mobile or tablet, false otherwise.
+ */
+export const isMobileOrTablet = (): boolean => {
+  const ua = navigator.userAgent || (window as { opera?: string }).opera || "";
+
+  const isIOS = /iPad|iPhone|iPod/.test(ua) || navigator.maxTouchPoints > 1;
+  const isAndroid = /Android/.test(ua);
+
+  return isIOS || isAndroid;
+};

@@ -46,6 +46,7 @@ export default [
       route("beers", "routes/api/untappd/search.ts"),
       route("beer/:beerId", "routes/api/untappd/$beerId.ts"),
       route("venues", "routes/api/untappd/venues.ts"),
+      route("check-in", "routes/api/untappd/check-in.ts"),
     ]),
   ]),
 ] satisfies RouteConfig;

@@ -1,18 +1,18 @@
-import { data } from "react-router";
 import { eq } from "drizzle-orm";
+import { data } from "react-router";
 
 import { userSessionGet } from "~/auth/users.server";
 import { db } from "~/database/config.server";
 import { ratings, sessionState } from "~/database/schema.server";
 
+import { bumpLastUpdatedAt } from "~/database/utils/bumpLastUpdatedAt.server";
+import { tryAdvanceSession } from "~/database/utils/tryAdvanceSession.server";
 import { extractSessionId } from "~/utils/utils";
 import { emitSessionEvent } from "~/utils/websocket.server";
-import { tryAdvanceSession } from "~/database/utils/tryAdvanceSession.server";
-import { bumpLastUpdatedAt } from "~/database/utils/bumpLastUpdatedAt.server";
 
-import type { Route } from "./+types/vote";
-import { SessionStatus } from "~/types/session";
 import type { Vote } from "~/types/rating";
+import { SessionStatus } from "~/types/session";
+import type { Route } from "./+types/vote";
 
 export async function action({ request, params }: Route.ActionArgs) {
   const sessionId = extractSessionId(params.sessionId);
@@ -76,6 +76,7 @@ export async function action({ request, params }: Route.ActionArgs) {
         });
     } catch (error) {
       console.error("Error inserting/updating rating:", error);
+
       return data(
         { message: "Error inserting/updating rating" },
         { status: 500 }
