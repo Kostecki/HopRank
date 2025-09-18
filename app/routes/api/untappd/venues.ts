@@ -1,6 +1,6 @@
+import { userSessionGet } from "~/auth/users.server";
 import type { UntappdVenue } from "~/types/untappd";
 import type { Route } from "./+types/venues";
-import { userSessionGet } from "~/auth/users.server";
 
 const UNTAPPD_AT_HOME_VENUE_ID = 9917985;
 

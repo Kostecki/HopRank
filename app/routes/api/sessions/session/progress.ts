@@ -1,23 +1,23 @@
-import { data } from "react-router";
 import { and, eq, inArray } from "drizzle-orm";
+import { data } from "react-router";
 
+import { userSessionGet } from "~/auth/users.server";
 import { db } from "~/database/config.server";
 import {
   ratings,
   sessionBeers,
   sessionCriteria,
-  sessions,
   sessionState,
   sessionUsers,
+  sessions,
   users,
 } from "~/database/schema.server";
-import { userSessionGet } from "~/auth/users.server";
 
-import { extractSessionId } from "~/utils/utils";
 import { getBeerInfo } from "~/utils/untappd";
+import { extractSessionId } from "~/utils/utils";
 
-import type { Route } from "./+types/progress";
 import { SessionBeerStatus } from "~/types/session";
+import type { Route } from "./+types/progress";
 
 const beerInfoCache = new Map<
   number,

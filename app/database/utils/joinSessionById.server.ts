@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
-import { sessionUsers } from "../schema.server";
 import { db } from "../config.server";
+import { sessionUsers } from "../schema.server";
 
 export async function joinSessionById({
   sessionId,

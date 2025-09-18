@@ -1,4 +1,4 @@
-import { redirect, type LoaderFunction, type MetaFunction } from "react-router";
+import { type LoaderFunction, type MetaFunction, redirect } from "react-router";
 
 import { authenticator } from "~/auth/auth.server";
 

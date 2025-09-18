@@ -1,241 +1,366 @@
-import { useEffect, useMemo, useState } from "react";
-import { useFetcher, useParams } from "react-router";
 import {
-  Button,
-  Center,
-  Collapse,
-  Divider,
-  Grid,
-  Image,
-  Paper,
-  ScrollArea,
-  SegmentedControl,
-  Select,
-  Stack,
-  Switch,
-  Text,
-  Textarea,
+	Avatar,
+	Box,
+	Button,
+	Card,
+	Collapse,
+	Divider,
+	Flex,
+	Grid,
+	Group,
+	LoadingOverlay,
+	Paper,
+	Stack,
+	Switch,
+	Text,
+	Textarea,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useDebouncedValue } from "@mantine/hooks";
-
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useFetcher, useParams } from "react-router";
 import RatingSlider from "./RatingSlider";
-import FriendsSearch from "./FriendsSearch";
+import VenueSearch from "./VenueSearch";
 
+import { IconCheck } from "@tabler/icons-react";
 import { useGeolocation } from "~/hooks/useGeolocation";
-
-import { sliderConf } from "~/utils/utils";
-import { calculateVoteScore } from "~/utils/score";
-import servingStyles from "~/servingStyles.json";
-
 import type { SessionCriterion, SessionProgress } from "~/types/session";
 import type { SessionUser } from "~/types/user";
+import { calculateVoteScore } from "~/utils/score";
+import { showDangerToast } from "~/utils/toasts";
+import { getGmtOffset, isMobileOrTablet, sliderConf } from "~/utils/utils";
 
 const CHECKIN_ENABLED = Boolean(
-  JSON.parse(import.meta.env.VITE_UNTAPPD_CHECKIN)
+	JSON.parse(import.meta.env.VITE_UNTAPPD_CHECKIN),
 );
 
 type InputProps = {
-  user: SessionUser;
-  session: SessionProgress;
-  sessionCriteria: SessionCriterion[];
+	user: SessionUser;
+	session: SessionProgress;
+	sessionCriteria: SessionCriterion[];
 };
 
 export default function NewVote({
-  user,
-  session,
-  sessionCriteria,
+	user,
+	session,
+	sessionCriteria,
 }: InputProps) {
-  const fetcher = useFetcher();
-  const { sessionId } = useParams();
+	const voteFetcher = useFetcher();
 
-  const [enableUntappdCheckin, setEnableUntappdCheckin] = useState(false);
-  const [selectedServingStyle, setSelectedServingStyle] = useState("1");
-  const [selectedFriends, setSelectedFriends] = useState<string[]>([]);
-  const [selectedLocation] = useState<string>("");
-  const [comment, setComment] = useState<string>("");
+	const { sessionId } = useParams();
 
-  const { defaultValue } = sliderConf();
+	const [isMobile, setIsMobile] = useState(false);
+	const [enableUntappdCheckin, setEnableUntappdCheckin] = useState(false);
+	const [openInUntappd, setOpenInUntappd] = useState(true);
+	const [includeScore, setIncludeScore] = useState(true);
 
-  const { location, requestLocation } = useGeolocation();
+	const [selectedVenue, setSelectedVenue] = useState<string>("");
+	const [comment, setComment] = useState<string>("");
+	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [checkinId, setCheckinId] = useState<number | null>(null);
 
-  const participantsUntappdIds = session?.users
-    .map((user) => user.untappdId)
-    .filter((id): id is number => id !== undefined);
+	const hasRequestedLocation = useRef(false);
 
-  const form = useForm({
-    initialValues: sessionCriteria.reduce((acc, key) => {
-      acc[key.name] =
-        session.currentBeer?.userRatings?.[key.id] ?? defaultValue;
-      return acc;
-    }, {} as Record<string, number>),
-  });
+	const { defaultValue } = sliderConf();
+	const { location, requestLocation } = useGeolocation();
 
-  const handleSubmit = (values: typeof form.values) => {
-    const vote = {
-      sessionId: Number(sessionId),
-      userId: user.id,
-      beerId: session.currentBeer?.beerId,
-      untappdBeerId: session.currentBeer?.untappdBeerId,
-      ratings: Object.entries(values).map(([name, rating]) => ({
-        id: sessionCriteria.find((r) => r.name === name)?.id,
-        name,
-        rating,
-      })),
-    };
+	const userHasRated =
+		Object.keys(session.currentBeer?.userRatings ?? {}).length > 0;
 
-    const formData = new FormData();
-    formData.append("vote", JSON.stringify(vote));
+	const ratingsForm = useForm({
+		initialValues: sessionCriteria.reduce(
+			(acc, key) => {
+				acc[key.name] =
+					session.currentBeer?.userRatings?.[key.id] ?? defaultValue;
+				return acc;
+			},
+			{} as Record<string, number>,
+		),
+	});
 
-    fetcher.submit(formData, {
-      method: "POST",
-      action: `/api/sessions/${sessionId}/vote`,
-    });
+	const openInApp = () => {
+		if (!checkinId) return;
 
-    form.reset();
+		const checkinUrl = `untappd://checkin/${checkinId}`;
+		window.open(checkinUrl, "_self");
+	};
 
-    if (enableUntappdCheckin) {
-      const geolat = Number(location?.lat.toFixed(4));
-      const geolng = Number(location?.lng.toFixed(4));
+	const handleSubmit = async (values: typeof ratingsForm.values) => {
+		setIsSubmitting(true);
 
-      const checkin = {
-        bid: session.currentBeer?.untappdBeerId,
-        rating: calculatedTotalScore,
-        geolat,
-        geolng,
-        checkin_tags: selectedFriends.map((friend) => Number.parseInt(friend)),
-        foursquare_id: selectedLocation,
-        timezone: "Europe/Copenhagen",
-        container_id: Number.parseInt(selectedServingStyle),
-        gmt_offset: 2,
-        shout: comment,
-      };
+		try {
+			if (enableUntappdCheckin && user.untappd && session.currentBeer) {
+				const geoLat = location.lat.toFixed(4);
+				const geoLng = location.lng.toFixed(4);
+				const gmtOffset = getGmtOffset().toString();
 
-      console.log("new checkin", checkin);
-    }
-  };
+				const formDataUntappd = new FormData();
+				formDataUntappd.append(
+					"bid",
+					session.currentBeer.untappdBeerId.toString(),
+				);
+				formDataUntappd.append("geolat", geoLat);
+				formDataUntappd.append("geolng", geoLng);
+				formDataUntappd.append("foursquare_id", selectedVenue);
+				formDataUntappd.append("shout", comment);
+				formDataUntappd.append("timezone", "Europe/Copenhagen");
+				formDataUntappd.append("gmt_offset", gmtOffset);
 
-  const calculatedTotalScore = useMemo(() => {
-    return calculateVoteScore(form.values, sessionCriteria);
-  }, [form.values, sessionCriteria]);
-  const [debouncedTotalScore] = useDebouncedValue(calculatedTotalScore, 200);
+				if (includeScore) {
+					formDataUntappd.append("rating", calculatedTotalScore.toString());
+				}
 
-  useEffect(() => {
-    if (enableUntappdCheckin) {
-      requestLocation();
-    }
-  }, [enableUntappdCheckin, requestLocation]);
+				const checkInResponse = await fetch("/api/untappd/check-in", {
+					method: "POST",
+					body: formDataUntappd,
+				});
 
-  return (
-    <Paper withBorder radius="md" p="md" pt="lg" mt={-10}>
-      <form onSubmit={form.onSubmit(handleSubmit)}>
-        <Stack>
-          {sessionCriteria.map((criterion) => (
-            <RatingSlider
-              key={criterion.id}
-              form={form}
-              name={criterion.name}
-              label={criterion.name}
-            />
-          ))}
-        </Stack>
+				const checkInData = await checkInResponse.json();
 
-        <Divider my="lg" opacity={0.75} />
+				if (checkInResponse.ok && checkInData.success) {
+					setCheckinId(checkInData.data.checkinId);
+					setEnableUntappdCheckin(false);
+					setComment("");
 
-        {user.untappd?.id && user.untappd.accessToken && CHECKIN_ENABLED && (
-          <>
-            <Grid align="center" gutter="xs">
-              <Grid.Col span={10}>
-                <Stack gap="xs">
-                  <Switch
-                    label="Check-in på Untappd"
-                    color="slateIndigo"
-                    checked={enableUntappdCheckin}
-                    onChange={(event) => {
-                      setEnableUntappdCheckin(event.currentTarget.checked);
-                    }}
-                  />
-                  <Text c="dimmed" size="xs">
-                    Lav et check-in direkte i Untappd sammen med din bedømmelse
-                  </Text>
-                </Stack>
-              </Grid.Col>
-              <Grid.Col span={2}>
-                <Text size="xl" ta="center">
-                  {Number.isNaN(debouncedTotalScore)
-                    ? "0.00"
-                    : debouncedTotalScore.toFixed(2)}
-                </Text>
-                <Text c="dimmed" fs="italic" ta="center" size="sm" mt={-5}>
-                  Score
-                </Text>
-              </Grid.Col>
-            </Grid>
+					if (openInUntappd) {
+						openInApp();
+					}
+				} else {
+					showDangerToast("Untappd check-in fejlede");
+				}
+			}
 
-            <Collapse in={enableUntappdCheckin}>
-              <ScrollArea type="never" offsetScrollbars scrollbarSize={4}>
-                <SegmentedControl
-                  mt="lg"
-                  value={selectedServingStyle}
-                  onChange={setSelectedServingStyle}
-                  data={servingStyles.map((style) => ({
-                    value: style.container_id.toString(),
-                    label: (
-                      <Center style={{ gap: 5 }}>
-                        <Image
-                          src={style.container_image_url}
-                          alt={style.container_name}
-                          width={20}
-                          height={20}
-                          ml="xs"
-                        />
-                        <Text size="sm" mr="md">
-                          {style.container_name_dk}
-                        </Text>
-                      </Center>
-                    ),
-                  }))}
-                />
-              </ScrollArea>
+			const vote = {
+				sessionId: Number(sessionId),
+				userId: user.id,
+				beerId: session.currentBeer?.beerId,
+				untappdBeerId: session.currentBeer?.untappdBeerId,
+				ratings: Object.entries(values).map(([name, rating]) => ({
+					id: sessionCriteria.find((r) => r.name === name)?.id,
+					name,
+					rating,
+				})),
+			};
 
-              <FriendsSearch
-                mt="sm"
-                value={selectedFriends}
-                onChange={setSelectedFriends}
-                untappdAccessToken={user.untappd.accessToken}
-                priorityUserIds={participantsUntappdIds}
-              />
+			const formData = new FormData();
+			formData.append("vote", JSON.stringify(vote));
 
-              <Select
-                mt={5}
-                placeholder="Søg efter en lokation"
-                data={["React", "Angular", "Vue", "Svelte"]}
-              />
+			voteFetcher.submit(formData, {
+				method: "POST",
+				action: `/api/sessions/${sessionId}/vote`,
+			});
+		} finally {
+			setIsSubmitting(false);
+		}
+	};
 
-              <Textarea
-                mt="sm"
-                label="Kommentar"
-                rows={3}
-                value={comment}
-                onChange={(event) => setComment(event.currentTarget.value)}
-              />
-            </Collapse>
-          </>
-        )}
+	const calculatedTotalScore = useMemo(() => {
+		return calculateVoteScore(ratingsForm.values, sessionCriteria);
+	}, [ratingsForm.values, sessionCriteria]);
+	const [debouncedTotalScore] = useDebouncedValue(calculatedTotalScore, 200);
 
-        <Button
-          color="slateIndigo"
-          tt="uppercase"
-          fw="bold"
-          lts={0.8}
-          fullWidth
-          type="submit"
-          loading={fetcher.state === "submitting"}
-          mt="lg"
-        >
-          Gem Bedømmelse {enableUntappdCheckin && "og Check-in"}
-        </Button>
-      </form>
-    </Paper>
-  );
+	useEffect(() => {
+		if (enableUntappdCheckin && !hasRequestedLocation.current) {
+			requestLocation();
+			hasRequestedLocation.current = true;
+		} else if (!enableUntappdCheckin) {
+			hasRequestedLocation.current = false;
+		}
+	}, [enableUntappdCheckin, requestLocation]);
+
+	useEffect(() => {
+		setIsMobile(isMobileOrTablet());
+	}, []);
+
+	return (
+		<Paper withBorder radius="md" p="md" pt="lg" mt={-10}>
+			<form onSubmit={ratingsForm.onSubmit(handleSubmit)}>
+				<Stack>
+					{sessionCriteria.map((criterion) => (
+						<RatingSlider
+							key={criterion.id}
+							form={ratingsForm}
+							name={criterion.name}
+							label={criterion.name}
+						/>
+					))}
+				</Stack>
+
+				<Divider my="lg" opacity={0.75} />
+
+				{!userHasRated}
+				{!userHasRated &&
+					user.untappd?.id &&
+					user.untappd.accessToken &&
+					CHECKIN_ENABLED && (
+						<Box mb="lg">
+							<Grid align="center" gutter="xs">
+								<Grid.Col span={10}>
+									<Stack gap="xs">
+										<Switch
+											label="Check-in i Untappd"
+											color="slateIndigo"
+											checked={enableUntappdCheckin}
+											onChange={(event) => {
+												setEnableUntappdCheckin(event.currentTarget.checked);
+											}}
+										/>
+										<Text c="dimmed" size="xs">
+											Lav et check-in direkte i Untappd sammen med din
+											bedømmelse
+										</Text>
+									</Stack>
+								</Grid.Col>
+								<Grid.Col span={2}>
+									<Text size="xl" ta="center">
+										{Number.isNaN(debouncedTotalScore)
+											? "0.00"
+											: debouncedTotalScore}
+									</Text>
+									<Text c="dimmed" fs="italic" ta="center" size="sm" mt={-5}>
+										Score
+									</Text>
+								</Grid.Col>
+							</Grid>
+
+							<Collapse in={enableUntappdCheckin}>
+								<Divider my="lg" opacity={0.5} />
+
+								<Grid align="flex-start" gutter="xs" my="lg">
+									<Grid.Col
+										span={{ base: 12, sm: 5 }}
+										mb={{ base: "xs", sm: 0 }}
+									>
+										<Stack gap="xs">
+											<Switch
+												label="Bruge score"
+												color="slateIndigo"
+												checked={includeScore}
+												onChange={(event) =>
+													setIncludeScore(event.currentTarget.checked)
+												}
+											/>
+											<Text c="dimmed" size="xs">
+												Brug den samlede score som rating i dit Untappd check-in
+											</Text>
+										</Stack>
+									</Grid.Col>
+									<Grid.Col span={{ base: 12, sm: 7 }}>
+										<Stack gap="xs">
+											<Switch
+												label="Åben i Untappd"
+												color="slateIndigo"
+												checked={openInUntappd}
+												onChange={(event) =>
+													setOpenInUntappd(event.currentTarget.checked)
+												}
+												disabled={!isMobile}
+											/>
+											<Text c="dimmed" size="xs">
+												Åbner automatisk dit nye check-in i Untappd-appen efter
+												bedømmelsen er gemt
+											</Text>
+										</Stack>
+									</Grid.Col>
+								</Grid>
+
+								<VenueSearch
+									mt="sm"
+									selectedVenue={selectedVenue}
+									onChange={setSelectedVenue}
+									untappdAccessToken={user.untappd.accessToken}
+									lat={location.lat}
+									lng={location.lng}
+									priorityVenueIds={[]}
+								/>
+								<Textarea
+									mt="sm"
+									label="Kommentar"
+									rows={3}
+									value={comment}
+									onChange={(event) => setComment(event.currentTarget.value)}
+								/>
+							</Collapse>
+						</Box>
+					)}
+
+				<Button
+					color="slateIndigo"
+					tt="uppercase"
+					fw="bold"
+					lts={0.8}
+					fullWidth
+					type="submit"
+					loading={isSubmitting || voteFetcher.state !== "idle"}
+					mb="lg"
+				>
+					Gem Bedømmelse {enableUntappdCheckin && "og Check-in"}
+				</Button>
+
+				{userHasRated && (
+					<>
+						<Card shadow="xs" radius="md">
+							<LoadingOverlay
+								visible={isSubmitting || voteFetcher.state !== "idle"}
+								zIndex={1000}
+								overlayProps={{ radius: "sm", blur: 2 }}
+								loaderProps={{ color: "slateIndigo" }}
+							/>
+							<Flex align="center">
+								<Avatar
+									color="slateIndigo"
+									variant="outline"
+									size="lg"
+									radius="xl"
+								>
+									<IconCheck color="#484F65" size={30} />
+								</Avatar>
+
+								<Group ml="xl" gap={3}>
+									<Text>Din bedømmelse er gemt!</Text>
+									<Text size="sm" c="dimmed">
+										Så længe der stadig bliver stemt kan du altid ændre din
+										score ved at gemme bedømmelsen igen.
+									</Text>
+								</Group>
+							</Flex>
+						</Card>
+
+						{checkinId && (
+							<Card shadow="xs" radius="md" mt="md">
+								<Flex align="center">
+									<Avatar
+										color="slateIndigo"
+										variant="outline"
+										size="lg"
+										radius="xl"
+									>
+										<IconCheck color="#484F65" size={30} />
+									</Avatar>
+
+									<Group ml="xl" gap={3}>
+										<Text>Dit check-in er oprettet i Untappd!</Text>
+										<Text size="sm" c="dimmed">
+											Du kan finde det i appen, eller ved at trykke på linket
+											herunder - så bliver du taget direkte til det.
+										</Text>
+									</Group>
+								</Flex>
+
+								<Button
+									variant="default"
+									color="slateIndigo"
+									fullWidth
+									mt="md"
+									radius="md"
+								>
+									Se check-in i Untappd
+								</Button>
+							</Card>
+						)}
+					</>
+				)}
+			</form>
+		</Paper>
+	);
 }

@@ -1,5 +1,5 @@
-import { Server } from "socket.io";
 import { createServer } from "node:http";
+import { Server } from "socket.io";
 
 const httpServer = createServer();
 export const io = new Server(httpServer, {

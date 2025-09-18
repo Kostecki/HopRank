@@ -5,9 +5,9 @@ import type {
   ratings,
   sessionBeers,
   sessionCriteria,
-  sessions,
   sessionState,
   sessionUsers,
+  sessions,
   users,
 } from "./schema.server";
 

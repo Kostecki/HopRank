@@ -20,5 +20,7 @@ export const calculateVoteScore = (
     { weightedSum: 0, totalWeight: 0 }
   );
 
-  return totalWeight > 0 ? weightedSum / totalWeight : 0;
+  const average = totalWeight > 0 ? (weightedSum / totalWeight).toFixed(2) : 0;
+
+  return Number(average);
 };

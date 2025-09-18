@@ -64,6 +64,20 @@
       "when": 1746564274898,
       "tag": "0008_same_master_chief",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1758051051656,
+      "tag": "0009_busy_gamora",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1758055371992,
+      "tag": "0010_tranquil_shooting_star",
+      "breakpoints": true
     }
   ]
 }
