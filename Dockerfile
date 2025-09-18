@@ -66,6 +66,9 @@ RUN apk add tzdata
 
 WORKDIR /app
 
+# Ensure the database folder exists
+RUN mkdir -p /app/database
+
 # Copy only runtime artifacts
 COPY --from=prod-deps /app/node_modules ./node_modules
 COPY --from=build /app/build ./build
