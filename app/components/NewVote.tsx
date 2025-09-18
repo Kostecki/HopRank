@@ -30,10 +30,6 @@ import { calculateVoteScore } from "~/utils/score";
 import { showDangerToast } from "~/utils/toasts";
 import { getGmtOffset, isMobileOrTablet, sliderConf } from "~/utils/utils";
 
-const CHECKIN_ENABLED = Boolean(
-	JSON.parse(import.meta.env.VITE_UNTAPPD_CHECKIN),
-);
-
 type InputProps = {
 	user: SessionUser;
 	session: SessionProgress;
@@ -189,100 +185,93 @@ export default function NewVote({
 				<Divider my="lg" opacity={0.75} />
 
 				{!userHasRated}
-				{!userHasRated &&
-					user.untappd?.id &&
-					user.untappd.accessToken &&
-					CHECKIN_ENABLED && (
-						<Box mb="lg">
-							<Grid align="center" gutter="xs">
-								<Grid.Col span={10}>
+				{!userHasRated && user.untappd?.id && user.untappd.accessToken && (
+					<Box mb="lg">
+						<Grid align="center" gutter="xs">
+							<Grid.Col span={10}>
+								<Stack gap="xs">
+									<Switch
+										label="Check-in i Untappd"
+										color="slateIndigo"
+										checked={enableUntappdCheckin}
+										onChange={(event) => {
+											setEnableUntappdCheckin(event.currentTarget.checked);
+										}}
+									/>
+									<Text c="dimmed" size="xs">
+										Lav et check-in direkte i Untappd sammen med din bedømmelse
+									</Text>
+								</Stack>
+							</Grid.Col>
+							<Grid.Col span={2}>
+								<Text size="xl" ta="center">
+									{Number.isNaN(debouncedTotalScore)
+										? "0.00"
+										: debouncedTotalScore}
+								</Text>
+								<Text c="dimmed" fs="italic" ta="center" size="sm" mt={-5}>
+									Score
+								</Text>
+							</Grid.Col>
+						</Grid>
+
+						<Collapse in={enableUntappdCheckin}>
+							<Divider my="lg" opacity={0.5} />
+
+							<Grid align="flex-start" gutter="xs" my="lg">
+								<Grid.Col span={{ base: 12, sm: 5 }} mb={{ base: "xs", sm: 0 }}>
 									<Stack gap="xs">
 										<Switch
-											label="Check-in i Untappd"
+											label="Bruge score"
 											color="slateIndigo"
-											checked={enableUntappdCheckin}
-											onChange={(event) => {
-												setEnableUntappdCheckin(event.currentTarget.checked);
-											}}
+											checked={includeScore}
+											onChange={(event) =>
+												setIncludeScore(event.currentTarget.checked)
+											}
 										/>
 										<Text c="dimmed" size="xs">
-											Lav et check-in direkte i Untappd sammen med din
-											bedømmelse
+											Brug den samlede score som rating i dit Untappd check-in
 										</Text>
 									</Stack>
 								</Grid.Col>
-								<Grid.Col span={2}>
-									<Text size="xl" ta="center">
-										{Number.isNaN(debouncedTotalScore)
-											? "0.00"
-											: debouncedTotalScore}
-									</Text>
-									<Text c="dimmed" fs="italic" ta="center" size="sm" mt={-5}>
-										Score
-									</Text>
+								<Grid.Col span={{ base: 12, sm: 7 }}>
+									<Stack gap="xs">
+										<Switch
+											label="Åben i Untappd"
+											color="slateIndigo"
+											checked={openInUntappd}
+											onChange={(event) =>
+												setOpenInUntappd(event.currentTarget.checked)
+											}
+											disabled={!isMobile}
+										/>
+										<Text c="dimmed" size="xs">
+											Åbner automatisk dit nye check-in i Untappd-appen efter
+											bedømmelsen er gemt
+										</Text>
+									</Stack>
 								</Grid.Col>
 							</Grid>
 
-							<Collapse in={enableUntappdCheckin}>
-								<Divider my="lg" opacity={0.5} />
-
-								<Grid align="flex-start" gutter="xs" my="lg">
-									<Grid.Col
-										span={{ base: 12, sm: 5 }}
-										mb={{ base: "xs", sm: 0 }}
-									>
-										<Stack gap="xs">
-											<Switch
-												label="Bruge score"
-												color="slateIndigo"
-												checked={includeScore}
-												onChange={(event) =>
-													setIncludeScore(event.currentTarget.checked)
-												}
-											/>
-											<Text c="dimmed" size="xs">
-												Brug den samlede score som rating i dit Untappd check-in
-											</Text>
-										</Stack>
-									</Grid.Col>
-									<Grid.Col span={{ base: 12, sm: 7 }}>
-										<Stack gap="xs">
-											<Switch
-												label="Åben i Untappd"
-												color="slateIndigo"
-												checked={openInUntappd}
-												onChange={(event) =>
-													setOpenInUntappd(event.currentTarget.checked)
-												}
-												disabled={!isMobile}
-											/>
-											<Text c="dimmed" size="xs">
-												Åbner automatisk dit nye check-in i Untappd-appen efter
-												bedømmelsen er gemt
-											</Text>
-										</Stack>
-									</Grid.Col>
-								</Grid>
-
-								<VenueSearch
-									mt="sm"
-									selectedVenue={selectedVenue}
-									onChange={setSelectedVenue}
-									untappdAccessToken={user.untappd.accessToken}
-									lat={location.lat}
-									lng={location.lng}
-									priorityVenueIds={[]}
-								/>
-								<Textarea
-									mt="sm"
-									label="Kommentar"
-									rows={3}
-									value={comment}
-									onChange={(event) => setComment(event.currentTarget.value)}
-								/>
-							</Collapse>
-						</Box>
-					)}
+							<VenueSearch
+								mt="sm"
+								selectedVenue={selectedVenue}
+								onChange={setSelectedVenue}
+								untappdAccessToken={user.untappd.accessToken}
+								lat={location.lat}
+								lng={location.lng}
+								priorityVenueIds={[]}
+							/>
+							<Textarea
+								mt="sm"
+								label="Kommentar"
+								rows={3}
+								value={comment}
+								onChange={(event) => setComment(event.currentTarget.value)}
+							/>
+						</Collapse>
+					</Box>
+				)}
 
 				<Button
 					color="slateIndigo"
