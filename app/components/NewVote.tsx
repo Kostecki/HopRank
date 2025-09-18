@@ -320,7 +320,7 @@ export default function NewVote({
 									<Text>Din bedømmelse er gemt!</Text>
 									<Text size="sm" c="dimmed">
 										Så længe der stadig bliver stemt kan du altid ændre din
-										bedømmelse ved at gemme bedømmelsen igen.
+										score ved at gemme bedømmelsen igen.
 									</Text>
 								</Group>
 							</Flex>
