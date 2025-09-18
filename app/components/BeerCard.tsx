@@ -143,8 +143,22 @@ export function BeerCard({ session, beer, rank }: InputProps) {
 				</Grid.Col>
 			</Grid>
 			{rank && rank > 3 && (
-				<Box pos="absolute" top={2} right={5}>
-					<Text size="sm" c="dimmed" fw="lighter" opacity={1}>
+				<Box
+					style={{
+						position: "absolute",
+						top: 0,
+						right: 0,
+						background: "#EDEDED",
+						width: 28,
+						height: 28,
+						clipPath: "polygon(100% 0, 100% 100%, 0 0)",
+						display: "flex",
+						justifyContent: "flex-end",
+						alignItems: "flex-start",
+						padding: 2.5,
+					}}
+				>
+					<Text size="sm" c="dimmed" opacity={0.5} mt="-3px">
 						{rank}
 					</Text>
 				</Box>
