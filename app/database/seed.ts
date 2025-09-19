@@ -21,6 +21,8 @@ const seedCriteria = async () => {
 };
 
 const seedDatabase = async () => {
+  console.log("Seeding Database:");
+
   await seedCriteria();
 };
 

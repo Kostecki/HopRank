@@ -53,7 +53,6 @@ const setupDatabase = async () => {
     migrationsFolder: MIGRATIONS_PATH,
   });
 
-  console.log("Seeding Database:");
   await seedDatabase();
 };
 
