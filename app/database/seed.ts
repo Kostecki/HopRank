@@ -15,8 +15,7 @@ const seedCriteria = async () => {
   const [existingCriteria] = await db.select({ count: count() }).from(criteria);
 
   if (existingCriteria.count === 0) {
-    console.log();
-    console.log("Seeding Criteria");
+    console.log(" - Criteria");
     await db.insert(criteria).values(criteriaData);
   }
 };

@@ -1,7 +1,6 @@
 services:
-  hoprank:
+  hop-rank:
     image: kostecki/hop-rank:latest
-    container_name: hop-rank
     restart: unless-stopped
     hostname: hop-rank-docker-tower
     ports:
@@ -28,5 +27,19 @@ services:
       - hoprank_data:/app/database
       - /etc/localtime:/etc/localtime:ro
 
+  drizzle-gateway:
+    image: ghcr.io/drizzle-team/gateway:latest
+    container_name: drizzle-gateway
+    restart: unless-stopped
+    ports:
+      - "4983:4983"
+    environment:
+      PORT: 4983
+      MASTERPASS: ${DRIZZLE_GATEWAY_MASTERPASS}
+    volumes:
+      - drizzle_gateway_data:/app
+      - hoprank_data:/app/database
+
 volumes:
   hoprank_data:
+  drizzle_gateway_data:
