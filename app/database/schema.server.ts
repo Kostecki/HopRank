@@ -2,6 +2,7 @@ import { type SQL, relations, sql } from "drizzle-orm";
 import {
   type AnySQLiteColumn,
   integer,
+  real,
   sqliteTable,
   text,
   unique,
@@ -85,7 +86,7 @@ export const criteria = sqliteTable("criteria", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   name: text("name").unique().notNull(),
   description: text("description").notNull(),
-  weight: integer("weight").notNull(),
+  weight: real("weight").notNull(),
 });
 
 export const sessionCriteria = sqliteTable("session_criteria", {
