@@ -19,7 +19,7 @@ const DB_URL = (() => {
 	if (typeof window === "undefined") return "#"; // SSR safeguard
 	const { protocol, hostname } = window.location;
 
-	if (hostname === "localhost" || hostname === "127.0.0.1") {
+	if (hostname === "localhost") {
 		return "https://local.drizzle.studio";
 	}
 
@@ -137,7 +137,11 @@ export function UserMenu({ user }: InputProps) {
 						</Menu.Item>
 
 						<Menu.Item component={Link} to={COMMIT_URL} target="_blank">
-							<Tooltip label={LATEST_COMMIT_MESSAGE} withArrow position="left">
+							<Tooltip
+								label={LATEST_COMMIT_MESSAGE}
+								withArrow
+								position="bottom"
+							>
 								<Text size="xs" c="dimmed" fs="italic" fw={300}>
 									Latest Commit: {LATEST_COMMIT_HASH}
 								</Text>
