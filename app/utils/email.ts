@@ -1,4 +1,5 @@
 import mjml2html from "mjml";
+import { invariant } from "./invariant";
 
 /**
  * Generates the HTML content for a magic link login email using MJML.
@@ -8,11 +9,14 @@ import mjml2html from "mjml";
  * @returns The compiled HTML string to be sent as an email.
  */
 export const getMagicLinkEmail = (code: string, magicLink: string) => {
+  const APP_URL = process.env.APP_URL;
+  invariant(APP_URL, "APP_URL is not defined");
+
   const mjml = `<mjml>
   <mj-body width="400">
     <mj-section>
       <mj-column>
-        <mj-image width="100px" src="https://xn--l-4ga.kostecki.dk/logo.png"></mj-image>
+        <mj-image width="100px" src="${APP_URL}/logo.png"></mj-image>
 
         <mj-divider border-width="1px" border-color="#c3c6d0"></mj-divider>
 
