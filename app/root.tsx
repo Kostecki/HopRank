@@ -89,33 +89,26 @@ export async function loader({ request }: LoaderFunctionArgs) {
 		startCron();
 	}
 
-	// const SRC_URL = import.meta.env.VITE_UMAMI_SRC_URL;
-	// const WEBSITE_ID = import.meta.env.VITE_UMAMI_WEBSITE_ID;
-	const SRC_URL = "https://umami.israndom.win/script.js";
-	const WEBSITE_ID = "05e5f7ee-6b31-48ad-b853-994f11cd2291";
-	invariant(SRC_URL, "UMAMI_SRC_URL is not defined");
-	invariant(WEBSITE_ID, "UMAMI_WEBSITE_ID is not defined");
-
-	console.log("SRC_URL:", SRC_URL, "WEBSITE_ID:", WEBSITE_ID);
-
 	const user = await userSessionGet(request);
 	const { toast, headers } = await getToast(request);
 
-	return data({ umami: { SRC_URL, WEBSITE_ID }, user, toast }, { headers });
+	return data({ user, toast }, { headers });
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
-	const { umami, toast } = useLoaderData<typeof loader>();
+	const { toast } = useLoaderData<typeof loader>();
 
-	console.log("Umami config:", umami);
+	const SRC_URL = import.meta.env.VITE_UMAMI_SRC_URL;
+	const WEBSITE_ID = import.meta.env.VITE_UMAMI_WEBSITE_ID;
+	invariant(SRC_URL, "UMAMI_SRC_URL is not defined");
+	invariant(WEBSITE_ID, "UMAMI_WEBSITE_ID is not defined");
+	console.log("Umami config:", { SRC_URL, WEBSITE_ID });
 
 	const UmamiScript = () => {
 		const isProd = import.meta.env.PROD;
-		if (!isProd || !umami.SRC_URL || !umami.WEBSITE_ID) return null;
-		const src = umami.SRC_URL;
-		const websiteId = umami.WEBSITE_ID;
+		if (!isProd) return null;
 
-		return <script defer src={src} data-website-id={websiteId} />;
+		return <script defer src={SRC_URL} data-website-id={WEBSITE_ID} />;
 	};
 
 	useEffect(() => {
