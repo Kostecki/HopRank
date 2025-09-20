@@ -53,9 +53,6 @@ jobs:
           provenance: false
           sbom: false
           build-args: |
-            VITE_LOCALE=${{ vars.VITE_LOCALE }}
-            VITE_TZ=${{ vars.VITE_TZ }}
-            VITE_WS_URL=${{ vars.VITE_WS_URL }}
             VITE_ALGOLIA_APP_ID=${{ vars.VITE_ALGOLIA_APP_ID }}
             VITE_ALGOLIA_API_KEY=${{ vars.VITE_ALGOLIA_API_KEY }}
             VITE_LATEST_COMMIT_HASH=${{ env.COMMIT_HASH }}

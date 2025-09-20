@@ -47,6 +47,7 @@ export const db = drizzle(new Database(DATABASE_PATH), {
 });
 
 const setupDatabase = async () => {
+  console.log();
   console.log("Running Migrations");
 
   migrate(db, {

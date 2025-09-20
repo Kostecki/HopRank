@@ -15,14 +15,13 @@ const seedCriteria = async () => {
   const [existingCriteria] = await db.select({ count: count() }).from(criteria);
 
   if (existingCriteria.count === 0) {
+    console.log("Seeding Database:");
     console.log(" - Criteria");
     await db.insert(criteria).values(criteriaData);
   }
 };
 
 const seedDatabase = async () => {
-  console.log("Seeding Database:");
-
   await seedCriteria();
 };
 

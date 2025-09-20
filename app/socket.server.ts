@@ -14,7 +14,7 @@ io.on("connection", (socket) => {
 });
 
 if (!process.env.VITE) {
-  const PORT = Number(process.env.WS_PORT) || 4000;
+  const PORT = 4000;
 
   httpServer.listen(PORT, () => {
     console.log();
