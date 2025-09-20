@@ -155,7 +155,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 export default function App() {
 	const { user } = useLoaderData<typeof loader>();
-	useUmamiIdentify(user?.email);
+
+	if (user?.email) {
+		useUmamiIdentify(user.email);
+	}
 
 	return (
 		<SocketProvider>
