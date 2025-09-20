@@ -44,16 +44,20 @@ const User = ({ user }: { user: SessionUser }) => {
 	const socket = useSocket();
 
 	useEffect(() => {
-		if (socket) {
-			setConnected(socket.connected);
-			socket.on("connect", () => setConnected(true));
-			socket.on("disconnect", () => setConnected(false));
+		if (!socket) return;
 
-			return () => {
-				socket.off("connect", () => setConnected(true));
-				socket.off("disconnect", () => setConnected(false));
-			};
-		}
+		const handleConnect = () => setConnected(true);
+		const handleDisconnect = () => setConnected(false);
+
+		setConnected(socket.connected);
+
+		socket.on("connect", handleConnect);
+		socket.on("disconnect", handleDisconnect);
+
+		return () => {
+			socket.off("connect", handleConnect);
+			socket.off("disconnect", handleDisconnect);
+		};
 	}, [socket]);
 
 	const LATEST_COMMIT_HASH = import.meta.env.VITE_LATEST_COMMIT_HASH;
