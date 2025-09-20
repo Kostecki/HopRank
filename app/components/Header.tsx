@@ -35,7 +35,8 @@ type InputProps = {
 };
 
 const User = ({ user }: { user: SessionUser }) => {
-	const { email, untappd } = user;
+	const { email, admin: isAdmin, untappd } = user;
+
 	const firstLetter = email.slice(0, 1).toUpperCase();
 
 	const [connected, setConnected] = useState(false);
@@ -110,7 +111,7 @@ const User = ({ user }: { user: SessionUser }) => {
 				>
 					Log ud
 				</Menu.Item>
-				{user.email === "jacob@kostecki.dk" && (
+				{isAdmin && (
 					<>
 						<MenuDivider />
 

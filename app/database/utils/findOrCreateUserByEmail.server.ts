@@ -8,9 +8,24 @@ export const findOrCreateUserByEmail = async (
   username?: string,
   name?: string
 ) => {
+  const userEmail = email.trim().toLowerCase();
+
+  // Set admin state based on list of emails in env var
+  const ADMIN_USER_EMAILS = process.env.ADMIN_USER_EMAILS || "";
+  const adminEmails = ADMIN_USER_EMAILS.split(",")
+    .map((e) => e.trim().toLowerCase())
+    .filter((e) => e.length > 0);
+  const isAdmin = adminEmails.includes(userEmail);
+
   const insertedUsers = await db
     .insert(users)
-    .values({ email, untappdId, username, name })
+    .values({
+      email: userEmail,
+      untappdId,
+      username,
+      name,
+      admin: isAdmin,
+    })
     .onConflictDoNothing()
     .returning();
 
@@ -21,7 +36,7 @@ export const findOrCreateUserByEmail = async (
   const [existingUser] = await db
     .select()
     .from(users)
-    .where(eq(users.email, email))
+    .where(eq(users.email, userEmail))
     .limit(1);
 
   if (!existingUser) {

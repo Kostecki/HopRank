@@ -62,6 +62,7 @@ authenticator.use(
       const sessionUser = {
         id: user.id,
         email: user.email,
+        admin: user.admin,
       };
 
       return await commitSessionUser(request, sessionUser);
@@ -96,6 +97,7 @@ authenticator.use(
       const sessionUser = {
         id: user.id,
         email: user.email,
+        admin: user.admin,
         untappd: {
           id: untappdId,
           username: userName,
