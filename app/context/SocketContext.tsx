@@ -5,9 +5,14 @@ export const SocketContext = createContext<Socket | null>(null);
 
 export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
 	const socket = useMemo(() => {
-		const url = import.meta.env.DEV ? "http://localhost:4000" : undefined;
+		// const url = import.meta.env.DEV
+		// 	? "http://localhost:4000"
+		// 	: "https://hr.kostecki.dk";
 
-		return io(url, { path: "/ws", transports: ["websocket"] });
+		return io("https://hr.kostecki.dk", {
+			path: "/ws",
+			transports: ["websocket"],
+		});
 	}, []);
 
 	return (
