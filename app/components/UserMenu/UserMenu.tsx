@@ -23,10 +23,8 @@ const DB_URL = (() => {
 		return "https://local.drizzle.studio";
 	}
 
-	const hostWithoutDb = hostname.replace(/^db\./, "");
-	const dbHost = `db.${hostWithoutDb}`;
-
-	return `${protocol}//${dbHost}`;
+	// Add db sub-subdomain for Drizzle Studio
+	return `${protocol}//db.${hostname}`;
 })();
 
 export function UserMenu({ user }: InputProps) {
