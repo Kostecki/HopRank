@@ -1,8 +1,21 @@
-.glowPulse {
+.glowPulseUndefined {
   animation: glow-pulse 4s ease-in-out infinite;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.6);
 }
 
-@keyframes glow-pulse {
+.glowPulseConnected {
+  animation: glow-pulse-green 4s ease-in-out infinite;
+}
+
+.glowPulseConnecting {
+  animation: glow-pulse-yellow 2s ease-in-out infinite;
+}
+
+.glowPulseDisconnected {
+  animation: glow-pulse-red 3s ease-in-out infinite;
+}
+
+@keyframes glow-pulse-green {
   0% {
     box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.6);
   }
@@ -11,5 +24,29 @@
   }
   100% {
     box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.6);
+  }
+}
+
+@keyframes glow-pulse-yellow {
+  0% {
+    box-shadow: 0 0 0 2px rgba(255, 193, 7, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 6px 3px rgba(255, 193, 7, 0.3);
+  }
+  100% {
+    box-shadow: 0 0 0 2px rgba(255, 193, 7, 0.6);
+  }
+}
+
+@keyframes glow-pulse-red {
+  0% {
+    box-shadow: 0 0 0 2px rgba(244, 67, 54, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 6px 3px rgba(244, 67, 54, 0.3);
+  }
+  100% {
+    box-shadow: 0 0 0 2px rgba(244, 67, 54, 0.6);
   }
 }

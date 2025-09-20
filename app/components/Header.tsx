@@ -11,6 +11,7 @@ import {
 	useMantineTheme,
 } from "@mantine/core";
 import { IconBeer, IconLogout, IconUsers } from "@tabler/icons-react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import { useRevalidator } from "react-router";
 
@@ -19,7 +20,6 @@ import { useSocket } from "~/hooks/useSocket";
 
 import { createProfileLink } from "~/utils/untappd";
 
-import { useEffect, useState } from "react";
 import { type SessionProgress, SessionStatus } from "~/types/session";
 import type { SessionUser } from "~/types/user";
 
@@ -39,24 +39,32 @@ const User = ({ user }: { user: SessionUser }) => {
 
 	const firstLetter = email.slice(0, 1).toUpperCase();
 
-	const [connected, setConnected] = useState(false);
+	const [WSStatus, setWSStatus] = useState<
+		"undefined" | "connecting" | "connected" | "disconnected"
+	>("undefined");
 
 	const socket = useSocket();
 
 	useEffect(() => {
 		if (!socket) return;
 
-		const handleConnect = () => setConnected(true);
-		const handleDisconnect = () => setConnected(false);
+		const handleConnect = () => setWSStatus("connected");
+		const handleDisconnect = () => setWSStatus("disconnected");
+		const handleConnectError = () => setWSStatus("disconnected");
+		const handleReconnectAttempt = () => setWSStatus("connecting");
 
-		setConnected(socket.connected);
+		setWSStatus(socket.connected ? "connected" : "disconnected");
 
 		socket.on("connect", handleConnect);
 		socket.on("disconnect", handleDisconnect);
+		socket.on("connect_error", handleConnectError);
+		socket.on("reconnect_attempt", handleReconnectAttempt);
 
 		return () => {
 			socket.off("connect", handleConnect);
 			socket.off("disconnect", handleDisconnect);
+			socket.off("connect_error", handleConnectError);
+			socket.off("reconnect_attempt", handleReconnectAttempt);
 		};
 	}, [socket]);
 
@@ -73,12 +81,17 @@ const User = ({ user }: { user: SessionUser }) => {
 					size="md"
 					style={{
 						cursor: "pointer",
-						boxShadow: connected
-							? "0 0 0 2px rgba(76, 175, 80, 0.6)"
-							: undefined,
 						transition: "box-shadow 0.2s ease-in-out",
 					}}
-					className={connected ? styles.glowPulse : undefined}
+					className={
+						WSStatus === "connected"
+							? styles.glowPulseConnected
+							: WSStatus === "connecting"
+								? styles.glowPulseConnecting
+								: WSStatus === "disconnected"
+									? styles.glowPulseDisconnected
+									: styles.glowPulseUndefined
+					}
 				>
 					{firstLetter}
 				</Avatar>
