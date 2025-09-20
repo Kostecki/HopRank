@@ -96,7 +96,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
-	const { toast } = useLoaderData<typeof loader>();
+	const loaderData = useLoaderData<typeof loader>();
+	const toast = loaderData?.toast;
 
 	const SRC_URL = import.meta.env.VITE_UMAMI_SRC_URL;
 	const WEBSITE_ID = import.meta.env.VITE_UMAMI_WEBSITE_ID;
