@@ -94,6 +94,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	invariant(SRC_URL, "UMAMI_SRC_URL is not defined");
 	invariant(WEBSITE_ID, "UMAMI_WEBSITE_ID is not defined");
 
+	console.log("SRC_URL:", SRC_URL, "WEBSITE_ID:", WEBSITE_ID);
+
 	const user = await userSessionGet(request);
 	const { toast, headers } = await getToast(request);
 
@@ -102,6 +104,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 export function Layout({ children }: { children: React.ReactNode }) {
 	const { umami, toast } = useLoaderData<typeof loader>();
+
+	console.log("Umami config:", umami);
 
 	const UmamiScript = () => {
 		const isProd = import.meta.env.PROD;
