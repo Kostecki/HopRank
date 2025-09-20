@@ -25,18 +25,18 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 	const origin = `${url.protocol}//${url.host}`;
 
 	let sessionProgress = null;
+	let sessionBeers: SelectSessionBeersWithBeer[] = [];
 	if (sessionId) {
-		const response = await fetch(
+		const sessionProgressResponse = await fetch(
 			`${origin}/api/sessions/${sessionId}/progress`,
 		);
-		sessionProgress = (await response.json()) as SessionProgress;
-	}
+		sessionProgress = (await sessionProgressResponse.json()) as SessionProgress;
 
-	const beersResponse = await fetch(
-		`${origin}/api/sessions/${sessionId}/list-beers`,
-	);
-	const sessionBeers =
-		(await beersResponse.json()) as SelectSessionBeersWithBeer[];
+		const beersResponse = await fetch(
+			`${origin}/api/sessions/${sessionId}/list-beers`,
+		);
+		sessionBeers = (await beersResponse.json()) as SelectSessionBeersWithBeer[];
+	}
 
 	return {
 		sessionId,
