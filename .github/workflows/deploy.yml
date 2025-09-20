@@ -55,5 +55,7 @@ jobs:
           build-args: |
             VITE_ALGOLIA_APP_ID=${{ vars.VITE_ALGOLIA_APP_ID }}
             VITE_ALGOLIA_API_KEY=${{ vars.VITE_ALGOLIA_API_KEY }}
+            VITE_UMAMI_SRC_URL=${{ vars.VITE_UMAMI_SRC_URL }}
+            VITE_UMAMI_WEBSITE_ID=${{ vars.VITE_UMAMI_WEBSITE_ID }}
             VITE_LATEST_COMMIT_HASH=${{ env.COMMIT_HASH }}
             VITE_LATEST_COMMIT_MESSAGE=${{ env.COMMIT_MESSAGE }}
