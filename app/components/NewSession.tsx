@@ -24,8 +24,8 @@ type InputProps = {
 
 export const criteriaGroups = [
 	{
-		id: "basic",
-		name: "Basic",
+		id: "minimal",
+		name: "Minimal",
 		active: [1],
 	},
 	{
@@ -43,7 +43,7 @@ export const criteriaGroups = [
 export default function NewSession({ criteria, ...props }: InputProps) {
 	const [selectedBeers, setSelectedBeers] = useState<BeerOption[]>([]);
 	const [activeCriteria, setActiveCriteria] = useState<number[]>(() => {
-		const group = criteriaGroups.find((group) => group.id === "simple");
+		const group = criteriaGroups.find((group) => group.id === "minimal");
 		return group?.active ?? [];
 	});
 	const [sessionName, setSessionName] = useState("");
@@ -146,7 +146,8 @@ export default function NewSession({ criteria, ...props }: InputProps) {
 
 				<Stack gap={5}>
 					<Text size="sm" c="dimmed" fs="italic">
-						Du kan tilføje øl til smagning ved at søge efter dem herunder
+						Du kan tilføje øl direkte til smagningen ved at søge efter dem
+						herunder
 					</Text>
 
 					<BeerMultiSelect
