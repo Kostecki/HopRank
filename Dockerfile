@@ -57,7 +57,7 @@ RUN pnpm install --prod --frozen-lockfile
 
 # -----------------------------------
 # Final runtime image
-FROM node:24-alpine AS runner
+FROM node:23-alpine AS runner
 
 RUN apk add tzdata
 
