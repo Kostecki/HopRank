@@ -89,8 +89,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
 		startCron();
 	}
 
-	const SRC_URL = process.env.UMAMI_SRC_URL;
-	const WEBSITE_ID = process.env.UMAMI_WEBSITE_ID;
+	const SRC_URL = import.meta.env.VITE_UMAMI_SRC_URL;
+	const WEBSITE_ID = import.meta.env.VITE_UMAMI_WEBSITE_ID;
 	invariant(SRC_URL, "UMAMI_SRC_URL is not defined");
 	invariant(WEBSITE_ID, "UMAMI_WEBSITE_ID is not defined");
 
