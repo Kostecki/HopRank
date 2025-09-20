@@ -7,7 +7,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
 	const socket = useMemo(() => {
 		const url = import.meta.env.DEV ? "http://localhost:4000" : undefined;
 
-		return io(url, { path: "/ws" });
+		return io(url, { path: "/ws", transports: ["websocket"] });
 	}, []);
 
 	return (
