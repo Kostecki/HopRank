@@ -23,7 +23,6 @@ services:
       UMAMI_WEBSITE_ID: ${UMAMI_WEBSITE_ID}
       UNTAPPD_CLIENT_ID: ${UNTAPPD_CLIENT_ID}
       UNTAPPD_CLIENT_SECRET: ${UNTAPPD_CLIENT_SECRET}
-      TZ: ${VITE_TZ}
     volumes:
       - hoprank_data:/app/database
       - /etc/localtime:/etc/localtime:ro
