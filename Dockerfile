@@ -26,6 +26,9 @@ COPY vite.config.ts tsconfig.json drizzle.config.ts postcss.config.cjs react-rou
 COPY package.json pnpm-lock.yaml ./
 
 # Inject public build-time environment variables
+ARG VITE_WS_URL
+ENV VITE_WS_URL=$VITE_WS_URL
+
 ARG VITE_ALGOLIA_APP_ID
 ENV VITE_ALGOLIA_APP_ID=$VITE_ALGOLIA_APP_ID
 
