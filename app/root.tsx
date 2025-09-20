@@ -103,7 +103,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
 	const WEBSITE_ID = import.meta.env.VITE_UMAMI_WEBSITE_ID;
 	invariant(SRC_URL, "UMAMI_SRC_URL is not defined");
 	invariant(WEBSITE_ID, "UMAMI_WEBSITE_ID is not defined");
-	console.log("Umami config:", { SRC_URL, WEBSITE_ID });
 
 	const UmamiScript = () => {
 		const isProd = import.meta.env.PROD;
