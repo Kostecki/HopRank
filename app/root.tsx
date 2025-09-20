@@ -89,8 +89,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
 		startCron();
 	}
 
-	const SRC_URL = import.meta.env.VITE_UMAMI_SRC_URL;
-	const WEBSITE_ID = import.meta.env.VITE_UMAMI_WEBSITE_ID;
+	// const SRC_URL = import.meta.env.VITE_UMAMI_SRC_URL;
+	// const WEBSITE_ID = import.meta.env.VITE_UMAMI_WEBSITE_ID;
+	const SRC_URL = "https://umami.israndom.win/script.js";
+	const WEBSITE_ID = "05e5f7ee-6b31-48ad-b853-994f11cd2291";
 	invariant(SRC_URL, "UMAMI_SRC_URL is not defined");
 	invariant(WEBSITE_ID, "UMAMI_WEBSITE_ID is not defined");
 
