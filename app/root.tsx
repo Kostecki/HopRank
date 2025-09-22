@@ -1,10 +1,9 @@
 import {
+	Button,
 	Code,
 	ColorSchemeScript,
 	Container,
 	MantineProvider,
-	ScrollArea,
-	Stack,
 	Text,
 	Title,
 	mantineHtmlProps,
@@ -12,6 +11,7 @@ import {
 import { Notifications } from "@mantine/notifications";
 import { useEffect } from "react";
 import {
+	Link,
 	Links,
 	type LoaderFunctionArgs,
 	Meta,
@@ -167,15 +167,15 @@ export default function App() {
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-	let message = "Oops!";
-	let details = "An unexpected error occurred.";
+	let message = "Hov!";
+	let details = "En uventet fejl opstod";
 	let stack: string | undefined;
 
 	if (isRouteErrorResponse(error)) {
-		message = error.status === 404 ? "404" : "Error";
+		message = error.status === 404 ? "404" : "Fejl";
 		details =
 			error.status === 404
-				? "The requested page could not be found."
+				? "Siden du leder efter findes desværre ikke."
 				: error.statusText || details;
 	} else if (import.meta.env.DEV && error && error instanceof Error) {
 		details = error.message;
@@ -183,20 +183,25 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
 	}
 
 	return (
-		<Container pt={64} px="md">
-			<Stack>
-				<Title order={1} c="white">
-					{message}
-				</Title>
-				<Text c="white">{details}</Text>
-				{stack && (
-					<ScrollArea.Autosize type="scroll" mah={600}>
-						<Code block w="100%" p="md">
-							{stack}
-						</Code>
-					</ScrollArea.Autosize>
-				)}
-			</Stack>
+		<Container style={{ textAlign: "center", paddingTop: 75 }}>
+			<Title order={1} c="black" mb="md">
+				{message}
+			</Title>
+			<Text size="xl" c="dimmed" mb="xl">
+				{details}
+			</Text>
+
+			{stack && (
+				<pre style={{ padding: "16px", overflowX: "auto" }}>
+					<Code block>{stack}</Code>
+				</pre>
+			)}
+
+			<Link to="/">
+				<Button tt="uppercase" mt="md" variant="gradient">
+					Tilbage til forsiden
+				</Button>
+			</Link>
 		</Container>
 	);
 }
