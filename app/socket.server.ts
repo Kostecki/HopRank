@@ -1,5 +1,6 @@
 import { createServer } from "node:http";
 import { Server } from "socket.io";
+import { pluralize } from "./utils/utils";
 
 const httpServer = createServer();
 export const io = new Server(httpServer, {
@@ -17,8 +18,13 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", (reason) => {
+    const clientCount = io.engine.clientsCount;
+
     console.log("client disconnected:", socket.id, "reason:", reason);
-    console.log(io.engine.clientsCount, "clients still connected");
+    console.log(
+      clientCount,
+      `${pluralize(clientCount, "client")} still connected`
+    );
   });
 });
 
