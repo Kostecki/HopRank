@@ -87,6 +87,9 @@ RUN apk add --no-cache tini \
 # Setup tini for correct signal handling
 ENTRYPOINT ["/sbin/tini", "--"]
 
+# Set environment to production
+ENV NODE_ENV=production
+
 # Expose app port
 EXPOSE 3000
 EXPOSE 4000
