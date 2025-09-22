@@ -32,6 +32,7 @@ io.on("connection", (socket) => {
     console.log(" - Client ID:", socket.id);
     console.log(" - Reason:", reason);
     console.log(" - Total Clients:", io.engine.clientsCount);
+    console.log();
   });
 
   socket.on("error", (err) => {
