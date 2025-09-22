@@ -10,6 +10,7 @@ import Navbar from "~/components/Navbar";
 
 import { extractSessionId } from "~/utils/utils";
 
+import { SocketProvider } from "~/context/SocketContext";
 import type { SessionProgress } from "~/types/session";
 import type { Route } from "../+types/root";
 
@@ -56,40 +57,42 @@ export default function Layout() {
 		useDisclosure(false);
 
 	return (
-		<AppShell
-			header={{ height: 60 }}
-			navbar={{
-				width: 300,
-				breakpoint: "sm",
-				collapsed: { mobile: !mobileOpened, desktop: !desktopOpened },
-			}}
-		>
-			<AppShell.Header>
-				<Header
-					user={user}
-					session={sessionProgress}
-					mobileOpened={mobileOpened}
-					desktopOpened={desktopOpened}
-					toggleMobile={toggleMobile}
-					toggleDesktop={toggleDesktop}
-				/>
-			</AppShell.Header>
+		<SocketProvider>
+			<AppShell
+				header={{ height: 60 }}
+				navbar={{
+					width: 300,
+					breakpoint: "sm",
+					collapsed: { mobile: !mobileOpened, desktop: !desktopOpened },
+				}}
+			>
+				<AppShell.Header>
+					<Header
+						user={user}
+						session={sessionProgress}
+						mobileOpened={mobileOpened}
+						desktopOpened={desktopOpened}
+						toggleMobile={toggleMobile}
+						toggleDesktop={toggleDesktop}
+					/>
+				</AppShell.Header>
 
-			<AppShell.Navbar p="md">
-				<Navbar
-					user={user}
-					sessionProgress={sessionProgress}
-					sessionBeers={sessionBeers}
-					closeMobile={closeMobile}
-					closeDesktop={closeDesktop}
-				/>
-			</AppShell.Navbar>
+				<AppShell.Navbar p="md">
+					<Navbar
+						user={user}
+						sessionProgress={sessionProgress}
+						sessionBeers={sessionBeers}
+						closeMobile={closeMobile}
+						closeDesktop={closeDesktop}
+					/>
+				</AppShell.Navbar>
 
-			<AppShell.Main>
-				<Container size="xs" mt="md" pb="xs">
-					<Outlet />
-				</Container>
-			</AppShell.Main>
-		</AppShell>
+				<AppShell.Main>
+					<Container size="xs" mt="md" pb="xs">
+						<Outlet />
+					</Container>
+				</AppShell.Main>
+			</AppShell>
+		</SocketProvider>
 	);
 }

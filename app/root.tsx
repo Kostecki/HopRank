@@ -32,8 +32,6 @@ import {
 	showWarningToast,
 } from "./utils/toasts";
 
-import { SocketProvider } from "./context/SocketContext";
-
 import { useUmamiIdentify } from "./hooks/umami";
 
 import { theme } from "theme";
@@ -159,11 +157,7 @@ export default function App() {
 		useUmamiIdentify(user.email);
 	}
 
-	return (
-		<SocketProvider>
-			<Outlet />
-		</SocketProvider>
-	);
+	return <Outlet />;
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
