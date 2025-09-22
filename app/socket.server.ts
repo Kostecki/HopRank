@@ -1,6 +1,5 @@
 import { createServer } from "node:http";
 import { Server } from "socket.io";
-import { pluralize } from "./utils/utils";
 
 const httpServer = createServer();
 export const io = new Server(httpServer, {
@@ -10,21 +9,31 @@ export const io = new Server(httpServer, {
 });
 
 io.on("connection", (socket) => {
-  console.log("client connected:", socket.id);
+  console.log();
+  console.log("Client Connected");
+  console.log(" - Client ID:", socket.id);
+  console.log(" - Total Clients:", io.engine.clientsCount);
 
   socket.on("join-session", (id) => {
     socket.join(`session:${id}`);
-    console.log(`socket ${socket.id} joined session:${id}`);
+    console.log(`Socket ${socket.id} joined session:${id}`);
+  });
+
+  socket.on("leave-session", (id) => {
+    socket.leave(`session:${id}`);
+    console.log(`Socket ${socket.id} left session:${id}`);
   });
 
   socket.on("disconnect", (reason) => {
-    const clientCount = io.engine.clientsCount;
+    console.log();
+    console.log("Client Disconnected");
+    console.log(" - Client ID:", socket.id);
+    console.log(" - Reason:", reason);
+    console.log(" - Total Clients:", io.engine.clientsCount);
+  });
 
-    console.log("client disconnected:", socket.id, "reason:", reason);
-    console.log(
-      clientCount,
-      `${pluralize(clientCount, "client")} still connected`
-    );
+  socket.on("error", (err) => {
+    console.error("Socket error:", err);
   });
 });
 
@@ -33,7 +42,6 @@ if (!process.env.VITE) {
 
   httpServer.listen(PORT, () => {
     console.log();
-    console.log(`WebSocket server listening on port ${PORT}`);
-    console.log();
+    console.log(`WebSocket server listening on port: ${PORT}`);
   });
 }

@@ -1,10 +1,7 @@
-import { useEffect } from "react";
-
-import { useSocket } from "./useSocket";
-
-import { onSessionEvent } from "~/utils/websocket";
-
+import { useCallback, useEffect, useRef } from "react";
 import type { SocketEvent, SocketEventMap } from "~/types/websocket";
+import { onSessionEvent } from "~/utils/websocket";
+import { useSocket } from "./useSocket";
 
 export const useDebouncedSocketEvent = <K extends SocketEvent>(
   event: K | K[],
@@ -13,6 +10,24 @@ export const useDebouncedSocketEvent = <K extends SocketEvent>(
   debounceMs = 100
 ) => {
   const socket = useSocket();
+  const handlerRef = useRef(handler);
+  const timers = useRef<Record<string, NodeJS.Timeout>>({});
+
+  // Keep the latest handler in a ref to avoid re-subscribing
+  useEffect(() => {
+    handlerRef.current = handler;
+  }, [handler]);
+
+  const debouncedHandler = useCallback(
+    (e: K, payload: SocketEventMap[K]) => {
+      if (timers.current[e]) clearTimeout(timers.current[e]);
+      timers.current[e] = setTimeout(() => {
+        handlerRef.current(payload);
+        delete timers.current[e];
+      }, debounceMs);
+    },
+    [debounceMs]
+  );
 
   useEffect(() => {
     const events = Array.isArray(event) ? event : [event];
@@ -25,20 +40,25 @@ export const useDebouncedSocketEvent = <K extends SocketEvent>(
     }
 
     const cleanups = events.map((e) =>
-      onSessionEvent(socket, e, async (...args) => {
-        await new Promise((r) => setTimeout(r, debounceMs));
-        handler(args[0] as SocketEventMap[typeof e]);
-      })
+      onSessionEvent(socket, e, (payload) =>
+        debouncedHandler(e, payload as SocketEventMap[K])
+      )
     );
 
     return () => {
-      for (const callback of cleanups) {
-        callback();
+      // Remove listeners
+      for (const fn of cleanups) {
+        fn();
       }
 
+      // Leave session if needed
       if (needsSession && sessionId) {
         socket.emit("leave-session", sessionId);
       }
+
+      // Clear any pending timers
+      Object.values(timers.current).forEach(clearTimeout);
+      timers.current = {};
     };
-  }, [socket, event, handler, sessionId, debounceMs]);
+  }, [socket, event, sessionId, debouncedHandler]);
 };
