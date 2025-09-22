@@ -18,6 +18,7 @@ io.on("connection", (socket) => {
 
   socket.on("join-session", (id) => {
     socket.join(`session:${id}`);
+    console.log();
     console.log(`Socket ${socket.id} joined session:${id}`);
   });
 
