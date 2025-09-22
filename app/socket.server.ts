@@ -18,6 +18,7 @@ io.on("connection", (socket) => {
 
   socket.on("disconnect", (reason) => {
     console.log("client disconnected:", socket.id, "reason:", reason);
+    console.log(io.engine.clientsCount, "clients still connected");
   });
 });
 
