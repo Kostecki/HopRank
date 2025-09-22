@@ -1,6 +1,8 @@
 import { createServer } from "node:http";
 import { Server } from "socket.io";
 
+const WS_URL = import.meta.env.VITE_WS_URL;
+
 const httpServer = createServer();
 export const io = new Server(httpServer, {
   path: "/ws",
@@ -38,10 +40,14 @@ io.on("connection", (socket) => {
 });
 
 if (!process.env.VITE) {
-  const PORT = 4000;
+  let PORT = 4000;
+  const url = new URL(WS_URL);
+  if (url.port) {
+    PORT = Number(url.port);
+  }
 
   httpServer.listen(PORT, () => {
     console.log();
-    console.log(`WebSocket server listening on port: ${PORT}`);
+    console.log(`WebSocket server active on: ${WS_URL}`);
   });
 }
