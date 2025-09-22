@@ -1,6 +1,5 @@
 import { io } from "~/socket.server";
 import type { GlobalEvent, SessionEvent } from "~/types/websocket";
-// TODO: add types
 
 export const emitSessionEvent = (
   sessionId: number,
