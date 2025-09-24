@@ -17,6 +17,8 @@ io.on("connection", (socket) => {
   console.log(" - Total Clients:", io.engine.clientsCount);
   console.log();
 
+  io.emit("clients-count", io.engine.clientsCount);
+
   socket.on("join-session", (id) => {
     socket.join(`session:${id}`);
     console.log();

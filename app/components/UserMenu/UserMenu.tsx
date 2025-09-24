@@ -32,6 +32,7 @@ export function UserMenu({ user }: InputProps) {
 
 	const firstLetter = email.slice(0, 1).toUpperCase();
 
+	const [clientsCount, setClientsCount] = useState<number | null>(0);
 	const [WSStatus, setWSStatus] = useState<
 		"undefined" | "connecting" | "connected" | "disconnected"
 	>("undefined");
@@ -52,6 +53,10 @@ export function UserMenu({ user }: InputProps) {
 		socket.on("disconnect", handleDisconnect);
 		socket.on("connect_error", handleConnectError);
 		socket.on("reconnect_attempt", handleReconnectAttempt);
+
+		socket.on("clients-count", (count: number) => {
+			setClientsCount(count);
+		});
 
 		return () => {
 			socket.off("connect", handleConnect);
@@ -114,6 +119,16 @@ export function UserMenu({ user }: InputProps) {
 						Untappd
 					</Menu.Item>
 				)}
+				{isAdmin && (
+					<Menu.Item
+						component="a"
+						href={DB_URL}
+						target="_blank"
+						leftSection={<IconDatabase size={16} />}
+					>
+						Drizzle Studio
+					</Menu.Item>
+				)}
 				<Menu.Item
 					component="a"
 					href="/auth/logout"
@@ -125,14 +140,9 @@ export function UserMenu({ user }: InputProps) {
 					<>
 						<MenuDivider />
 
-						<Menu.Item
-							component="a"
-							href={DB_URL}
-							target="_blank"
-							leftSection={<IconDatabase size={16} />}
-						>
-							Drizzle Studio
-						</Menu.Item>
+						<Text size="xs" c="dimmed" fs="italic" fw={300} p="xs">
+							{`Connected Clients: ${clientsCount}`}
+						</Text>
 
 						<Menu.Item component={Link} to={COMMIT_URL} target="_blank">
 							<Tooltip
