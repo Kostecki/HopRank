@@ -140,8 +140,16 @@ export function UserMenu({ user }: InputProps) {
 					<>
 						<MenuDivider />
 
-						<Text size="xs" c="dimmed" fs="italic" fw={300} p="xs">
-							{`Connected Clients: ${clientsCount}`}
+						<Text
+							size="xs"
+							c="dimmed"
+							fs="italic"
+							fw={300}
+							px="sm"
+							pt="sm"
+							pb={6}
+						>
+							{`Forbundne klienter: ${clientsCount}`}
 						</Text>
 
 						<Menu.Item component={Link} to={COMMIT_URL} target="_blank">
@@ -151,7 +159,7 @@ export function UserMenu({ user }: InputProps) {
 								position="bottom"
 							>
 								<Text size="xs" c="dimmed" fs="italic" fw={300}>
-									Latest Commit: {LATEST_COMMIT_HASH}
+									Seneste commit: {LATEST_COMMIT_HASH}
 								</Text>
 							</Tooltip>
 						</Menu.Item>
