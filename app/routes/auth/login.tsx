@@ -1,4 +1,4 @@
-import { type MetaFunction, redirect } from "react-router";
+import { type MetaFunction, redirect, useLoaderData } from "react-router";
 
 import { authenticator } from "~/auth/auth.server";
 import { userSessionGet } from "~/auth/users.server";
@@ -7,6 +7,12 @@ import LoginForm from "~/components/auth/LoginForm";
 
 import { getPageTitle } from "~/utils/utils";
 
+import { Card, Divider, Tabs } from "@mantine/core";
+import { eq } from "drizzle-orm";
+import SessionsTable from "~/components/SessionsTable";
+import { db } from "~/database/config.server";
+import { sessionState, sessions } from "~/database/schema.server";
+import { SessionStatus } from "~/types/session";
 import type { Route } from "./+types/login";
 
 export const meta: MetaFunction = () => {
@@ -18,7 +24,31 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 	if (user) return redirect("/");
 
-	return null;
+	const sessionsRaw = await db
+		.select()
+		.from(sessions)
+		.innerJoin(sessionState, eq(sessions.id, sessionState.sessionId));
+
+	const allSessions = sessionsRaw.map(
+		({ sessions: session, session_state }) => ({
+			id: session.id,
+			name: session.name,
+			joinCode: session.joinCode,
+			participants: 0,
+			beers: 0,
+			status: session_state.status,
+			createdAt: session.createdAt,
+		}),
+	);
+
+	return {
+		activeSessions: allSessions.filter(
+			(s) => s.status === SessionStatus.active,
+		),
+		finishedSessions: allSessions.filter(
+			(s) => s.status === SessionStatus.finished,
+		),
+	};
 }
 
 export async function action({ request }: Route.ActionArgs) {
@@ -38,5 +68,38 @@ export async function action({ request }: Route.ActionArgs) {
 }
 
 export default function Login() {
-	return <LoginForm />;
+	const { activeSessions, finishedSessions } = useLoaderData<typeof loader>();
+
+	return (
+		<>
+			<LoginForm />
+
+			<Divider my="xl" />
+
+			<Card shadow="lg" padding="lg" radius="md">
+				<Tabs defaultValue="active" color="slateIndigo">
+					<Tabs.List mb="sm" grow justify="center">
+						<Tabs.Tab value="active" fw="bold">
+							Aktive
+						</Tabs.Tab>
+						<Tabs.Tab value="past" fw="bold">
+							Afsluttede
+						</Tabs.Tab>
+					</Tabs.List>
+
+					<Tabs.Panel value="active">
+						<SessionsTable sessions={activeSessions} mode="active" readOnly />
+					</Tabs.Panel>
+
+					<Tabs.Panel value="past">
+						<SessionsTable
+							sessions={finishedSessions}
+							mode="finished"
+							readOnly
+						/>
+					</Tabs.Panel>
+				</Tabs>
+			</Card>
+		</>
+	);
 }
