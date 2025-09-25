@@ -61,5 +61,12 @@
     "typescript": "^5.8.3",
     "vite": "^6.3.5",
     "vite-tsconfig-paths": "^5.1.4"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@biomejs/biome",
+      "better-sqlite3",
+      "esbuild"
+    ]
   }
 }
