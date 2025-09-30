@@ -1,6 +1,6 @@
 # -----------------------------------
 # Base image with pnpm installed
-FROM node:24-slim AS base
+FROM node:24 AS base
 RUN npm install -g pnpm
 
 # -----------------------------------
@@ -60,7 +60,7 @@ RUN pnpm install --prod --frozen-lockfile
 
 # -----------------------------------
 # Final runtime image
-FROM node:23-alpine AS runner
+FROM node:24-alpine AS runner
 
 RUN apk add tzdata
 
