@@ -31,8 +31,6 @@ export async function loader({ request }: Route.LoaderArgs) {
 
   const { response: data } = await response.json();
 
-  console.log("Venues data:", data);
-
   const untappdAtHome = data.recent.items.find(
     (venue: UntappdVenue) => venue.venue_id === UNTAPPD_AT_HOME_VENUE_ID
   );

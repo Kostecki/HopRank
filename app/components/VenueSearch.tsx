@@ -66,7 +66,6 @@ export default function VenueSearch({
 
 		const cached = venuesCache.get(key);
 		if (cached) {
-			console.log("cached", cached);
 			if (Array.isArray(cached)) {
 				setData(cached);
 				setEmpty(cached[0].items.length === 0 || cached[1].items.length === 0);
@@ -84,7 +83,6 @@ export default function VenueSearch({
 
 		getVenues(untappdAccessToken, lat, lng, query)
 			.then((result) => {
-				console.log("fetched", result);
 				venuesCache.set(key, result);
 				setData(result);
 				setLoading(false);
