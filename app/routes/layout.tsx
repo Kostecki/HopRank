@@ -88,7 +88,7 @@ export default function Layout() {
 				</AppShell.Navbar>
 
 				<AppShell.Main>
-					<Container size="xs" mt="md" pb="xs">
+					<Container strategy="grid" size="xs" mt="md" pb="xs">
 						<Outlet />
 					</Container>
 				</AppShell.Main>

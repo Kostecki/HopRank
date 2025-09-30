@@ -7,9 +7,9 @@ import LoginForm from "~/components/auth/LoginForm";
 
 import { getPageTitle } from "~/utils/utils";
 
-import { Card, Divider, Tabs } from "@mantine/core";
+import { Card, Divider } from "@mantine/core";
 import { eq } from "drizzle-orm";
-import SessionsTable from "~/components/SessionsTable";
+import { SessionTabs } from "~/components/SessionTabs";
 import { db } from "~/database/config.server";
 import { sessionState, sessions } from "~/database/schema.server";
 import { SessionStatus } from "~/types/session";
@@ -74,31 +74,14 @@ export default function Login() {
 		<>
 			<LoginForm />
 
-			<Divider my="xl" />
+			<Divider my="xl" opacity={0.5} />
 
 			<Card shadow="lg" padding="lg" radius="md">
-				<Tabs defaultValue="active" color="slateIndigo">
-					<Tabs.List mb="sm" grow justify="center">
-						<Tabs.Tab value="active" fw="bold">
-							Aktive
-						</Tabs.Tab>
-						<Tabs.Tab value="past" fw="bold">
-							Afsluttede
-						</Tabs.Tab>
-					</Tabs.List>
-
-					<Tabs.Panel value="active">
-						<SessionsTable sessions={activeSessions} mode="active" readOnly />
-					</Tabs.Panel>
-
-					<Tabs.Panel value="past">
-						<SessionsTable
-							sessions={finishedSessions}
-							mode="finished"
-							readOnly
-						/>
-					</Tabs.Panel>
-				</Tabs>
+				<SessionTabs
+					activeSessions={activeSessions}
+					finishedSessions={finishedSessions}
+					readOnly
+				/>
 			</Card>
 		</>
 	);

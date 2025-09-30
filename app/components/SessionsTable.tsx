@@ -81,7 +81,7 @@ export default function SessionsTable({
 		>
 			<Table.Td tt="capitalize">{session.name}</Table.Td>
 
-			{stateActive && (
+			{!readOnly && stateActive && (
 				<Table.Td ta="center" lts={2}>
 					{session.joinCode}
 				</Table.Td>
@@ -96,7 +96,7 @@ export default function SessionsTable({
 			{!readOnly && <Table.Td ta="center">{session.beers}</Table.Td>}
 
 			<Table.Td ta="right">
-				{stateActive ? (
+				{stateActive && !readOnly ? (
 					<Button
 						variant="filled"
 						size="xs"

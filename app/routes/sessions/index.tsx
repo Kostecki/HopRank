@@ -1,10 +1,9 @@
-import { Paper, Tabs } from "@mantine/core";
+import { Paper } from "@mantine/core";
 import { and, count, eq } from "drizzle-orm";
 import { redirect, useLoaderData, useRevalidator } from "react-router";
 
 import NewSession from "~/components/NewSession";
 import SessionPinInput from "~/components/SessionPinInput";
-import SessionsTable from "~/components/SessionsTable";
 
 import { userSessionGet } from "~/auth/users.server";
 import { db } from "~/database/config.server";
@@ -20,6 +19,7 @@ import { useDebouncedSocketEvent } from "~/hooks/useDebouncedSocketEvent";
 
 import { getPageTitle } from "~/utils/utils";
 
+import { SessionTabs } from "~/components/SessionTabs";
 import { SessionStatus } from "~/types/session";
 import type { Route } from "./+types";
 
@@ -136,24 +136,11 @@ export default function Sessions() {
 		<Paper p="md" radius="md" withBorder>
 			<SessionPinInput mt="md" mb={50} />
 
-			<Tabs defaultValue="active" color="slateIndigo">
-				<Tabs.List mb="sm" grow justify="center">
-					<Tabs.Tab value="active" fw="bold">
-						Aktive
-					</Tabs.Tab>
-					<Tabs.Tab value="past" fw="bold">
-						Afsluttede
-					</Tabs.Tab>
-				</Tabs.List>
-
-				<Tabs.Panel value="active">
-					<SessionsTable sessions={activeSessions} mode="active" />
-				</Tabs.Panel>
-
-				<Tabs.Panel value="past">
-					<SessionsTable sessions={finishedSessions} mode="finished" />
-				</Tabs.Panel>
-			</Tabs>
+			<SessionTabs
+				activeSessions={activeSessions}
+				finishedSessions={finishedSessions}
+				readOnly={false}
+			/>
 
 			<NewSession criteria={criteria} />
 		</Paper>
