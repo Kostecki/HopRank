@@ -1,6 +1,6 @@
 # -----------------------------------
 # Base image with pnpm installed
-FROM node:25 AS base
+FROM node:24 AS base
 RUN npm install -g pnpm
 
 # -----------------------------------
