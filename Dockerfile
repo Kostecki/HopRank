@@ -60,7 +60,7 @@ RUN pnpm install --prod --frozen-lockfile
 
 # -----------------------------------
 # Final runtime image
-FROM node:25-alpine AS runner
+FROM node:24-alpine AS runner
 
 WORKDIR /app
 
