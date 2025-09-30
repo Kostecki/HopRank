@@ -1,6 +1,6 @@
 # -----------------------------------
 # Base image with pnpm installed
-FROM node:24 AS base
+FROM node:25 AS base
 RUN npm install -g pnpm
 
 # -----------------------------------
@@ -60,11 +60,12 @@ RUN pnpm install --prod --frozen-lockfile
 
 # -----------------------------------
 # Final runtime image
-FROM node:24-alpine AS runner
-
-RUN apk add tzdata
+FROM node:25-alpine AS runner
 
 WORKDIR /app
+
+# Install build tools for native modules
+RUN apk add --no-cache python3 make g++ tzdata tini
 
 # Ensure the database folder exists
 RUN mkdir -p /app/database
@@ -79,9 +80,8 @@ COPY package.json pnpm-lock.yaml ./
 # Rebuild native modules for Alpine/musl
 RUN npm rebuild better-sqlite3
 
-# Cleanup and install tini
-RUN apk add --no-cache tini \
-  && npm cache clean --force \
+# Cleanup
+RUN npm cache clean --force \
   && rm -rf /root/.npm /root/.pnpm-store /tmp/*
 
 # Setup tini for correct signal handling
