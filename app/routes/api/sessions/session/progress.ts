@@ -189,6 +189,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
         totalPossibleVoteCount: expectedVotes,
         userRatings: user ? userRatingsById : undefined,
         userHadBeer: false,
+        addedByUserId: currentBeerRow.addedByUserId,
       }
     : null;
 

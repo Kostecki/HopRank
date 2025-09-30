@@ -6,6 +6,8 @@ export type SessionProgressUser = {
   username?: string;
   email: string;
   name?: string;
+  avatarURL?: string;
+  admin: boolean;
 };
 
 export type SessionCriteria = {
@@ -39,6 +41,7 @@ export type CurrentBeer = {
   currentVoteCount: number;
   totalPossibleVoteCount: number;
   userRatings: Record<number, number>;
+  addedByUserId: number;
   userHadBeer?: boolean;
 };
 

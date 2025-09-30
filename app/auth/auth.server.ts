@@ -92,7 +92,8 @@ authenticator.use(
         email,
         untappdId,
         userName,
-        fullName
+        fullName,
+        avatar
       );
       const sessionUser = {
         id: user.id,

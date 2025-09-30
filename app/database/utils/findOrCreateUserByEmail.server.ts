@@ -6,7 +6,8 @@ export const findOrCreateUserByEmail = async (
   email: string,
   untappdId?: number,
   username?: string,
-  name?: string
+  name?: string,
+  avatar?: string
 ) => {
   const userEmail = email.trim().toLowerCase();
 
@@ -24,6 +25,7 @@ export const findOrCreateUserByEmail = async (
       untappdId,
       username,
       name,
+      avatarURL: avatar,
       admin: isAdmin,
     })
     .onConflictDoNothing()
@@ -38,6 +40,14 @@ export const findOrCreateUserByEmail = async (
     .from(users)
     .where(eq(users.email, userEmail))
     .limit(1);
+
+  if (avatar && existingUser && existingUser.avatarURL !== avatar) {
+    await db
+      .update(users)
+      .set({ avatarURL: avatar })
+      .where(eq(users.id, existingUser.id));
+    existingUser.avatarURL = avatar;
+  }
 
   if (!existingUser) {
     throw new Error("User not found after insert conflict");
