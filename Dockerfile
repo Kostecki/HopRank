@@ -67,17 +67,14 @@ WORKDIR /app
 # Copy package manifests first
 COPY package.json pnpm-lock.yaml ./
 
-# Copy node_modules from prod-deps stage
-COPY --from=prod-deps /app/node_modules ./node_modules
-
 # Enable pnpm in this stage
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
 # Install tzdata, tini, and minimal build deps for better-sqlite3
 # Rebuild better-sqlite3 and clean everything in one layer
-RUN apk add --no-cache tzdata tini python3 && \
-  pnpm rebuild better-sqlite3 && \
-  apk del python3 && \
+RUN apk add --no-cache tzdata tini python3 g++ make musl-dev && \
+  pnpm install --prod --frozen-lockfile && \
+  apk del python3 g++ make musl-dev && \
   pnpm store prune && \
   rm -rf /root/.npm /root/.pnpm-store /tmp/*
 
