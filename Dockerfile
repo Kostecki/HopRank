@@ -60,40 +60,38 @@ RUN pnpm install --prod --frozen-lockfile
 
 # -----------------------------------
 # Final runtime image
-FROM node:24-alpine AS runner
+FROM node:23-alpine AS runner
+
+RUN apk add tzdata
 
 WORKDIR /app
 
-# Copy package manifests first
-COPY package.json pnpm-lock.yaml ./
+# Ensure the database folder exists
+RUN mkdir -p /app/database
 
-# Enable pnpm in this stage
-RUN corepack enable && corepack prepare pnpm@latest --activate
-
-# Install tzdata, tini, and minimal build deps for better-sqlite3
-# Rebuild better-sqlite3 and clean everything in one layer
-RUN apk add --no-cache tzdata tini python3 g++ make musl-dev && \
-  pnpm install --prod --frozen-lockfile && \
-  apk del python3 g++ make musl-dev && \
-  pnpm store prune && \
-  rm -rf /root/.npm /root/.pnpm-store /tmp/*
-
-# Copy runtime artifacts
+# Copy only runtime artifacts
+COPY --from=prod-deps /app/node_modules ./node_modules
 COPY --from=build /app/build ./build
 COPY --from=build /app/public ./public
 COPY --from=build /app/app/database/migrations ./database/migrations
+COPY package.json pnpm-lock.yaml ./
 
-# Ensure database folder exists
-RUN mkdir -p /app/database
+# Rebuild native modules for Alpine/musl
+RUN npm rebuild better-sqlite3
 
-# Use tini for proper signal handling
+# Cleanup and install tini
+RUN apk add --no-cache tini \
+  && npm cache clean --force \
+  && rm -rf /root/.npm /root/.pnpm-store /tmp/*
+
+# Setup tini for correct signal handling
 ENTRYPOINT ["/sbin/tini", "--"]
 
-# Set production environment
+# Set environment to production
 ENV NODE_ENV=production
 
-# Expose app ports
+# Expose app port
 EXPOSE 3000 4000
 
 # Start the app
-CMD ["pnpm", "start"]
+CMD ["npm", "start"]
