@@ -1,9 +1,10 @@
 import { Box, Grid, Table } from "@mantine/core";
 import { inArray } from "drizzle-orm/sql/expressions/conditions";
-import { useLoaderData } from "react-router";
+import { useLoaderData, useRevalidator } from "react-router";
 import MedalPodium from "~/components/MedalPodium";
 import { db } from "~/database/config.server";
 import { users } from "~/database/schema.server";
+import { useDebouncedSocketEvent } from "~/hooks/useDebouncedSocketEvent";
 import type { SessionProgress, SessionProgressUser } from "~/types/session";
 import { createBeerLink } from "~/utils/untappd";
 import { extractSessionId, getPageTitle } from "~/utils/utils";
@@ -61,9 +62,22 @@ const viewBeerUntappd = (untappdBeerId: number) => {
 export default function SessionView() {
 	const { sessionProgress, allUsers } = useLoaderData<typeof loader>();
 
+	const { revalidate } = useRevalidator();
+
+	useDebouncedSocketEvent(
+		[
+			"sessions:created",
+			"session:users-changed",
+			"session:beer-changed",
+			"session:vote",
+		],
+		async () => revalidate(),
+		sessionProgress.sessionId,
+	);
+
 	const nonPodiumBeers = sessionProgress.ratedBeers.slice(3);
 
-	const rows = nonPodiumBeers.map((beer, index) => {
+	const tableRows = nonPodiumBeers.map((beer, index) => {
 		const addedBy = allUsers.find((user) => user.id === beer.addedByUserId);
 
 		return (
@@ -96,7 +110,7 @@ export default function SessionView() {
 								<Table.Th ta="center">Rating</Table.Th>
 							</Table.Tr>
 						</Table.Thead>
-						<Table.Tbody>{rows}</Table.Tbody>
+						<Table.Tbody>{tableRows}</Table.Tbody>
 					</Table>
 				</Grid.Col>
 			</Grid>
