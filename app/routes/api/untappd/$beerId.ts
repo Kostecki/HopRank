@@ -76,6 +76,7 @@ export async function loader({ params }: Route.LoaderArgs) {
       .text()
       .trim()
       .replace(",", "");
+
     const checkinCountUnique = $(".stats p:nth-child(2) .count")
       .text()
       .trim()
@@ -99,12 +100,12 @@ export async function loader({ params }: Route.LoaderArgs) {
       abv,
       description,
       checkins: {
-        total: Number(checkinCount),
-        unique: Number(checkinCountUnique),
+        total: checkinCount,
+        unique: checkinCountUnique,
       },
       rating: {
         value: Number(rating),
-        count: Number(ratingsCount),
+        count: ratingsCount,
       },
     };
 

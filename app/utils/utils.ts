@@ -143,3 +143,21 @@ export const isMobileOrTablet = (): boolean => {
 export const pluralize = (count: number, word: string) => {
   return count === 1 ? word : `${word}s`;
 };
+
+/**
+ * Formats a count value for display.
+ *
+ * @param value - The count value to format (e.g., 1234).
+ * @param locale - The locale to use for formatting (default: "da-DK").
+ * @returns The formatted count string (e.g., "1.234").
+ */
+export const formatCount = (
+  value: string | number | undefined | null,
+  locale = "da-DK"
+) => {
+  if (!value) return "-";
+  if (typeof value === "string" && /[KM]/i.test(value)) {
+    return value;
+  }
+  return Number(value).toLocaleString(locale);
+};

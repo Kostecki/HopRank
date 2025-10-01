@@ -13,7 +13,7 @@ import type { RatedBeers } from "~/types/session";
 import type { ScrapedBeer } from "~/types/untappd";
 
 import { createBeerLink } from "~/utils/untappd";
-import { displayScore } from "~/utils/utils";
+import { displayScore, formatCount } from "~/utils/utils";
 
 type InputProps = {
 	beer: RatedBeers;
@@ -50,7 +50,7 @@ export function BeerCardDetails({ beer }: InputProps) {
 					overlayProps={{ radius: "sm", blur: 2 }}
 					loaderProps={{ color: "slateIndigo" }}
 				/>
-				<SimpleGrid cols={3}>
+				<SimpleGrid cols={criteriaBreakdown.length}>
 					{criteriaBreakdown.map(({ name, averageScore: score }) => (
 						<Stack gap={0} align="center" key={name}>
 							<Text fw={400}>{name}</Text>
@@ -67,15 +67,15 @@ export function BeerCardDetails({ beer }: InputProps) {
 							Checkins
 						</Text>
 						<Text ta="center" fw="bold">
-							{beerDetails?.checkins?.total?.toLocaleString("da-DK") ?? "-"}
+							{formatCount(beerDetails?.checkins?.total)}
 						</Text>
 					</Box>
 					<Box>
 						<Text ta="center" fw={400}>
-							Unkikke
+							Unikke
 						</Text>
 						<Text ta="center" fw="bold">
-							{beerDetails?.checkins?.unique?.toLocaleString("da-DK") ?? "-"}
+							{formatCount(beerDetails?.checkins?.unique)}
 						</Text>
 					</Box>
 					<Box>
@@ -85,13 +85,8 @@ export function BeerCardDetails({ beer }: InputProps) {
 						<Text ta="center" fw="bold">
 							{beerDetails?.rating.value ? (
 								<>
-									{(
-										Math.round(
-											Number.parseFloat(beerDetails.rating.value.toString()) *
-												100,
-										) / 100
-									).toLocaleString("da-DK")}{" "}
-									({beerDetails?.rating.count.toLocaleString("da-DK")})
+									{displayScore(beerDetails.rating.value)} (
+									{formatCount(beerDetails.rating.count)})
 								</>
 							) : (
 								"-"

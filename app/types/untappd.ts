@@ -69,12 +69,12 @@ export type ScrapedBeer = {
   abv: number;
   description: string;
   checkins: {
-    total: number;
-    unique: number;
+    total: number | string;
+    unique: number | string;
   };
   rating: {
     value: number;
-    count: number;
+    count: number | string;
   };
 };
 
