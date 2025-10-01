@@ -64,6 +64,12 @@ FROM node:24-alpine AS runner
 
 RUN apk add tzdata
 
+# Install build tools to compile better-sqlite3
+RUN apk --no-cache add --virtual native-deps \
+  g++ gcc libgcc libstdc++ linux-headers make python3 && \
+  npm rebuild better-sqlite3 && \
+  apk del native-deps
+
 WORKDIR /app
 
 # Ensure the database folder exists
@@ -75,9 +81,6 @@ COPY --from=build /app/build ./build
 COPY --from=build /app/public ./public
 COPY --from=build /app/app/database/migrations ./database/migrations
 COPY package.json pnpm-lock.yaml ./
-
-# Rebuild native modules for Alpine/musl
-RUN npm rebuild better-sqlite3
 
 # Cleanup and install tini
 RUN apk add --no-cache tini \
