@@ -115,7 +115,7 @@ export default function Session() {
 				/>
 			)}
 
-			<Accordion unstyled chevron={false}>
+			<Accordion unstyled chevron={null}>
 				{sessionProgress.ratedBeers.map((beer, index) => {
 					const { beerId } = beer;
 

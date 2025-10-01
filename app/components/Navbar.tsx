@@ -198,7 +198,7 @@ export default function Navbar({
 
 								<Divider opacity={0.5} mb="md" />
 
-								<List spacing="xs" size="sm">
+								<List spacing="xs" size="sm" pl={0}>
 									{sessionProgress.users.map((user) => (
 										<UserListItem key={user.id} user={user} />
 									))}
@@ -223,7 +223,7 @@ export default function Navbar({
 								<Divider opacity={0.5} mb="md" />
 
 								{usersBeers.length > 0 && (
-									<List spacing="xs" size="sm">
+									<List spacing="xs" size="sm" pl={0}>
 										{usersBeers.map((beer) => (
 											<ListItem key={beer.beerId} beer={beer} />
 										))}
