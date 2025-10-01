@@ -23,7 +23,7 @@ COPY app/ ./app
 # Copy config files
 COPY public/ ./public
 COPY vite.config.ts tsconfig.json drizzle.config.ts postcss.config.cjs react-router.config.ts theme.ts ./
-COPY package.json pnpm-lock.yaml ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
 # Inject public build-time environment variables
 ARG VITE_WS_URL
@@ -60,7 +60,7 @@ RUN pnpm install --prod --frozen-lockfile
 
 # -----------------------------------
 # Final runtime image
-FROM node:23-alpine AS runner
+FROM node:24-alpine AS runner
 
 RUN apk add tzdata
 
