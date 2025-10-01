@@ -4,6 +4,7 @@ import type {
 	SessionProgress,
 	SessionProgressUser,
 } from "~/types/session";
+import { createBeerLink } from "~/utils/untappd";
 
 type inputProps = {
 	session: SessionProgress;
@@ -32,6 +33,11 @@ export default function MedalPodium({ session, users }: inputProps) {
 	const displayOrder = [topBeers[1], topBeers[0], topBeers[2]];
 	const displayHeights = [heights[1], heights[0], heights[2]];
 
+	const viewBeerUntappd = (untappdBeerId: number) => {
+		const untappdLink = createBeerLink(untappdBeerId);
+		window.open(untappdLink, "_blank");
+	};
+
 	return (
 		<Flex justify="center" align="flex-end" gap="xl">
 			{displayOrder.map((beer, i) => {
@@ -42,7 +48,14 @@ export default function MedalPodium({ session, users }: inputProps) {
 				const addedBy = users.find((user) => user.id === beer?.addedByUserId);
 
 				return (
-					<Flex direction="column" align="center" key={place} w={230}>
+					<Flex
+						direction="column"
+						align="center"
+						key={place}
+						w={230}
+						onClick={() => beer && viewBeerUntappd(beer.untappdBeerId)}
+						style={{ cursor: beer ? "pointer" : "default" }}
+					>
 						<Flex
 							direction="column"
 							align="center"
