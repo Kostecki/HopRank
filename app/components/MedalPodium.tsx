@@ -98,7 +98,7 @@ export default function MedalPodium({ session, users }: inputProps) {
 										/>
 									</Card>
 
-									<Text size="sm" c="dimmed">
+									<Text size="sm" c="gray.7">
 										{beer.breweryName}
 									</Text>
 
