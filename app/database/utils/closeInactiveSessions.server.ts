@@ -35,7 +35,8 @@ export const closeInactiveSessions = async () => {
       (s) =>
         s.state?.status === SessionStatus.active &&
         s.state.lastUpdatedAt &&
-        s.state.lastUpdatedAt < recentActivityCutoff
+        s.state.lastUpdatedAt < recentActivityCutoff &&
+        s.state.currentBeerId === null
     )
     .map((s) => s.id);
 
