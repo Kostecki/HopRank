@@ -118,7 +118,6 @@ export function BeerCard({ session, beer, rank }: InputProps) {
 			}}
 			withBorder
 		>
-			<RenderHadAlreadyHad />
 			<Grid justify="space-between" align="center">
 				<Grid.Col span={3} p="sm">
 					<Image src={label} alt={name} radius="md" mah={65} w="auto" />
@@ -142,27 +141,8 @@ export function BeerCard({ session, beer, rank }: InputProps) {
 					</Flex>
 				</Grid.Col>
 			</Grid>
-			{rank && rank > 3 && (
-				<Box
-					style={{
-						position: "absolute",
-						top: 0,
-						right: 0,
-						background: "#EDEDED",
-						width: 28,
-						height: 28,
-						clipPath: "polygon(100% 0, 100% 100%, 0 0)",
-						display: "flex",
-						justifyContent: "flex-end",
-						alignItems: "flex-start",
-						padding: 2.5,
-					}}
-				>
-					<Text size="sm" c="dimmed" opacity={0.5} mt="-3px">
-						{rank}
-					</Text>
-				</Box>
-			)}
+
+			<RenderHadAlreadyHad />
 		</Card>
 	);
 }
