@@ -1,5 +1,4 @@
 import { Box, Grid, Table } from "@mantine/core";
-import { inArray } from "drizzle-orm/sql/expressions/conditions";
 import { useLoaderData, useRevalidator } from "react-router";
 import MedalPodium from "~/components/MedalPodium";
 import { db } from "~/database/config.server";
@@ -37,16 +36,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 	}
 
 	const sessionProgress = (await progressResponse.json()) as SessionProgress;
-
-	const userIds = sessionProgress.users.map((u) => u.id);
-	const allUsers = await db
-		.select()
-		.from(users)
-		.where(inArray(users.id, userIds));
-
-	if (allUsers.length !== userIds.length) {
-		throw new Response("Some users not found", { status: 404 });
-	}
+	const allUsers = await db.select().from(users);
 
 	return {
 		sessionProgress,
@@ -61,6 +51,8 @@ const viewBeerUntappd = (untappdBeerId: number) => {
 
 export default function SessionView() {
 	const { sessionProgress, allUsers } = useLoaderData<typeof loader>();
+
+	console.log(allUsers);
 
 	const { revalidate } = useRevalidator();
 
