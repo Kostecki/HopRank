@@ -100,27 +100,31 @@ export default function Navbar({
 		.filter((beer) => beer.addedByUserId === user?.id)
 		.sort((a, b) => (b.order ?? 0) - (a.order ?? 0));
 
-	const UserListItem = ({ user }: { user: SessionProgressUser }) => (
-		<Flex justify="space-between" pos="relative" align="center" h={25}>
-			<Text size="sm" fw="500" lineClamp={1}>
-				{user.name ?? user.email}
-			</Text>
+	const UserListItem = ({ user }: { user: SessionProgressUser }) => {
+		console.log("Rendering user:", user);
 
-			{user.untappdId && user.username && (
-				<Tooltip label="Se Untappd-profil" position="bottom">
-					<ActionIcon
-						component={Link}
-						variant="subtle"
-						color="slateIndigo"
-						to={createProfileLink(user.username)}
-						target="_blank"
-					>
-						<IconExternalLink size={16} stroke={1.5} />
-					</ActionIcon>
-				</Tooltip>
-			)}
-		</Flex>
-	);
+		return (
+			<Flex justify="space-between" pos="relative" align="center" h={25}>
+				<Text size="sm" fw="500" lineClamp={1}>
+					{user.name ?? user.email}
+				</Text>
+
+				{user.untappdId && user.username && (
+					<Tooltip label="Se Untappd-profil" position="bottom">
+						<ActionIcon
+							component={Link}
+							variant="subtle"
+							color="slateIndigo"
+							to={createProfileLink(user.username)}
+							target="_blank"
+						>
+							<IconExternalLink size={16} stroke={1.5} />
+						</ActionIcon>
+					</Tooltip>
+				)}
+			</Flex>
+		);
+	};
 
 	const ListItem = ({ beer }: { beer: SelectSessionBeersWithBeer }) => {
 		const {
