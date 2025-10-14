@@ -52,8 +52,6 @@ const viewBeerUntappd = (untappdBeerId: number) => {
 export default function SessionView() {
 	const { sessionProgress, allUsers } = useLoaderData<typeof loader>();
 
-	console.log(allUsers);
-
 	const { revalidate } = useRevalidator();
 
 	useDebouncedSocketEvent(

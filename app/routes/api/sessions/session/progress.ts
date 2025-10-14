@@ -16,7 +16,7 @@ import {
 import { getBeerInfo } from "~/utils/untappd";
 import { extractSessionId } from "~/utils/utils";
 
-import { SessionBeerStatus } from "~/types/session";
+import { SessionBeerStatus, SessionStatus } from "~/types/session";
 import type { Route } from "./+types/progress";
 
 const beerInfoCache = new Map<
@@ -82,6 +82,16 @@ export async function loader({ request, params }: Route.LoaderArgs) {
       userIds.filter((id): id is number => id !== null)
     ),
   });
+
+  // Count session users from ratings for finished sessions
+  // Shows who participated in the session
+  const ratingsForSession = await db.query.ratings.findMany({
+    where: eq(ratings.sessionId, sessionId),
+    columns: {
+      userId: true,
+    },
+  });
+  const userCountByVotes = new Set(ratingsForSession.map((r) => r.userId)).size;
 
   const sessionBeerRowsNotEmpty = sessionBeerRows.filter(
     (sb): sb is typeof sb & { beer: NonNullable<typeof sb.beer> } =>
@@ -211,7 +221,10 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     joinCode: session.joinCode,
     beersTotalCount: sessionBeerRowsNotEmpty.length,
     beersRatedCount: ratedBeers.length,
-    users: usersForSession,
+    users:
+      state?.status === SessionStatus.active
+        ? usersForSession
+        : userCountByVotes,
     sessionCriteria: criteriaList,
     currentBeer: { ...currentBeerData, userHadBeer },
     ratedBeers,

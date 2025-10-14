@@ -4,7 +4,7 @@ import { useRevalidator } from "react-router";
 
 import { useDebouncedSocketEvent } from "~/hooks/useDebouncedSocketEvent";
 
-import { type SessionProgress, SessionStatus } from "~/types/session";
+import type { SessionProgress } from "~/types/session";
 import type { SessionUser } from "~/types/user";
 
 import { UserMenu } from "./UserMenu/UserMenu";
@@ -66,9 +66,7 @@ export function Header({
 							<Group gap="5">
 								<IconBeer color={slateIndigo} size={20} />
 								<Text c="slateIndigo" fw={600}>
-									{session.status === SessionStatus.active
-										? `${session.beersRatedCount} / ${session.beersTotalCount}`
-										: session.beersTotalCount}
+									{`${session.beersRatedCount} / ${session.beersTotalCount}`}
 								</Text>
 							</Group>
 						</>
