@@ -85,15 +85,23 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 
   // Count session users from ratings for finished sessions
   // Shows who participated in the session
+  // Get ratings, extract unique userIds, fetch those users
   const ratingsForSession = await db.query.ratings.findMany({
     where: eq(ratings.sessionId, sessionId),
     columns: {
       userId: true,
     },
   });
-  const userCountByVotes = Array.from(
-    new Set(ratingsForSession.map((r) => r.userId))
-  );
+  const uniqueUserIds = Array.from(
+    new Set(
+      ratingsForSession
+        .map((r) => r.userId)
+        .filter((id): id is number => id != null)
+    )
+  ) as readonly number[];
+  const userCountByVotes = await db.query.users.findMany({
+    where: inArray(users.id, uniqueUserIds),
+  });
 
   const sessionBeerRowsNotEmpty = sessionBeerRows.filter(
     (sb): sb is typeof sb & { beer: NonNullable<typeof sb.beer> } =>

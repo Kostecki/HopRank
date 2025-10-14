@@ -43,6 +43,7 @@ export function Header({
 		if (session.status === SessionStatus.active) {
 			return `${session.beersRatedCount} / ${session.beersTotalCount}`;
 		}
+
 		return session.beersTotalCount;
 	};
 

@@ -101,8 +101,6 @@ export default function Navbar({
 		.sort((a, b) => (b.order ?? 0) - (a.order ?? 0));
 
 	const UserListItem = ({ user }: { user: SessionProgressUser }) => {
-		console.log("Rendering user:", user);
-
 		return (
 			<Flex justify="space-between" pos="relative" align="center" h={25}>
 				<Text size="sm" fw="500" lineClamp={1}>
