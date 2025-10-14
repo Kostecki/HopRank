@@ -91,7 +91,9 @@ export async function loader({ request, params }: Route.LoaderArgs) {
       userId: true,
     },
   });
-  const userCountByVotes = new Set(ratingsForSession.map((r) => r.userId)).size;
+  const userCountByVotes = Array.from(
+    new Set(ratingsForSession.map((r) => r.userId))
+  );
 
   const sessionBeerRowsNotEmpty = sessionBeerRows.filter(
     (sb): sb is typeof sb & { beer: NonNullable<typeof sb.beer> } =>
