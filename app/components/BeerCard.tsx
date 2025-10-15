@@ -112,8 +112,12 @@ export function BeerCard({ session, beer, rank }: InputProps) {
 			p="xs"
 			style={{
 				...(getMedalColor()
-					? { borderBottom: `8px solid ${getMedalColor()}` }
-					: {}),
+					? {
+							borderLeft: `8px solid ${getMedalColor()}`,
+						}
+					: {
+							borderLeft: "8px solid transparent",
+						}),
 				zIndex: 10,
 			}}
 			withBorder
