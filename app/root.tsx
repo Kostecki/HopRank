@@ -153,9 +153,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 export default function App() {
 	const { user } = useLoaderData<typeof loader>();
 
-	if (user?.email) {
-		useUmamiIdentify(user.email);
-	}
+	useUmamiIdentify(user?.email);
 
 	return <Outlet />;
 }
