@@ -20,6 +20,7 @@ import { useDebouncedSocketEvent } from "~/hooks/useDebouncedSocketEvent";
 import { getPageTitle } from "~/utils/utils";
 
 import { SessionTabs } from "~/components/SessionTabs";
+import { ModalSetName } from "~/components/modals/ModalSetName";
 import { SessionStatus } from "~/types/session";
 import type { Route } from "./+types";
 
@@ -99,11 +100,12 @@ export async function loader({ request }: Route.LoaderArgs) {
 	return {
 		criteria: allCriteria,
 		sessionSummaries,
+		user,
 	};
 }
 
 export default function Sessions() {
-	const { criteria, sessionSummaries } = useLoaderData<typeof loader>();
+	const { criteria, sessionSummaries, user } = useLoaderData<typeof loader>();
 	const { revalidate } = useRevalidator();
 
 	const activeUserSessionIds = sessionSummaries
@@ -133,16 +135,20 @@ export default function Sessions() {
 	);
 
 	return (
-		<Paper p="md" radius="md" withBorder>
-			<SessionPinInput mt="md" mb={50} />
+		<>
+			<Paper p="md" radius="md" withBorder>
+				<SessionPinInput mt="md" mb={50} />
 
-			<SessionTabs
-				activeSessions={activeSessions}
-				finishedSessions={finishedSessions}
-				readOnly={false}
-			/>
+				<SessionTabs
+					activeSessions={activeSessions}
+					finishedSessions={finishedSessions}
+					readOnly={false}
+				/>
 
-			<NewSession criteria={criteria} />
-		</Paper>
+				<NewSession criteria={criteria} />
+			</Paper>
+
+			<ModalSetName user={user} />
+		</>
 	);
 }

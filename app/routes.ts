@@ -48,5 +48,6 @@ export default [
       route("venues", "routes/api/untappd/venues.ts"),
       route("check-in", "routes/api/untappd/check-in.ts"),
     ]),
+    ...prefix("user", [route("update", "routes/api/user/update.ts")]),
   ]),
 ] satisfies RouteConfig;

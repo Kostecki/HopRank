@@ -63,6 +63,7 @@ authenticator.use(
         id: user.id,
         email: user.email,
         admin: user.admin,
+        name: user.name,
       };
 
       return await commitSessionUser(request, sessionUser);

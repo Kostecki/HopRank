@@ -75,6 +75,7 @@ export function UserMenu({ user }: InputProps) {
 			<Menu.Target>
 				<Avatar
 					src={untappd?.avatar}
+					name={untappd?.name ?? user.name ?? firstLetter}
 					radius="100%"
 					size="md"
 					style={{
@@ -90,18 +91,16 @@ export function UserMenu({ user }: InputProps) {
 									? styles.glowPulseDisconnected
 									: styles.glowPulseUndefined
 					}
-				>
-					{firstLetter}
-				</Avatar>
+				/>
 			</Menu.Target>
 
 			<Menu.Dropdown>
 				<Menu.Label>
 					<Stack gap={0}>
 						<Text fw={500} size="sm" c="slateIndigo">
-							{untappd?.name ?? email}
+							{untappd?.name ?? user.name ?? user.email}
 						</Text>
-						{untappd?.name && (
+						{(untappd?.name || user.name) && (
 							<Text c="dimmed" fw={500} size="xs" fs="italic">
 								{email}
 							</Text>
