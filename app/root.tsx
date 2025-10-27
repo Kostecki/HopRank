@@ -40,7 +40,6 @@ import "@mantine/notifications/styles.css";
 import "./app.css";
 
 import { startCron } from "~/utils/cron.server";
-import { invariant } from "./utils/invariant";
 
 import type { Route } from "./+types/root";
 
@@ -99,12 +98,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 	const SRC_URL = import.meta.env.VITE_UMAMI_SRC_URL;
 	const WEBSITE_ID = import.meta.env.VITE_UMAMI_WEBSITE_ID;
-	invariant(SRC_URL, "UMAMI_SRC_URL is not defined");
-	invariant(WEBSITE_ID, "UMAMI_WEBSITE_ID is not defined");
 
 	const UmamiScript = () => {
 		const isProd = import.meta.env.PROD;
-		if (!isProd) return null;
+		if (!isProd || !SRC_URL || !WEBSITE_ID) return null;
 
 		return <script defer src={SRC_URL} data-website-id={WEBSITE_ID} />;
 	};
