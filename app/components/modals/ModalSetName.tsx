@@ -18,7 +18,7 @@ export function ModalSetName({ user }: InputProps) {
 	const [handled, setHandled] = useState(false);
 
 	useEffect(() => {
-		if (!user.name) {
+		if (!user?.untappd && (!user?.name || user.name.trim() === "")) {
 			setTimeout(() => open(), 100);
 		}
 	}, [user.name, open]);
