@@ -21,7 +21,7 @@
     "@react-router/node": "^7.6.0",
     "@react-router/serve": "^7.6.0",
     "@tabler/icons-react": "^3.31.0",
-    "better-sqlite3": "^11.10.0",
+    "better-sqlite3": "^12.4.1",
     "cheerio": "^1.0.0",
     "concurrently": "^9.1.2",
     "dayjs": "^1.11.13",
