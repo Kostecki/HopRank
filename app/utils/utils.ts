@@ -161,3 +161,14 @@ export const formatCount = (
   }
   return Number(value).toLocaleString(locale);
 };
+
+/**
+ * Capitalizes the first letter of a given string.
+ *
+ * @param str - The string to capitalize.
+ * @returns The string with the first letter capitalized.
+ */
+export const capitalizeFirstLetter = (str: string): string => {
+  if (!str) return "";
+  return str.charAt(0).toUpperCase() + str.slice(1);
+};

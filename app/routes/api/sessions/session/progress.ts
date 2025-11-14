@@ -224,17 +224,21 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     userHadBeer = beerInfo?.stats.user_count > 0 || false;
   }
 
+  // Count session as active if it's created or active
+  const activeSession =
+    state?.status === SessionStatus.active ||
+    state?.status === SessionStatus.created;
+
   return data({
     sessionId,
     sessionName: session.name,
     status: state?.status,
+    createdAt: session.createdAt,
+    createdBy: session.createdBy,
     joinCode: session.joinCode,
     beersTotalCount: sessionBeerRowsNotEmpty.length,
     beersRatedCount: ratedBeers.length,
-    users:
-      state?.status === SessionStatus.active
-        ? usersForSession
-        : userCountByVotes,
+    users: activeSession ? usersForSession : userCountByVotes,
     sessionCriteria: criteriaList,
     currentBeer: { ...currentBeerData, userHadBeer },
     ratedBeers,
