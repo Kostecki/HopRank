@@ -57,7 +57,9 @@ export default function Navbar({
     setLocalSessionBeers(sessionBeers);
   }, [sessionBeers]);
 
-  const activeSession = sessionProgress?.status === SessionStatus.active;
+  const activeSession =
+    sessionProgress?.status === SessionStatus.active ||
+    sessionProgress?.status === SessionStatus.created;
   const readOnly = location.pathname.endsWith("/view");
 
   const handleLeaveSession = async () => {
