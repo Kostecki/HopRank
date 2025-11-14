@@ -128,7 +128,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
     <html lang="en" style={{ height: "100%", margin: 0 }} {...mantineHtmlProps}>
       <head>
         <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+        />
         <meta name="apple-mobile-web-app-title" content="HopRank" />
         <Meta />
         <Links />
