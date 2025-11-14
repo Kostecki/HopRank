@@ -9,82 +9,82 @@ importers:
   .:
     dependencies:
       '@mantine/core':
-        specifier: ^8.3.2
+        specifier: ^8.3.7
         version: 8.3.7(@mantine/hooks@8.3.7(react@19.2.0))(@types/react@19.2.4)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@mantine/form':
-        specifier: ^8.3.2
+        specifier: ^8.3.7
         version: 8.3.7(react@19.2.0)
       '@mantine/hooks':
-        specifier: ^8.3.2
+        specifier: ^8.3.7
         version: 8.3.7(react@19.2.0)
       '@mantine/notifications':
-        specifier: ^8.3.2
+        specifier: ^8.3.7
         version: 8.3.7(@mantine/core@8.3.7(@mantine/hooks@8.3.7(react@19.2.0))(@types/react@19.2.4)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(@mantine/hooks@8.3.7(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@mjackson/headers':
-        specifier: ^0.10.0
-        version: 0.10.0
+        specifier: ^0.11.1
+        version: 0.11.1
       '@react-router/node':
-        specifier: ^7.6.0
+        specifier: ^7.9.6
         version: 7.9.6(react-router@7.9.6(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(typescript@5.9.3)
       '@react-router/serve':
-        specifier: ^7.6.0
+        specifier: ^7.9.6
         version: 7.9.6(react-router@7.9.6(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(typescript@5.9.3)
       '@tabler/icons-react':
-        specifier: ^3.31.0
+        specifier: ^3.35.0
         version: 3.35.0(react@19.2.0)
       better-sqlite3:
         specifier: ^12.4.1
         version: 12.4.1
       cheerio:
-        specifier: ^1.0.0
+        specifier: ^1.1.2
         version: 1.1.2
       concurrently:
-        specifier: ^9.1.2
+        specifier: ^9.2.1
         version: 9.2.1
       dayjs:
-        specifier: ^1.11.13
+        specifier: ^1.11.19
         version: 1.11.19
       dotenv:
         specifier: ^16.5.0
         version: 16.6.1
       drizzle-orm:
-        specifier: ^0.43.1
-        version: 0.43.1(@types/better-sqlite3@7.6.13)(better-sqlite3@12.4.1)
+        specifier: ^0.44.7
+        version: 0.44.7(@types/better-sqlite3@7.6.13)(better-sqlite3@12.4.1)
       isbot:
-        specifier: ^5.1.28
+        specifier: ^5.1.32
         version: 5.1.32
       mjml:
-        specifier: ^4.15.3
+        specifier: ^4.17.0
         version: 4.17.0
       mnemonic-id:
         specifier: ^3.2.7
         version: 3.2.7
       node-cron:
-        specifier: ^4.0.5
+        specifier: ^4.2.1
         version: 4.2.1
       nodemailer:
-        specifier: ^7.0.3
+        specifier: ^7.0.10
         version: 7.0.10
       react:
-        specifier: ^19.0.0
+        specifier: ^19.2.0
         version: 19.2.0
       react-dom:
-        specifier: ^19.0.0
+        specifier: ^19.2.0
         version: 19.2.0(react@19.2.0)
       react-router:
-        specifier: ^7.6.0
+        specifier: ^7.9.6
         version: 7.9.6(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       remix-auth:
         specifier: ^4.2.0
         version: 4.2.0
       remix-auth-oauth2:
-        specifier: ^3.4.0
+        specifier: ^3.4.1
         version: 3.4.1(remix-auth@4.2.0)
       remix-auth-totp:
         specifier: ^4.0.0
         version: 4.0.0(remix-auth@4.2.0)
       remix-toast:
-        specifier: ^3.1.0
+        specifier: ^3.3.0
         version: 3.3.0(react-router@7.9.6(react-dom@19.2.0(react@19.2.0))(react@19.2.0))
       socket.io:
         specifier: ^4.8.1
@@ -97,7 +97,7 @@ importers:
         specifier: 1.9.4
         version: 1.9.4
       '@react-router/dev':
-        specifier: ^7.6.0
+        specifier: ^7.9.6
         version: 7.9.6(@react-router/serve@7.9.6(react-router@7.9.6(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(typescript@5.9.3))(@types/node@22.19.1)(babel-plugin-macros@3.1.0)(react-router@7.9.6(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(sugarss@5.0.1(postcss@8.5.6))(tsx@4.20.6)(typescript@5.9.3)(vite@6.4.1(@types/node@22.19.1)(sugarss@5.0.1(postcss@8.5.6))(tsx@4.20.6))
       '@types/better-sqlite3':
         specifier: ^7.6.13
@@ -115,19 +115,19 @@ importers:
         specifier: ^6.4.17
         version: 6.4.21
       '@types/react':
-        specifier: ^19.1.4
+        specifier: ^19.2.4
         version: 19.2.4
       '@types/react-dom':
-        specifier: ^19.1.5
+        specifier: ^19.2.3
         version: 19.2.3(@types/react@19.2.4)
       drizzle-kit:
-        specifier: ^0.31.1
+        specifier: ^0.31.7
         version: 0.31.7
       postcss:
-        specifier: ^8.5.3
+        specifier: ^8.5.6
         version: 8.5.6
       postcss-preset-mantine:
-        specifier: ^1.17.0
+        specifier: ^1.18.0
         version: 1.18.0(postcss@8.5.6)
       postcss-simple-vars:
         specifier: ^7.0.1
@@ -136,10 +136,10 @@ importers:
         specifier: ^5.0.5
         version: 5.1.6(@types/react-dom@19.2.3(@types/react@19.2.4))(@types/react@19.2.4)(react-dom@19.2.0(react@19.2.0))(react-router@7.9.6(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react@19.2.0)(vite@6.4.1(@types/node@22.19.1)(sugarss@5.0.1(postcss@8.5.6))(tsx@4.20.6))
       tsx:
-        specifier: ^4.19.4
+        specifier: ^4.20.6
         version: 4.20.6
       typescript:
-        specifier: ^5.8.3
+        specifier: ^5.9.3
         version: 5.9.3
       vite:
         specifier: ^6.3.5
@@ -879,6 +879,9 @@ packages:
 
   '@mjackson/headers@0.10.0':
     resolution: {integrity: sha512-U1Eu1gF979k7ZoIBsJyD+T5l9MjtPONsZfoXfktsQHPJD0s7SokBGx+tLKDLsOY+gzVYAWS0yRFDNY8cgbQzWQ==}
+
+  '@mjackson/headers@0.11.1':
+    resolution: {integrity: sha512-uXXhd4rtDdDwkqAuGef1nuafkCa1NlTmEc1Jzc0NL4YiA1yON1NFXuqJ3hOuKvNKQwkiDwdD+JJlKVyz4dunFA==}
 
   '@mjackson/headers@0.8.0':
     resolution: {integrity: sha512-A6nE9ZKTGX1hTHQOeoYn/f7+xRTgzixHWu9jtZ8zYgZYq30MPtZIRXqEyY8bWaIILr+zWdmUPQg/R/8e+e/8Nw==}
@@ -2079,8 +2082,8 @@ packages:
     resolution: {integrity: sha512-hOzRGSdyKIU4FcTSFYGKdXEjFsncVwHZ43gY3WU5Bz9j5Iadp6Rh6hxLSQ1IWXpKLBKt/d5y1cpSPcV+FcoQ1A==}
     hasBin: true
 
-  drizzle-orm@0.43.1:
-    resolution: {integrity: sha512-dUcDaZtE/zN4RV/xqGrVSMpnEczxd5cIaoDeor7Zst9wOe/HzC/7eAaulywWGYXdDEc9oBPMjayVEDg0ziTLJA==}
+  drizzle-orm@0.44.7:
+    resolution: {integrity: sha512-quIpnYznjU9lHshEOAYLoZ9s3jweleHlZIAWR/jX9gAWNg/JhQ1wj0KGRf7/Zm+obRrYd9GjPVJg790QY9N5AQ==}
     peerDependencies:
       '@aws-sdk/client-rds-data': '>=3'
       '@cloudflare/workers-types': '>=4'
@@ -2096,6 +2099,7 @@ packages:
       '@types/better-sqlite3': '*'
       '@types/pg': '*'
       '@types/sql.js': '*'
+      '@upstash/redis': '>=1.34.7'
       '@vercel/postgres': '>=0.8.0'
       '@xata.io/client': '*'
       better-sqlite3: '>=7'
@@ -2138,6 +2142,8 @@ packages:
       '@types/pg':
         optional: true
       '@types/sql.js':
+        optional: true
+      '@upstash/redis':
         optional: true
       '@vercel/postgres':
         optional: true
@@ -4609,6 +4615,8 @@ snapshots:
 
   '@mjackson/headers@0.10.0': {}
 
+  '@mjackson/headers@0.11.1': {}
+
   '@mjackson/headers@0.8.0': {}
 
   '@mjackson/node-fetch-server@0.2.0': {}
@@ -5902,7 +5910,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  drizzle-orm@0.43.1(@types/better-sqlite3@7.6.13)(better-sqlite3@12.4.1):
+  drizzle-orm@0.44.7(@types/better-sqlite3@7.6.13)(better-sqlite3@12.4.1):
     optionalDependencies:
       '@types/better-sqlite3': 7.6.13
       better-sqlite3: 12.4.1
