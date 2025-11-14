@@ -10,80 +10,80 @@ import type { SessionUser } from "~/types/user";
 import { UserMenu } from "./UserMenu/UserMenu";
 
 type InputProps = {
-	user: SessionUser | null;
-	session: SessionProgress | null;
-	mobileOpened: boolean;
-	desktopOpened: boolean;
-	toggleMobile: () => void;
-	toggleDesktop: () => void;
+  user: SessionUser | null;
+  session: SessionProgress | null;
+  mobileOpened: boolean;
+  desktopOpened: boolean;
+  toggleMobile: () => void;
+  toggleDesktop: () => void;
 };
 
 export function Header({
-	user,
-	session,
-	mobileOpened,
-	desktopOpened,
-	toggleMobile,
-	toggleDesktop,
+  user,
+  session,
+  mobileOpened,
+  desktopOpened,
+  toggleMobile,
+  toggleDesktop,
 }: InputProps) {
-	const theme = useMantineTheme();
-	const slateIndigo = theme.colors.slateIndigo[6];
+  const theme = useMantineTheme();
+  const slateIndigo = theme.colors.slateIndigo[6];
 
-	const { revalidate } = useRevalidator();
+  const { revalidate } = useRevalidator();
 
-	useDebouncedSocketEvent(
-		["session:users-changed"],
-		() => revalidate(),
-		session?.sessionId,
-	);
+  useDebouncedSocketEvent(
+    ["session:users-changed"],
+    () => revalidate(),
+    session?.sessionId
+  );
 
-	const BeerCount = () => {
-		if (!session) return "-";
+  const BeerCount = () => {
+    if (!session) return "-";
 
-		if (session.status === SessionStatus.active) {
-			return `${session.beersRatedCount} / ${session.beersTotalCount}`;
-		}
+    if (session.status === SessionStatus.active) {
+      return `${session.beersRatedCount} / ${session.beersTotalCount}`;
+    }
 
-		return session.beersTotalCount;
-	};
+    return session.beersTotalCount;
+  };
 
-	return (
-		<Paper shadow="md" h="100%">
-			<Group justify="space-between" px="md" pt="sm">
-				<Group gap="sm">
-					{session && (
-						<>
-							<Group gap="xs" mr="xs">
-								<Burger
-									opened={mobileOpened}
-									onClick={toggleMobile}
-									hiddenFrom="sm"
-									size="sm"
-								/>
-								<Burger
-									opened={desktopOpened}
-									onClick={toggleDesktop}
-									visibleFrom="sm"
-									size="sm"
-								/>
-							</Group>
-							<Group gap="8">
-								<IconUsers color={slateIndigo} size={20} />
-								<Text c="slateIndigo" fw={600}>
-									{session.users.length}
-								</Text>
-							</Group>
-							<Group gap="5">
-								<IconBeer color={slateIndigo} size={20} />
-								<Text c="slateIndigo" fw={600}>
-									<BeerCount />
-								</Text>
-							</Group>
-						</>
-					)}
-				</Group>
-				{user && <UserMenu user={user} />}
-			</Group>
-		</Paper>
-	);
+  return (
+    <Paper shadow="md" h="100%">
+      <Group justify="space-between" px="md" pt="sm">
+        <Group gap="sm">
+          {session && (
+            <>
+              <Group gap="xs" mr="xs">
+                <Burger
+                  opened={mobileOpened}
+                  onClick={toggleMobile}
+                  hiddenFrom="sm"
+                  size="sm"
+                />
+                <Burger
+                  opened={desktopOpened}
+                  onClick={toggleDesktop}
+                  visibleFrom="sm"
+                  size="sm"
+                />
+              </Group>
+              <Group gap="8">
+                <IconUsers color={slateIndigo} size={20} />
+                <Text c="slateIndigo" fw={600}>
+                  {session.users.length}
+                </Text>
+              </Group>
+              <Group gap="5">
+                <IconBeer color={slateIndigo} size={20} />
+                <Text c="slateIndigo" fw={600}>
+                  <BeerCount />
+                </Text>
+              </Group>
+            </>
+          )}
+        </Group>
+        {user && <UserMenu user={user} />}
+      </Group>
+    </Paper>
+  );
 }
