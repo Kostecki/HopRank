@@ -49,6 +49,8 @@ export type SessionProgress = {
   sessionId: number;
   sessionName: string;
   status: string | null | undefined;
+  createdAt: string;
+  createdBy: number;
   joinCode: string;
   beersTotalCount: number;
   beersRatedCount: number;
@@ -66,6 +68,7 @@ export type SessionCriterion = {
 };
 
 export const SessionStatus = {
+  created: "created",
   active: "active",
   finished: "finished",
 } as const;
