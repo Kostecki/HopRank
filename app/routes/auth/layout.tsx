@@ -6,8 +6,8 @@ export default function Layout() {
     <AppShell>
       <AppShell.Main>
         <Container size="xs">
-          <Grid justify="center" pt={80}>
-            <Grid.Col span={10}>
+          <Grid justify="center" pt="md">
+            <Grid.Col>
               <Outlet />
             </Grid.Col>
           </Grid>
