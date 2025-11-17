@@ -2,13 +2,13 @@ import { Tabs } from "@mantine/core";
 import SessionsTable, { type Session } from "./SessionsTable";
 
 type InputProps = {
-  activeSessions: Session[];
+  inProgressSessions: Session[];
   finishedSessions: Session[];
   readOnly: boolean;
 };
 
 export function SessionTabs({
-  activeSessions,
+  inProgressSessions,
   finishedSessions,
   readOnly,
 }: InputProps) {
@@ -25,7 +25,7 @@ export function SessionTabs({
 
       <Tabs.Panel value="active">
         <SessionsTable
-          sessions={activeSessions}
+          sessions={inProgressSessions}
           mode="active"
           readOnly={readOnly}
         />

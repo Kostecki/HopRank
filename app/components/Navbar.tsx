@@ -57,14 +57,16 @@ export default function Navbar({
     setLocalSessionBeers(sessionBeers);
   }, [sessionBeers]);
 
-  const activeSession = sessionProgress?.status === SessionStatus.active;
+  const inProgressSession =
+    sessionProgress?.status === SessionStatus.active ||
+    sessionProgress?.status === SessionStatus.created;
   const readOnly = location.pathname.endsWith("/view");
 
   const handleLeaveSession = async () => {
     closeMobile();
     closeDesktop();
 
-    if (!sessionProgress || !activeSession) {
+    if (!sessionProgress || !inProgressSession) {
       navigate("/sessions");
     } else {
       const sessionId = sessionProgress.sessionId;
@@ -208,7 +210,7 @@ export default function Navbar({
               </>
             )}
 
-            {activeSession && !readOnly && (
+            {inProgressSession && !readOnly && (
               <>
                 <Group mt="xl" justify="space-between">
                   <Text size="md" tt="uppercase">

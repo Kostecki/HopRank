@@ -1,5 +1,5 @@
-import { Paper } from "@mantine/core";
-import { and, count, eq } from "drizzle-orm";
+import { Paper, Text } from "@mantine/core";
+import { and, eq } from "drizzle-orm";
 import { redirect, useLoaderData, useRevalidator } from "react-router";
 
 import NewSession from "~/components/NewSession";
@@ -7,13 +7,7 @@ import SessionPinInput from "~/components/SessionPinInput";
 
 import { userSessionGet } from "~/auth/users.server";
 import { db } from "~/database/config.server";
-import {
-  criteria,
-  sessionBeers,
-  sessionState,
-  sessionUsers,
-  sessions,
-} from "~/database/schema.server";
+import { criteria, sessionUsers, sessions } from "~/database/schema.server";
 
 import { useDebouncedSocketEvent } from "~/hooks/useDebouncedSocketEvent";
 
@@ -21,6 +15,7 @@ import { getPageTitle } from "~/utils/utils";
 
 import { SessionTabs } from "~/components/SessionTabs";
 import { ModalSetName } from "~/components/modals/ModalSetName";
+import { getSessionCounts } from "~/database/utils/getSessionCounts.server";
 import { SessionStatus } from "~/types/session";
 import type { Route } from "./+types";
 
@@ -64,32 +59,16 @@ export async function loader({ request }: Route.LoaderArgs) {
 
   const sessionSummaries = await Promise.all(
     allSessions.map(async (session) => {
-      const [state, participantCount, beerCount] = await Promise.all([
-        db.query.sessionState.findFirst({
-          where: eq(sessionState.sessionId, session.id),
-        }),
-        db
-          .select({ count: count() })
-          .from(sessionUsers)
-          .where(
-            and(
-              eq(sessionUsers.sessionId, session.id),
-              eq(sessionUsers.active, true)
-            )
-          ),
-
-        db
-          .select({ count: count() })
-          .from(sessionBeers)
-          .where(eq(sessionBeers.sessionId, session.id)),
-      ]);
+      const { state, participantCount, beerCount } = await getSessionCounts(
+        session.id
+      );
 
       return {
         id: session.id,
         name: session.name,
         joinCode: session.joinCode,
-        participants: participantCount[0].count ?? 0,
-        beers: beerCount[0].count ?? 0,
+        participants: participantCount,
+        beers: beerCount,
         status: state?.status,
         createdAt: session.createdAt,
         createdBy: session.createdBy,
@@ -108,8 +87,12 @@ export default function Sessions() {
   const { criteria, sessionSummaries, user } = useLoaderData<typeof loader>();
   const { revalidate } = useRevalidator();
 
+  // Get active session IDs for the user to filter socket events
   const activeUserSessionIds = sessionSummaries
-    .filter((s) => s.status === SessionStatus.active)
+    .filter(
+      (s) =>
+        s.status === SessionStatus.active || s.status === SessionStatus.created
+    )
     .map((s) => s.id);
 
   useDebouncedSocketEvent(
@@ -127,8 +110,9 @@ export default function Sessions() {
     }
   );
 
-  const activeSessions = sessionSummaries.filter(
-    (s) => s.status === SessionStatus.active
+  const inProgressSessions = sessionSummaries.filter(
+    (s) =>
+      s.status === SessionStatus.active || s.status === SessionStatus.created
   );
   const finishedSessions = sessionSummaries.filter(
     (s) => s.status === SessionStatus.finished
@@ -140,7 +124,7 @@ export default function Sessions() {
         <SessionPinInput mt="md" mb={50} />
 
         <SessionTabs
-          activeSessions={activeSessions}
+          inProgressSessions={inProgressSessions}
           finishedSessions={finishedSessions}
           readOnly={false}
         />

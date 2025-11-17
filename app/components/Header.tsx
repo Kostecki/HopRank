@@ -29,6 +29,10 @@ export function Header({
   const theme = useMantineTheme();
   const slateIndigo = theme.colors.slateIndigo[6];
 
+  const inProgressSession =
+    session?.status === SessionStatus.active ||
+    session?.status === SessionStatus.created;
+
   const { revalidate } = useRevalidator();
 
   useDebouncedSocketEvent(
@@ -40,7 +44,7 @@ export function Header({
   const BeerCount = () => {
     if (!session) return "-";
 
-    if (session.status === SessionStatus.active) {
+    if (inProgressSession) {
       return `${session.beersRatedCount} / ${session.beersTotalCount}`;
     }
 

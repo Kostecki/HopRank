@@ -126,7 +126,7 @@ export const sessionState = sqliteTable("session_state", {
     .references(() => sessions.id),
   currentBeerId: integer("current_beer_id").references(() => beers.id),
   currentBeerOrder: integer("current_beer_order"),
-  status: text("status").notNull().default(SessionStatus.active),
+  status: text("status").notNull().default(SessionStatus.created),
   lastUpdatedAt: text("last_updated_at")
     .default(sql`CURRENT_TIMESTAMP`)
     .$onUpdate(() => sql`CURRENT_TIMESTAMP`),

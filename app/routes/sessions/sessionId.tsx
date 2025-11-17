@@ -17,6 +17,7 @@ import { extractSessionId, getPageTitle } from "~/utils/utils";
 
 import { type SessionProgress, SessionStatus } from "~/types/session";
 import type { Route } from "./+types/sessionId";
+import { StartSession } from "~/components/StartSession/StartSession";
 
 export function meta() {
   return [{ title: getPageTitle("Smagning") }];
@@ -82,6 +83,7 @@ export default function Session() {
   const { revalidate } = useRevalidator();
 
   const hasCurrentBeer =
+    sessionProgress.status === SessionStatus.active &&
     sessionProgress.currentBeer &&
     Object.keys(sessionProgress.currentBeer).length !== 0;
 
@@ -105,6 +107,10 @@ export default function Session() {
   return (
     <>
       {emptySession && <EmptySession />}
+
+      {!emptySession && sessionProgress.status === SessionStatus.created && (
+        <StartSession user={user} session={sessionProgress} />
+      )}
 
       {hasCurrentBeer && (
         <UpNext
