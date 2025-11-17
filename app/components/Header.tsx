@@ -29,7 +29,8 @@ export function Header({
   const theme = useMantineTheme();
   const slateIndigo = theme.colors.slateIndigo[6];
 
-  const activeSession =
+  // Good word for active or created that isn't "ongoing":
+  const inProgressSession =
     session?.status === SessionStatus.active ||
     session?.status === SessionStatus.created;
 
@@ -44,7 +45,7 @@ export function Header({
   const BeerCount = () => {
     if (!session) return "-";
 
-    if (activeSession) {
+    if (inProgressSession) {
       return `${session.beersRatedCount} / ${session.beersTotalCount}`;
     }
 

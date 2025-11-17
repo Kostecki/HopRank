@@ -46,7 +46,7 @@ export async function loader({ request }: Route.LoaderArgs) {
   );
 
   return {
-    activeSessions: allSessions.filter(
+    inProgressSessions: allSessions.filter(
       (s) =>
         s.status === SessionStatus.active || s.status === SessionStatus.created
     ),
@@ -73,7 +73,8 @@ export async function action({ request }: Route.ActionArgs) {
 }
 
 export default function Login() {
-  const { activeSessions, finishedSessions } = useLoaderData<typeof loader>();
+  const { inProgressSessions, finishedSessions } =
+    useLoaderData<typeof loader>();
 
   return (
     <>
@@ -83,7 +84,7 @@ export default function Login() {
 
       <Card shadow="lg" padding="lg" radius="md">
         <SessionTabs
-          activeSessions={activeSessions}
+          inProgressSessions={inProgressSessions}
           finishedSessions={finishedSessions}
           readOnly
         />

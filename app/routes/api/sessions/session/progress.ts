@@ -225,7 +225,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   }
 
   // Count session as active if it's created or active
-  const activeSession =
+  const inProgressSession =
     state?.status === SessionStatus.active ||
     state?.status === SessionStatus.created;
 
@@ -238,7 +238,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     joinCode: session.joinCode,
     beersTotalCount: sessionBeerRowsNotEmpty.length,
     beersRatedCount: ratedBeers.length,
-    users: activeSession ? usersForSession : userCountByVotes,
+    users: inProgressSession ? usersForSession : userCountByVotes,
     sessionCriteria: criteriaList,
     currentBeer: { ...currentBeerData, userHadBeer },
     ratedBeers,

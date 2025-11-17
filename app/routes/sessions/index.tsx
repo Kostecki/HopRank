@@ -110,7 +110,7 @@ export default function Sessions() {
     }
   );
 
-  const activeSessions = sessionSummaries.filter(
+  const inProgressSessions = sessionSummaries.filter(
     (s) =>
       s.status === SessionStatus.active || s.status === SessionStatus.created
   );
@@ -124,7 +124,7 @@ export default function Sessions() {
         <SessionPinInput mt="md" mb={50} />
 
         <SessionTabs
-          activeSessions={activeSessions}
+          inProgressSessions={inProgressSessions}
           finishedSessions={finishedSessions}
           readOnly={false}
         />
