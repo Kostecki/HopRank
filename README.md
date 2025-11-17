@@ -74,26 +74,77 @@ pnpm install
 
 ### Environment Setup
 
-Create a `.env` file with the required environment variables:
+Create a `.env` file with the required environment variables. Below is a consolidated list grouped by purpose.
+
+#### Required (Core Functionality)
+
+| Variable | Purpose |
+|----------|---------|
+| `APP_URL` | Base URL of the app (used to build OAuth callback URLs) |
+| `SESSION_SECRET` | Secret for signing session cookies |
+| `UNTAPPD_CLIENT_ID` | Untappd OAuth client ID |
+| `UNTAPPD_CLIENT_SECRET` | Untappd OAuth client secret |
+| `DATABASE_PATH` | Path to the SQLite database file (e.g. `./data/database.db`) |
+| `VITE_ALGOLIA_APP_ID` | Algolia application ID for beer search |
+| `VITE_ALGOLIA_API_KEY` | Algolia search-only API key |
+| `VITE_WS_URL` | WebSocket endpoint used by the client (e.g. `ws://localhost:5173`) |
+
+#### Optional / Feature-Specific
+
+| Variable | Purpose |
+|----------|---------|
+| `MIGRATIONS_PATH` | Custom path to Drizzle migration folder (defaults to project path) |
+| `SMTP_FROM` | From address for outbound emails |
+| `SMTP_HOST` | SMTP server host for email login links |
+| `SMTP_PORT` | SMTP server port |
+| `SMTP_USER` | SMTP auth username |
+| `SMTP_PASS` | SMTP auth password |
+| `TOTP_SECRET` | Base secret for generating TOTP (2FA) codes |
+| `MAX_SESSION_AGE_HOURS` | Auto-close sessions older than this (default 12) |
+| `VITE_UMAMI_SRC_URL` | Umami analytics script URL (production only) |
+| `VITE_UMAMI_WEBSITE_ID` | Umami website/site ID |
+| `VITE_LATEST_COMMIT_HASH` | Injected at build time for UI display of current commit |
+| `VITE_LATEST_COMMIT_MESSAGE` | Injected commit message for display |
+
+#### Example `.env` (local development)
 
 ```env
+# Base App
+APP_URL=http://localhost:5173
+SESSION_SECRET=dev_super_secret
+
+# Database
+DATABASE_PATH=./data/database.db
+
 # Untappd OAuth
 UNTAPPD_CLIENT_ID=your_untappd_client_id
 UNTAPPD_CLIENT_SECRET=your_untappd_client_secret
-UNTAPPD_CALLBACK_URL=http://localhost:5173/auth/untappd/callback
 
-# Database
-DATABASE_URL=./data/database.db
-
-# Session secrets
-SESSION_SECRET=your_session_secret
-
-# Algolia (for beer search)
+# Algolia (Beer Search)
 VITE_ALGOLIA_APP_ID=your_algolia_app_id
 VITE_ALGOLIA_API_KEY=your_algolia_api_key
 
-# WebSocket URL
+# WebSockets
 VITE_WS_URL=ws://localhost:5173
+
+# Optional Email (disable if not set)
+SMTP_FROM=HopRank <no-reply@localhost>
+SMTP_HOST=localhost
+SMTP_PORT=1025
+SMTP_USER=
+SMTP_PASS=
+
+# Optional 2FA
+TOTP_SECRET=replace_me_for_prod
+
+# Optional Analytics / Build Metadata
+VITE_UMAMI_SRC_URL=
+VITE_UMAMI_WEBSITE_ID=
+VITE_LATEST_COMMIT_HASH=
+VITE_LATEST_COMMIT_MESSAGE=
+
+# Housekeeping
+MAX_SESSION_AGE_HOURS=12
 ```
 
 ### Database Setup
