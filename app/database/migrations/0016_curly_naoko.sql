@@ -1,0 +1,1 @@
+ALTER TABLE `criteria` DROP COLUMN `last_updated_at`;

@@ -89,6 +89,7 @@ export const criteria = sqliteTable("criteria", {
   name: text("name").unique().notNull(),
   description: text("description").notNull(),
   weight: real("weight").notNull(),
+  enabled: integer({ mode: "boolean" }).notNull().default(true),
 });
 
 export const sessionCriteria = sqliteTable("session_criteria", {

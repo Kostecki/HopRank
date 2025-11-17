@@ -1,4 +1,4 @@
-import { Paper, Text } from "@mantine/core";
+import { Paper } from "@mantine/core";
 import { and, eq } from "drizzle-orm";
 import { redirect, useLoaderData, useRevalidator } from "react-router";
 
@@ -38,7 +38,10 @@ export async function loader({ request }: Route.LoaderArgs) {
     return redirect(`/sessions/${sessionId}`);
   }
 
-  const allCriteria = await db.select().from(criteria);
+  const allCriteria = await db
+    .select()
+    .from(criteria)
+    .where(eq(criteria.enabled, true));
 
   const createdSessions = await db
     .select()

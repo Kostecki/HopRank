@@ -68,16 +68,23 @@ export default function SelectCriteria({
       <Box my="xs">
         <Chip.Group multiple={false} value={value} onChange={handleGroupChange}>
           <Group gap="xs">
-            {criteriaGroups.map((group) => (
-              <Chip
-                key={group.id}
-                value={group.id}
-                size="xs"
-                color="slateIndigo"
-              >
-                {group.name}
-              </Chip>
-            ))}
+            {criteriaGroups.map((group) => {
+              // Only show group-pill if all its criteria are available
+              if (group.active.length > criteria.length) {
+                return null;
+              }
+
+              return (
+                <Chip
+                  key={group.id}
+                  value={group.id}
+                  size="xs"
+                  color="slateIndigo"
+                >
+                  {group.name}
+                </Chip>
+              );
+            })}
 
             <Collapse in={value === "custom"} transitionDuration={150}>
               <Chip key="custom" value="custom" size="xs" color="slateIndigo">
