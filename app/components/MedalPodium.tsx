@@ -1,4 +1,4 @@
-import { Avatar, Box, Card, Flex, Image, rem, Text } from "@mantine/core";
+import { Avatar, Card, Flex, Image, rem, Text, ThemeIcon } from "@mantine/core";
 
 import type {
   RatedBeers,
@@ -41,12 +41,11 @@ export default function MedalPodium({ session, users }: inputProps) {
   };
 
   return (
-    <Flex justify="center" align="flex-end" gap="xl">
+    <Flex justify="center" align="flex-end" gap="xl" aria-label="Podium">
       {displayOrder.map((beer, i) => {
         const place = i === 1 ? 1 : i === 0 ? 2 : 3;
         const bg = placementColors[i];
         const height = displayHeights[i] || rem(120);
-
         const addedBy = users.find((user) => user.id === beer?.addedByUserId);
 
         return (
@@ -68,9 +67,10 @@ export default function MedalPodium({ session, users }: inputProps) {
               bdrs="md"
               pt="xl"
               pb="sm"
-              bg={`linear-gradient(180deg, ${bg} 0%, rgba(0,0,0,0.1) 100%)`}
+              bg={`linear-gradient(180deg, ${bg} 0%, rgba(0,0,0,0.08) 100%)`}
               style={{
-                boxShadow: "0 2px 6px rgba(0, 0, 0, 0.1)",
+                boxShadow: "0 2px 6px rgba(0, 0, 0, 0.08)",
+                overflow: "hidden",
               }}
             >
               {beer ? (
@@ -91,7 +91,14 @@ export default function MedalPodium({ session, users }: inputProps) {
                     }}
                   />
 
-                  <Card withBorder shadow="sm" p="xs" radius="md" mb="sm">
+                  <Card
+                    withBorder
+                    shadow="sm"
+                    p="xs"
+                    radius="md"
+                    mb="sm"
+                    bg="white"
+                  >
                     <Image
                       src={`${beer.label}`}
                       alt={beer.name}
@@ -109,7 +116,23 @@ export default function MedalPodium({ session, users }: inputProps) {
                   </Text>
                 </>
               ) : (
-                <Box style={{ height: "100%", width: "100%" }} />
+                <Flex
+                  direction="column"
+                  align="center"
+                  justify="center"
+                  gap={6}
+                  h="100%"
+                  w="100%"
+                  style={{
+                    backdropFilter: "blur(2px)",
+                  }}
+                >
+                  <ThemeIcon size={46} radius="xl" variant="light" color="gray">
+                    <Text fw={700} size="lg">
+                      {place}
+                    </Text>
+                  </ThemeIcon>
+                </Flex>
               )}
             </Flex>
           </Flex>

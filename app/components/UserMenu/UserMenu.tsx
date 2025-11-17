@@ -114,7 +114,7 @@ export function UserMenu({ user }: InputProps) {
             target="_blank"
             leftSection={<IconBeer size={16} />}
           >
-            Untappd
+            Untappd-profil
           </Menu.Item>
         )}
         {isAdmin && (
