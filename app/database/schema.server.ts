@@ -1,4 +1,4 @@
-import { type SQL, relations, sql } from "drizzle-orm";
+import { relations, type SQL, sql } from "drizzle-orm";
 import {
   type AnySQLiteColumn,
   integer,
@@ -8,6 +8,7 @@ import {
   unique,
   uniqueIndex,
 } from "drizzle-orm/sqlite-core";
+
 import { SessionBeerStatus, SessionStatus } from "~/types/session";
 
 export function lower(email: AnySQLiteColumn): SQL {

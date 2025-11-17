@@ -1,8 +1,10 @@
 import { data } from "react-router";
+
+import type { Route } from "./+types/check-in";
+
 import { userSessionGet } from "~/auth/users.server";
 import { invariant } from "~/utils/invariant";
 import { checkinBeer } from "~/utils/untappd";
-import type { Route } from "./+types/check-in";
 
 export async function action({ request }: Route.ActionArgs) {
   const user = await userSessionGet(request);

@@ -10,9 +10,10 @@ import {
   Title,
 } from "@mantine/core";
 import { IconCheck } from "@tabler/icons-react";
-import { displayScore } from "~/utils/utils";
 
 import type { RatedBeers, SessionProgress } from "~/types/session";
+
+import { displayScore } from "~/utils/utils";
 
 type InputProps = {
   session: SessionProgress;

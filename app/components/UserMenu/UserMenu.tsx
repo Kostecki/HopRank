@@ -3,11 +3,10 @@ import { IconBeer, IconDatabase, IconLogout } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
 
-import { useSocket } from "~/hooks/useSocket";
-
-import { createProfileLink } from "~/utils/untappd";
-
 import type { SessionUser } from "~/types/user";
+
+import { useSocket } from "~/hooks/useSocket";
+import { createProfileLink } from "~/utils/untappd";
 
 import styles from "./UserMenu.module.css";
 

@@ -19,10 +19,54 @@
 		"enabled": true,
 		"indentStyle": "tab"
 	},
-	"assist": { "actions": { "source": { "organizeImports": "on" } } },
+	"assist": {
+		"actions": {
+			"source": {
+				"organizeImports": {
+					"level": "on",
+					"options": {
+						"groups": [
+							[
+								":NODE:",
+								":PACKAGE:",
+								":PACKAGE_WITH_PROTOCOL:"
+							],
+							":BLANK_LINE:",
+							[
+								"~/types",
+								"~/types/**",
+								"@/types",
+								"@/types/**",
+								"./+types",
+								"./+types/**",
+								"../+types",
+								"../+types/**",
+								"./$types",
+								"./$types/**",
+								"../$types",
+								"../$types/**"
+							],
+							":BLANK_LINE:",
+							":ALIAS:",
+							":BLANK_LINE:",
+							[
+								"../**",
+								"./**"
+							]
+						]
+					}
+				}
+			}
+		}
+	},
 	"linter": {
 		"enabled": true,
-		"includes": ["**", "!**/node_modules", "!**/build", "!**/.react-router"],
+		"includes": [
+			"**",
+			"!**/node_modules",
+			"!**/build",
+			"!**/.react-router"
+		],
 		"rules": {
 			"recommended": true,
 			"correctness": {

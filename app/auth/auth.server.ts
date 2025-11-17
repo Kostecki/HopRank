@@ -2,15 +2,14 @@ import { redirect } from "react-router";
 import { Authenticator } from "remix-auth";
 import { TOTPStrategy } from "remix-auth-totp";
 
-import { UntappdStrategy } from "./untappd-strategy.server";
+import type { SessionUser } from "~/types/user";
 
 import { findOrCreateUserByEmail } from "~/database/utils/findOrCreateUserByEmail.server";
-import { sendMagicLinkEmail } from "./email.server";
-import { commitSession, getSession } from "./session.server";
-
 import { invariant } from "~/utils/invariant";
 
-import type { SessionUser } from "~/types/user";
+import { sendMagicLinkEmail } from "./email.server";
+import { commitSession, getSession } from "./session.server";
+import { UntappdStrategy } from "./untappd-strategy.server";
 
 export const authenticator = new Authenticator<SessionUser>();
 

@@ -1,19 +1,18 @@
+import { Card, Divider } from "@mantine/core";
+import { eq } from "drizzle-orm";
 import { type MetaFunction, redirect, useLoaderData } from "react-router";
+
 import { SessionStatus } from "~/types/session";
 import type { Route } from "./+types/login";
 
 import { authenticator } from "~/auth/auth.server";
 import { userSessionGet } from "~/auth/users.server";
-
 import LoginForm from "~/components/auth/LoginForm";
-
-import { Card, Divider } from "@mantine/core";
-import { eq } from "drizzle-orm";
 import { SessionTabs } from "~/components/SessionTabs";
 import { db } from "~/database/config.server";
 import { sessionState, sessions } from "~/database/schema.server";
-import { getPageTitle } from "~/utils/utils";
 import { getSessionCounts } from "~/database/utils/getSessionCounts.server";
+import { getPageTitle } from "~/utils/utils";
 
 export const meta: MetaFunction = () => {
   return [{ title: getPageTitle("Log ind") }];

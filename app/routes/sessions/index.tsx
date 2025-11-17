@@ -2,22 +2,19 @@ import { Paper } from "@mantine/core";
 import { and, eq } from "drizzle-orm";
 import { redirect, useLoaderData, useRevalidator } from "react-router";
 
-import NewSession from "~/components/NewSession";
-import SessionPinInput from "~/components/SessionPinInput";
-
-import { userSessionGet } from "~/auth/users.server";
-import { db } from "~/database/config.server";
-import { criteria, sessionUsers, sessions } from "~/database/schema.server";
-
-import { useDebouncedSocketEvent } from "~/hooks/useDebouncedSocketEvent";
-
-import { getPageTitle } from "~/utils/utils";
-
-import { SessionTabs } from "~/components/SessionTabs";
-import { ModalSetName } from "~/components/modals/ModalSetName";
-import { getSessionCounts } from "~/database/utils/getSessionCounts.server";
 import { SessionStatus } from "~/types/session";
 import type { Route } from "./+types";
+
+import { userSessionGet } from "~/auth/users.server";
+import { ModalSetName } from "~/components/modals/ModalSetName";
+import NewSession from "~/components/NewSession";
+import SessionPinInput from "~/components/SessionPinInput";
+import { SessionTabs } from "~/components/SessionTabs";
+import { db } from "~/database/config.server";
+import { criteria, sessions, sessionUsers } from "~/database/schema.server";
+import { getSessionCounts } from "~/database/utils/getSessionCounts.server";
+import { useDebouncedSocketEvent } from "~/hooks/useDebouncedSocketEvent";
+import { getPageTitle } from "~/utils/utils";
 
 export function meta() {
   return [{ title: getPageTitle("Smagninger") }];

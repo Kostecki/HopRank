@@ -1,7 +1,9 @@
 import { and, eq, ne } from "drizzle-orm";
+
+import { SessionBeerStatus } from "~/types/session";
+
 import { db } from "~/database/config.server";
 import { sessionBeers } from "~/database/schema.server";
-import { SessionBeerStatus } from "~/types/session";
 
 type BeerRow = {
   id: number;

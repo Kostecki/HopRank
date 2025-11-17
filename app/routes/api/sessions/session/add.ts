@@ -1,12 +1,11 @@
 import { data } from "react-router";
 
+import type { Route } from "./+types/add";
+
 import { userSessionGet } from "~/auth/users.server";
 import { addBeersToSession } from "~/database/utils/addBeersToSession.server";
-
 import { extractSessionId } from "~/utils/utils";
-
 import { emitGlobalEvent, emitSessionEvent } from "~/utils/websocket.server";
-import type { Route } from "./+types/add";
 
 export async function action({ request, params }: Route.ActionArgs) {
   const sessionId = extractSessionId(params.sessionId);

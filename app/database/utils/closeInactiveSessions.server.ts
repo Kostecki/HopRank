@@ -1,11 +1,11 @@
 import { inArray, lt } from "drizzle-orm";
 
-import { db } from "../config.server";
-import { sessionState, sessionUsers, sessions } from "../schema.server";
+import { SessionStatus } from "~/types/session";
 
 import dayjs from "~/utils/dayjs";
 
-import { SessionStatus } from "~/types/session";
+import { db } from "../config.server";
+import { sessionState, sessions, sessionUsers } from "../schema.server";
 
 const MAX_SESSION_AGE_HOURS = Number(process.env.MAX_SESSION_AGE_HOURS) || 12;
 const MAX_SESSION_IDLE_TIME_HOURS =

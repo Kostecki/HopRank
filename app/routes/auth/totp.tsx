@@ -7,14 +7,12 @@ import {
   useLoaderData,
 } from "react-router";
 
-import TOTPVerify from "~/components/auth/TOTPVerify";
+import type { Route } from "./+types/totp";
 
 import { authenticator } from "~/auth/auth.server";
 import { userSessionGet } from "~/auth/users.server";
-
+import TOTPVerify from "~/components/auth/TOTPVerify";
 import { getPageTitle } from "~/utils/utils";
-
-import type { Route } from "./+types/totp";
 
 export const meta: MetaFunction = () => {
   return [{ title: getPageTitle("Verificér") }];

@@ -1,10 +1,10 @@
 import {
   Box,
+  type BoxProps,
   Button,
   PinInput,
   Stack,
   Text,
-  type BoxProps,
 } from "@mantine/core";
 import { useEffect, useState } from "react";
 import { useFetcher } from "react-router";

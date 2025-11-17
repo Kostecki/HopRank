@@ -13,13 +13,13 @@ import {
   useCombobox,
 } from "@mantine/core";
 import { useDebouncedValue } from "@mantine/hooks";
-import { useEffect, useMemo, useState } from "react";
-import { useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useFetcher } from "react-router";
 
-import type { SelectBeers } from "~/database/schema.types";
 import type { BeerOption } from "~/types/misc";
 import type { RatedBeers } from "~/types/session";
+
+import type { SelectBeers } from "~/database/schema.types";
 
 type InputProps = {
   selectedBeers: BeerOption[];

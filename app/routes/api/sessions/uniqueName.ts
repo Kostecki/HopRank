@@ -2,10 +2,10 @@ import { eq, sql } from "drizzle-orm";
 import { createNameId } from "mnemonic-id";
 import { data } from "react-router";
 
+import type { Route } from "./+types/uniqueName";
+
 import { db } from "~/database/config.server";
 import { sessions } from "~/database/schema.server";
-
-import type { Route } from "./+types/uniqueName";
 
 const titleCaseName = (name: string) => {
   return name

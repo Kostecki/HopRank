@@ -3,7 +3,9 @@ import { useForm } from "@mantine/form";
 import { useDisclosure } from "@mantine/hooks";
 import { useEffect, useState } from "react";
 import { useFetcher } from "react-router";
+
 import type { SessionUser } from "~/types/user";
+
 import { showDangerToast, showSuccessToast } from "~/utils/toasts";
 
 type InputProps = {
@@ -21,7 +23,7 @@ export function ModalSetName({ user }: InputProps) {
     if (!user?.untappd && (!user?.name || user.name.trim() === "")) {
       setTimeout(() => open(), 100);
     }
-  }, [user.name, open]);
+  }, [user.name, user?.untappd, open]);
 
   useEffect(() => {
     if (fetcher.state === "idle" && fetcher.data && !handled) {

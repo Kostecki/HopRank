@@ -1,9 +1,9 @@
 import * as cheerio from "cheerio";
 
-import { createBeerLink } from "~/utils/untappd";
-
 import type { ScrapedBeer } from "~/types/untappd";
 import type { Route } from "./+types/$beerId";
+
+import { createBeerLink } from "~/utils/untappd";
 
 const cachedData = new Map<string, { data: ScrapedBeer; timestamp: number }>();
 const inFlight = new Map<string, Promise<ScrapedBeer>>();

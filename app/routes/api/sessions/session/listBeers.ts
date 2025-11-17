@@ -1,11 +1,10 @@
 import { eq } from "drizzle-orm";
 
-import { extractSessionId } from "~/utils/utils";
+import type { Route } from "./+types/listBeers";
 
 import { db } from "~/database/config.server";
 import { sessionBeers } from "~/database/schema.server";
-
-import type { Route } from "./+types/listBeers";
+import { extractSessionId } from "~/utils/utils";
 
 export async function loader({ params }: Route.LoaderArgs) {
   if (params.sessionId && params.sessionId !== "undefined") {

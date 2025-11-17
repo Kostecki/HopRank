@@ -1,15 +1,14 @@
 import { eq } from "drizzle-orm";
 import { data, redirect } from "react-router";
 
+import type { Route } from "./+types/join";
+
 import { userSessionGet } from "~/auth/users.server";
 import { db } from "~/database/config.server";
 import { sessions } from "~/database/schema.server";
-
 import { joinSessionById } from "~/database/utils/joinSessionById.server";
 import { extractSessionId } from "~/utils/utils";
 import { emitGlobalEvent, emitSessionEvent } from "~/utils/websocket.server";
-
-import type { Route } from "./+types/join";
 
 export async function action({ request, params }: Route.ActionArgs) {
   const sessionId = extractSessionId(params.sessionId);

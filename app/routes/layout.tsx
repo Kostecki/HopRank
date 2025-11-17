@@ -2,20 +2,18 @@ import { AppShell, Container } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { Outlet, useLoaderData } from "react-router";
 
-import { userSessionGet } from "~/auth/users.server";
-import type { SelectSessionBeersWithBeer } from "~/database/schema.types";
-
-import { Header } from "~/components/Header";
-import Navbar from "~/components/Navbar";
-
-import { extractSessionId } from "~/utils/utils";
-
-import { SocketProvider } from "~/context/SocketContext";
 import type { SessionProgress } from "~/types/session";
 import type { Route } from "../+types/root";
 
+import { userSessionGet } from "~/auth/users.server";
+import { Header } from "~/components/Header";
+import Navbar from "~/components/Navbar";
+import { SocketProvider } from "~/context/SocketContext";
+import type { SelectSessionBeersWithBeer } from "~/database/schema.types";
+import { extractSessionId } from "~/utils/utils";
+
 export async function loader({ params, request }: Route.LoaderArgs) {
-  let sessionId = undefined;
+  let sessionId: number | undefined;
   if (params.sessionId) {
     sessionId = extractSessionId(params.sessionId);
   }

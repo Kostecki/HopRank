@@ -1,6 +1,9 @@
 import { and, eq, inArray } from "drizzle-orm";
 import { data } from "react-router";
 
+import { SessionBeerStatus, SessionStatus } from "~/types/session";
+import type { Route } from "./+types/progress";
+
 import { userSessionGet } from "~/auth/users.server";
 import { db } from "~/database/config.server";
 import {
@@ -8,16 +11,12 @@ import {
   sessionBeers,
   sessionCriteria,
   sessionState,
-  sessionUsers,
   sessions,
+  sessionUsers,
   users,
 } from "~/database/schema.server";
-
 import { getBeerInfo } from "~/utils/untappd";
 import { extractSessionId } from "~/utils/utils";
-
-import { SessionBeerStatus, SessionStatus } from "~/types/session";
-import type { Route } from "./+types/progress";
 
 const beerInfoCache = new Map<
   number,
@@ -214,14 +213,14 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     : null;
 
   // Check if the current beer has already been checked in by the user
-  let userHadBeer = undefined;
+  let userHadBeer = false;
   if (currentBeerData && user?.untappd) {
     const beerInfo = await getCachedBeerInfo(
       currentBeerData.untappdBeerId,
       user.untappd.accessToken
     );
 
-    userHadBeer = beerInfo?.stats.user_count > 0 || false;
+    userHadBeer = beerInfo?.stats?.user_count > 0;
   }
 
   // Count session as active if it's created or active

@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useRef } from "react";
+
 import type { SocketEvent, SocketEventMap } from "~/types/websocket";
+
 import { onSessionEvent } from "~/utils/websocket";
+
 import { useSocket } from "./useSocket";
 
 export const useDebouncedSocketEvent = <K extends SocketEvent>(

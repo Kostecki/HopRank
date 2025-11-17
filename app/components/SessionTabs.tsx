@@ -1,4 +1,5 @@
 import { Tabs } from "@mantine/core";
+
 import SessionsTable, { type Session } from "./SessionsTable";
 
 type InputProps = {

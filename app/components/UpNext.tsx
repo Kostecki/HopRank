@@ -1,12 +1,12 @@
 import { Anchor, Box, type BoxProps } from "@mantine/core";
 
-import { BeerCard } from "./BeerCard";
-import NewVote from "./NewVote";
+import type { SessionCriterion, SessionProgress } from "~/types/session";
+import type { SessionUser } from "~/types/user";
 
 import { createBeerLink } from "~/utils/untappd";
 
-import type { SessionCriterion, SessionProgress } from "~/types/session";
-import type { SessionUser } from "~/types/user";
+import { BeerCard } from "./BeerCard";
+import NewVote from "./NewVote";
 
 type InputProps = {
   user: SessionUser;

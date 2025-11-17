@@ -9,6 +9,7 @@ import {
   Text,
 } from "@mantine/core";
 import { useEffect, useState } from "react";
+
 import type { RatedBeers } from "~/types/session";
 import type { ScrapedBeer } from "~/types/untappd";
 

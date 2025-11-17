@@ -1,10 +1,12 @@
 import { eq } from "drizzle-orm";
 import { data } from "react-router";
+
+import type { Route } from "./+types/update";
+
 import { commitSession, getSession } from "~/auth/session.server";
 import { userSessionGet } from "~/auth/users.server";
 import { db } from "~/database/config.server";
 import { users } from "~/database/schema.server";
-import type { Route } from "./+types/update";
 
 export async function action({ request }: Route.ActionArgs) {
   const user = await userSessionGet(request);

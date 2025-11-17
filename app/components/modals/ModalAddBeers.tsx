@@ -3,14 +3,15 @@ import { useDisclosure } from "@mantine/hooks";
 import { createContext, useContext, useEffect, useState } from "react";
 import { useFetcher, useParams } from "react-router";
 
-import BeerMultiSelect from "../BeerMultiSelect";
+import type { BeerOption } from "~/types/misc";
+import type { SessionProgress } from "~/types/session";
 
 import type {
   SelectBeers,
   SelectSessionBeersWithBeer,
 } from "~/database/schema.types";
-import type { BeerOption } from "~/types/misc";
-import type { SessionProgress } from "~/types/session";
+
+import BeerMultiSelect from "../BeerMultiSelect";
 
 type InputProps = {
   children: React.ReactNode;

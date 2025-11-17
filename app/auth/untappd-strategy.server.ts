@@ -56,9 +56,8 @@ export class UntappdStrategy<User> extends OAuth2Strategy<User> {
       });
     }
 
-    const { accessToken, refreshToken, extraParams } = await this.tokenRequest(
-      code
-    );
+    const { accessToken, refreshToken, extraParams } =
+      await this.tokenRequest(code);
 
     const profile = await this.userProfile(accessToken);
 

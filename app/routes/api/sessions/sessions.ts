@@ -1,4 +1,7 @@
+import { eq } from "drizzle-orm";
 import { data, redirect } from "react-router";
+
+import type { Route } from "./+types/sessions";
 
 import { userSessionGet } from "~/auth/users.server";
 import { db } from "~/database/config.server";
@@ -7,14 +10,11 @@ import {
   sessionState,
   sessions,
 } from "~/database/schema.server";
-
+import type { SelectSessions } from "~/database/schema.types";
 import { addBeersToSession } from "~/database/utils/addBeersToSession.server";
-import { emitGlobalEvent } from "~/utils/websocket.server";
-
-import { eq } from "drizzle-orm";
 import { joinSessionById } from "~/database/utils/joinSessionById.server";
 import { generateJoinCode } from "~/utils/utils";
-import type { Route } from "./+types/sessions";
+import { emitGlobalEvent } from "~/utils/websocket.server";
 
 export async function action({ request }: Route.ActionArgs) {
   const formData = await request.formData();
@@ -45,7 +45,7 @@ export async function action({ request }: Route.ActionArgs) {
     }
   }
 
-  let session = undefined;
+  let session: SelectSessions;
   try {
     const name = String(sessionName);
     const [createdSession] = await db

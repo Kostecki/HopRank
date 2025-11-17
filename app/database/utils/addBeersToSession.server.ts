@@ -1,12 +1,12 @@
 import { and, eq } from "drizzle-orm";
 
-import { db } from "../config.server";
-import { beers, sessionBeers, sessionState } from "../schema.server";
+import { SessionBeerStatus } from "~/types/session";
 
 import { shuffleBeersInSession } from "~/utils/shuffle";
-import { bumpLastUpdatedAt } from "./bumpLastUpdatedAt.server";
 
-import { SessionBeerStatus } from "~/types/session";
+import { db } from "../config.server";
+import { beers, sessionBeers, sessionState } from "../schema.server";
+import { bumpLastUpdatedAt } from "./bumpLastUpdatedAt.server";
 
 type BeerInput = {
   untappdBeerId: number;

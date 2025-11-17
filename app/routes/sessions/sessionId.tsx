@@ -2,22 +2,19 @@ import { Accordion } from "@mantine/core";
 import { eq } from "drizzle-orm";
 import { redirect, useLoaderData, useRevalidator } from "react-router";
 
-import { userSessionGet } from "~/auth/users.server";
-import { db } from "~/database/config.server";
-import { sessionCriteria } from "~/database/schema.server";
+import { type SessionProgress, SessionStatus } from "~/types/session";
+import type { Route } from "./+types/sessionId";
 
+import { userSessionGet } from "~/auth/users.server";
 import { BeerCard } from "~/components/BeerCard";
 import { BeerCardDetails } from "~/components/BeerCardDetails";
 import EmptySession from "~/components/EmptySession";
-import UpNext from "~/components/UpNext";
-
-import { useDebouncedSocketEvent } from "~/hooks/useDebouncedSocketEvent";
-
-import { extractSessionId, getPageTitle } from "~/utils/utils";
-
-import { type SessionProgress, SessionStatus } from "~/types/session";
-import type { Route } from "./+types/sessionId";
 import { StartSession } from "~/components/StartSession/StartSession";
+import UpNext from "~/components/UpNext";
+import { db } from "~/database/config.server";
+import { sessionCriteria } from "~/database/schema.server";
+import { useDebouncedSocketEvent } from "~/hooks/useDebouncedSocketEvent";
+import { extractSessionId, getPageTitle } from "~/utils/utils";
 
 export function meta() {
   return [{ title: getPageTitle("Smagning") }];

@@ -3,7 +3,6 @@ import path from "node:path";
 import Database from "better-sqlite3";
 import { drizzle } from "drizzle-orm/better-sqlite3";
 import { migrate } from "drizzle-orm/better-sqlite3/migrator";
-import seedDatabase from "./seed";
 
 import { invariant } from "~/utils/invariant";
 
@@ -16,11 +15,12 @@ import {
   sessionCriteria,
   sessionCriteriaRelations,
   sessionState,
-  sessionUsers,
   sessions,
   sessionsRelations,
+  sessionUsers,
   users,
 } from "./schema.server";
+import seedDatabase from "./seed";
 
 const DATABASE_PATH = process.env.DATABASE_PATH;
 const MIGRATIONS_PATH = process.env.MIGRATIONS_PATH;

@@ -1,18 +1,17 @@
 import { eq } from "drizzle-orm";
 import { data } from "react-router";
 
+import type { Vote } from "~/types/rating";
+import { SessionStatus } from "~/types/session";
+import type { Route } from "./+types/vote";
+
 import { userSessionGet } from "~/auth/users.server";
 import { db } from "~/database/config.server";
 import { ratings, sessionState } from "~/database/schema.server";
-
 import { bumpLastUpdatedAt } from "~/database/utils/bumpLastUpdatedAt.server";
 import { tryAdvanceSession } from "~/database/utils/tryAdvanceSession.server";
 import { extractSessionId } from "~/utils/utils";
 import { emitSessionEvent } from "~/utils/websocket.server";
-
-import type { Vote } from "~/types/rating";
-import { SessionStatus } from "~/types/session";
-import type { Route } from "./+types/vote";
 
 export async function action({ request, params }: Route.ActionArgs) {
   const sessionId = extractSessionId(params.sessionId);

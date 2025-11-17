@@ -1,4 +1,7 @@
 import { and, eq } from "drizzle-orm";
+
+import { SessionBeerStatus, SessionStatus } from "~/types/session";
+
 import { db } from "../config.server";
 import {
   ratings,
@@ -7,8 +10,6 @@ import {
   sessionState,
   sessionUsers,
 } from "../schema.server";
-
-import { SessionBeerStatus, SessionStatus } from "~/types/session";
 
 export const tryAdvanceSession = async (sessionId: number) => {
   const state = await db.query.sessionState.findFirst({

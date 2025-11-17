@@ -2,10 +2,10 @@ import { Burger, Group, Paper, Text, useMantineTheme } from "@mantine/core";
 import { IconBeer, IconUsers } from "@tabler/icons-react";
 import { useRevalidator } from "react-router";
 
-import { useDebouncedSocketEvent } from "~/hooks/useDebouncedSocketEvent";
-
 import { type SessionProgress, SessionStatus } from "~/types/session";
 import type { SessionUser } from "~/types/user";
+
+import { useDebouncedSocketEvent } from "~/hooks/useDebouncedSocketEvent";
 
 import { UserMenu } from "./UserMenu/UserMenu";
 

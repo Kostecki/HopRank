@@ -7,12 +7,15 @@ import {
   Stack,
   Text,
 } from "@mantine/core";
+
 import type { SessionProgress } from "~/types/session";
 import type { SessionUser } from "~/types/user";
+
 import dayjs from "~/utils/dayjs";
 import { capitalizeFirstLetter } from "~/utils/utils";
 
-import styles from "./StartSession.module.css";
+// import styles from "./StartSession.module.css";
+// TODO: Add animation
 
 type InputProps = {
   user: SessionUser;

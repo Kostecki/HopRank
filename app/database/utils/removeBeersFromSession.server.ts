@@ -1,11 +1,11 @@
 import { and, eq, inArray, ne } from "drizzle-orm";
 
-import { db } from "../config.server";
-import { sessionBeers } from "../schema.server";
+import { SessionBeerStatus } from "~/types/session";
 
 import { shuffleBeersInSession } from "~/utils/shuffle";
 
-import { SessionBeerStatus } from "~/types/session";
+import { db } from "../config.server";
+import { sessionBeers } from "../schema.server";
 
 export const removeBeersFromSession = async (
   sessionId: number,

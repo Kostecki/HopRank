@@ -1,13 +1,15 @@
 import { Box, Grid, Table } from "@mantine/core";
 import { useLoaderData, useRevalidator } from "react-router";
+
+import type { SessionProgress, SessionProgressUser } from "~/types/session";
+import type { Route } from "./+types/readOnly";
+
 import MedalPodium from "~/components/MedalPodium";
 import { db } from "~/database/config.server";
 import { users } from "~/database/schema.server";
 import { useDebouncedSocketEvent } from "~/hooks/useDebouncedSocketEvent";
-import type { SessionProgress, SessionProgressUser } from "~/types/session";
 import { createBeerLink } from "~/utils/untappd";
 import { extractSessionId, getPageTitle } from "~/utils/utils";
-import type { Route } from "./+types/readOnly";
 
 export function meta() {
   return [{ title: getPageTitle("Smagning") }];

@@ -1,11 +1,12 @@
+import { Button, Paper, Text } from "@mantine/core";
 import { useEffect, useState } from "react";
 import { useFetcher, useParams } from "react-router";
-import { Button, Paper, Text } from "@mantine/core";
-
-import BeerMultiSelect from "./BeerMultiSelect";
 
 import type { BeerOption } from "~/types/misc";
+
 import type { SelectBeers } from "~/database/schema.types";
+
+import BeerMultiSelect from "./BeerMultiSelect";
 
 export default function EmptySession() {
   const { sessionId } = useParams();

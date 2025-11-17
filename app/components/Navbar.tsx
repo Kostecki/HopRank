@@ -17,14 +17,9 @@ import {
   IconPlus,
   IconTrash,
 } from "@tabler/icons-react";
+import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
 
-import ModalAddBeers, { ModalAddBeersTrigger } from "./modals/ModalAddBeers";
-
-import type { SelectSessionBeersWithBeer } from "~/database/schema.types";
-import { createProfileLink } from "~/utils/untappd";
-
-import { useEffect, useState } from "react";
 import {
   SessionBeerStatus,
   type SessionProgress,
@@ -32,6 +27,11 @@ import {
   SessionStatus,
 } from "~/types/session";
 import type { SessionUser } from "~/types/user";
+
+import type { SelectSessionBeersWithBeer } from "~/database/schema.types";
+import { createProfileLink } from "~/utils/untappd";
+
+import ModalAddBeers, { ModalAddBeersTrigger } from "./modals/ModalAddBeers";
 
 type InputProps = {
   user: SessionUser;
@@ -161,83 +161,81 @@ export default function Navbar({
   if (!sessionProgress) return "None";
 
   return (
-    <>
-      <ModalAddBeers sessionProgress={sessionProgress}>
-        <Box>
-          <Stack gap="0">
-            <Text ta="center" fw={500}>
-              {sessionProgress.sessionName}
-            </Text>
+    <ModalAddBeers sessionProgress={sessionProgress}>
+      <Box>
+        <Stack gap="0">
+          <Text ta="center" fw={500}>
+            {sessionProgress.sessionName}
+          </Text>
 
-            <CopyButton value={sessionProgress.joinCode}>
-              {({ copied, copy }) => (
-                <Tooltip label="Kopier kode" position="bottom">
-                  <Button color="slateIndigo" variant="white" onClick={copy}>
-                    {copied ? "Kopieret" : sessionProgress.joinCode}
-                  </Button>
-                </Tooltip>
-              )}
-            </CopyButton>
+          <CopyButton value={sessionProgress.joinCode}>
+            {({ copied, copy }) => (
+              <Tooltip label="Kopier kode" position="bottom">
+                <Button color="slateIndigo" variant="white" onClick={copy}>
+                  {copied ? "Kopieret" : sessionProgress.joinCode}
+                </Button>
+              </Tooltip>
+            )}
+          </CopyButton>
 
-            <Divider my="sm" mb="lg" opacity={0.5} />
+          <Divider my="sm" mb="lg" opacity={0.5} />
 
-            <Button
-              justify="center"
-              variant="default"
-              leftSection={<IconDoorExit size={14} />}
-              color="slateIndigo"
-              fw={500}
-              onClick={handleLeaveSession}
-            >
-              Forlad smagningen
-            </Button>
+          <Button
+            justify="center"
+            variant="default"
+            leftSection={<IconDoorExit size={14} />}
+            color="slateIndigo"
+            fw={500}
+            onClick={handleLeaveSession}
+          >
+            Forlad smagningen
+          </Button>
 
-            {sessionProgress.users.length > 0 && (
-              <>
-                <Group mt="xl" justify="space-between">
-                  <Text size="md" tt="uppercase">
-                    Deltagere
-                  </Text>
-                </Group>
+          {sessionProgress.users.length > 0 && (
+            <>
+              <Group mt="xl" justify="space-between">
+                <Text size="md" tt="uppercase">
+                  Deltagere
+                </Text>
+              </Group>
 
-                <Divider opacity={0.5} mb="md" />
+              <Divider opacity={0.5} mb="md" />
 
+              <List spacing="xs" size="sm" pl={0}>
+                {sessionProgress.users.map((user) => (
+                  <UserListItem key={user.id} user={user} />
+                ))}
+              </List>
+            </>
+          )}
+
+          {inProgressSession && !readOnly && (
+            <>
+              <Group mt="xl" justify="space-between">
+                <Text size="md" tt="uppercase">
+                  Dine øl
+                </Text>
+
+                <ModalAddBeersTrigger>
+                  <ActionIcon variant="subtle" color="slateIndigo">
+                    <IconPlus size={14} />
+                  </ActionIcon>
+                </ModalAddBeersTrigger>
+              </Group>
+
+              <Divider opacity={0.5} mb="md" />
+
+              {usersBeers.length > 0 && (
                 <List spacing="xs" size="sm" pl={0}>
-                  {sessionProgress.users.map((user) => (
-                    <UserListItem key={user.id} user={user} />
+                  {usersBeers.map((beer) => (
+                    <ListItem key={beer.beerId} beer={beer} />
                   ))}
                 </List>
-              </>
-            )}
-
-            {inProgressSession && !readOnly && (
-              <>
-                <Group mt="xl" justify="space-between">
-                  <Text size="md" tt="uppercase">
-                    Dine øl
-                  </Text>
-
-                  <ModalAddBeersTrigger>
-                    <ActionIcon variant="subtle" color="slateIndigo">
-                      <IconPlus size={14} />
-                    </ActionIcon>
-                  </ModalAddBeersTrigger>
-                </Group>
-
-                <Divider opacity={0.5} mb="md" />
-
-                {usersBeers.length > 0 && (
-                  <List spacing="xs" size="sm" pl={0}>
-                    {usersBeers.map((beer) => (
-                      <ListItem key={beer.beerId} beer={beer} />
-                    ))}
-                  </List>
-                )}
-              </>
-            )}
-          </Stack>
-        </Box>
-      </ModalAddBeers>
-    </>
+              )}
+            </>
+          )}
+        </Stack>
+      </Box>
+    </ModalAddBeers>
   );
 }

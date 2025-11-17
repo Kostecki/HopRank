@@ -1,4 +1,5 @@
 import type { InferSelectModel } from "drizzle-orm";
+
 import type {
   beers,
   criteria,
@@ -6,8 +7,8 @@ import type {
   sessionBeers,
   sessionCriteria,
   sessionState,
-  sessionUsers,
   sessions,
+  sessionUsers,
   users,
 } from "./schema.server";
 

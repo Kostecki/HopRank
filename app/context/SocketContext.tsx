@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { type Socket, io } from "socket.io-client";
+import { io, type Socket } from "socket.io-client";
+
 import { invariant } from "~/utils/invariant";
 
 export const SocketContext = createContext<Socket | null>(null);

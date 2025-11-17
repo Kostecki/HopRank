@@ -8,15 +8,16 @@ import {
   Text,
   TextInput,
 } from "@mantine/core";
+import { IconRefresh } from "@tabler/icons-react";
 import { useCallback, useEffect, useState } from "react";
 import { useFetcher } from "react-router";
 
+import type { BeerOption } from "~/types/misc";
+
+import type { SelectCriteria } from "~/database/schema.types";
+
 import BeerMultiSelect from "./BeerMultiSelect";
 import SelectRatings from "./SelectRatings";
-
-import { IconRefresh } from "@tabler/icons-react";
-import type { SelectCriteria } from "~/database/schema.types";
-import type { BeerOption } from "~/types/misc";
 
 type InputProps = {
   criteria: SelectCriteria[];

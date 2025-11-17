@@ -4,13 +4,15 @@ import {
   ColorSchemeScript,
   Container,
   MantineProvider,
+  mantineHtmlProps,
   Text,
   Title,
-  mantineHtmlProps,
 } from "@mantine/core";
 import { Notifications } from "@mantine/notifications";
 import { useEffect } from "react";
 import {
+  data,
+  isRouteErrorResponse,
   Link,
   Links,
   type LoaderFunctionArgs,
@@ -18,30 +20,25 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
-  data,
-  isRouteErrorResponse,
   useLoaderData,
 } from "react-router";
 import { getToast } from "remix-toast";
+import { theme } from "theme";
 
 import { userSessionGet } from "./auth/users.server";
-
+import { useUmamiIdentify } from "./hooks/umami";
 import {
   showDangerToast,
   showSuccessToast,
   showWarningToast,
 } from "./utils/toasts";
-
-import { useUmamiIdentify } from "./hooks/umami";
-
-import { theme } from "theme";
 import "@mantine/core/styles.css";
 import "@mantine/notifications/styles.css";
 import "./app.css";
 
-import { startCron } from "~/utils/cron.server";
-
 import type { Route } from "./+types/root";
+
+import { startCron } from "~/utils/cron.server";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },

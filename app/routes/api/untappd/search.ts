@@ -1,7 +1,7 @@
-import { invariant } from "~/utils/invariant";
-
 import type { AlgoliaBeerResponse } from "~/types/untappd";
 import type { Route } from "./+types/search";
+
+import { invariant } from "~/utils/invariant";
 
 const ALGOLIA_APP_ID = import.meta.env.VITE_ALGOLIA_APP_ID;
 const ALGOLIA_API_KEY = import.meta.env.VITE_ALGOLIA_API_KEY;

@@ -17,18 +17,20 @@ import {
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useDebouncedValue } from "@mantine/hooks";
+import { IconCheck } from "@tabler/icons-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useFetcher, useParams } from "react-router";
-import RatingSlider from "./RatingSlider";
-import VenueSearch from "./VenueSearch";
 
-import { IconCheck } from "@tabler/icons-react";
-import { useGeolocation } from "~/hooks/useGeolocation";
 import type { SessionCriterion, SessionProgress } from "~/types/session";
 import type { SessionUser } from "~/types/user";
+
+import { useGeolocation } from "~/hooks/useGeolocation";
 import { calculateVoteScore } from "~/utils/score";
 import { showDangerToast } from "~/utils/toasts";
 import { getGmtOffset, isMobileOrTablet, sliderConf } from "~/utils/utils";
+
+import RatingSlider from "./RatingSlider";
+import VenueSearch from "./VenueSearch";
 
 type InputProps = {
   user: SessionUser;

@@ -1,9 +1,11 @@
-import { Avatar, Box, Card, Flex, Image, Text, rem } from "@mantine/core";
+import { Avatar, Box, Card, Flex, Image, rem, Text } from "@mantine/core";
+
 import type {
   RatedBeers,
   SessionProgress,
   SessionProgressUser,
 } from "~/types/session";
+
 import { createBeerLink } from "~/utils/untappd";
 
 type inputProps = {
