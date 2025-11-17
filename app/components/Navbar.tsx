@@ -1,5 +1,6 @@
 import {
   ActionIcon,
+  Avatar,
   Box,
   Button,
   CopyButton,
@@ -103,11 +104,29 @@ export default function Navbar({
     .sort((a, b) => (b.order ?? 0) - (a.order ?? 0));
 
   const UserListItem = ({ user }: { user: SessionProgressUser }) => {
+    const firstLetter = user.email.slice(0, 1).toUpperCase();
+
     return (
-      <Flex justify="space-between" pos="relative" align="center" h={25}>
-        <Text size="sm" fw="500" lineClamp={1}>
-          {user.name ?? user.email}
-        </Text>
+      <Flex
+        justify="space-between"
+        pos="relative"
+        align="center"
+        h={25}
+        mb="xs"
+      >
+        <Flex align="center">
+          <Avatar
+            src={user?.avatarURL}
+            name={user.username ?? user.name ?? firstLetter}
+            color="initials"
+            size="sm"
+            mr="xs"
+          />
+
+          <Text size="sm" fw="500" lineClamp={1}>
+            {user.name ?? user.email}
+          </Text>
+        </Flex>
 
         {user.untappdId && user.username && (
           <Tooltip label="Se Untappd-profil" position="bottom">
