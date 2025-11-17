@@ -148,7 +148,7 @@ export function UserMenu({ user }: InputProps) {
               pt="sm"
               pb={6}
             >
-              {`Forbundne klienter: ${clientsCount}`}
+              {`Forbundne klienter (WS): ${clientsCount}`}
             </Text>
 
             <Menu.Item component={Link} to={COMMIT_URL} target="_blank">
