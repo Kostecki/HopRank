@@ -29,7 +29,6 @@ export function Header({
   const theme = useMantineTheme();
   const slateIndigo = theme.colors.slateIndigo[6];
 
-  // Good word for active or created that isn't "ongoing":
   const inProgressSession =
     session?.status === SessionStatus.active ||
     session?.status === SessionStatus.created;
