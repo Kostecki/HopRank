@@ -207,7 +207,7 @@ export default function Navbar({
             fw={500}
             onClick={handleLeaveSession}
           >
-            Forlad smagningen
+            Forlad smagning
           </Button>
 
           {sessionProgress.users.length > 0 && (

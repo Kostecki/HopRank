@@ -1,52 +1,58 @@
-import { eq } from "drizzle-orm";
 import { data, redirect } from "react-router";
 
 import type { Route } from "./+types/joinByCode";
 
 import { userSessionGet } from "~/auth/users.server";
-import { db } from "~/database/config.server";
-import { sessions } from "~/database/schema.server";
-import { joinSessionById } from "~/database/utils/joinSessionById.server";
-import { emitGlobalEvent, emitSessionEvent } from "~/utils/websocket.server";
+import {
+  joinSessionByCode,
+  SessionNotFoundError,
+  SessionStateNotFoundError,
+} from "~/database/utils/joinSessionByCode.server";
+import { JOIN_CODE_PATTERN, normalizeJoinCode } from "~/utils/join";
 
 export async function action({ request, params }: Route.ActionArgs) {
-  const joinCode = params.joinCode;
+  const rawCode = params.joinCode;
+  const joinCode = normalizeJoinCode(rawCode);
 
   if (!joinCode) {
     return data({ message: "Pinkoden mangler" }, { status: 400 });
+  }
+  if (!JOIN_CODE_PATTERN.test(joinCode)) {
+    return data(
+      { message: "Formatet for pinkoden er ugyldigt" },
+      { status: 400 }
+    );
   }
 
   const user = await userSessionGet(request);
   if (!user) {
     return data(
-      { message: "You must be logged in to join a session" },
+      { message: "Du skal være logget ind for at deltage" },
       { status: 401 }
     );
   }
 
   try {
-    const session = await db.query.sessions.findFirst({
-      where: eq(sessions.joinCode, joinCode),
-    });
+    const result = await joinSessionByCode({ joinCode, userId: user.id });
+    const sessionId = result.session.id;
 
-    if (!session) {
-      return data({ message: "Pinkoden er ikke gyldig" }, { status: 404 });
+    if (result.readOnly) {
+      return redirect(`/sessions/${sessionId}/view`);
     }
 
-    await joinSessionById({ sessionId: session.id, userId: user.id });
-
-    emitSessionEvent(session.id, "session:users-changed");
-    emitGlobalEvent("sessions:users-changed", {
-      sessionId: session.id,
-    });
-
-    return redirect(`/sessions/${session.id}`);
+    return redirect(`/sessions/${sessionId}`);
   } catch (error) {
+    if (error instanceof SessionNotFoundError) {
+      return data({ message: "Pinkoden er ikke gyldig" }, { status: 404 });
+    }
+    if (error instanceof SessionStateNotFoundError) {
+      return data({ message: "Session status mangler" }, { status: 500 });
+    }
     console.error("Error joining session by code:", error);
     return data(
       {
         message:
-          "Der skete en fejl under tilmelding til smagningen. Prøv venligst igen.",
+          "Der skete en intern fejl under tilmelding. Prøv venligst igen senere.",
       },
       { status: 500 }
     );

@@ -17,13 +17,24 @@ export const isUntappdUser = (user: SessionUser) => {
   return !!user.untappd;
 };
 
+const isSafeRedirect = (target: string | null | undefined) => {
+  if (!target) return false;
+  if (!target.startsWith("/")) return false;
+  if (target.startsWith("//")) return false;
+  return true;
+};
+
 const commitSessionUser = async (request: Request, user: SessionUser) => {
   const session = await getSession(request.headers.get("Cookie"));
   session.set("user", user);
 
+  const url = new URL(request.url);
+  const next = url.searchParams.get("next");
+  const redirectTarget = isSafeRedirect(next) ? (next as string) : "/sessions";
+
   const sessionCookie = await commitSession(session);
 
-  throw redirect("/", {
+  throw redirect(redirectTarget, {
     headers: {
       "Set-Cookie": sessionCookie,
     },

@@ -20,8 +20,15 @@ export const meta: MetaFunction = () => {
 
 export async function loader({ request }: Route.LoaderArgs) {
   const user = await userSessionGet(request);
+  const url = new URL(request.url);
+  const next = url.searchParams.get("next");
 
-  if (user) return redirect("/");
+  if (user) {
+    if (next?.startsWith("/") && !next?.startsWith("//")) {
+      return redirect(next as string);
+    }
+    return redirect("/");
+  }
 
   const sessionsRaw = await db
     .select()
@@ -52,6 +59,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     finishedSessions: allSessions.filter(
       (s) => s.status === SessionStatus.finished
     ),
+    next: next?.startsWith("/") && !next?.startsWith("//") ? next : null,
   };
 }
 

@@ -70,7 +70,7 @@ export function StartSession({ user, session }: InputProps) {
           <>
             <Divider my="xs" />
             <Button onClick={handleStartSession} color="slateIndigo">
-              Start Session
+              Start Smagning
             </Button>
           </>
         )}
