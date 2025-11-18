@@ -172,3 +172,22 @@ export const capitalizeFirstLetter = (str: string): string => {
   if (!str) return "";
   return str.charAt(0).toUpperCase() + str.slice(1);
 };
+
+/**
+ * Checks if a given target URL is a safe redirect within the application.
+ *
+ * A safe redirect is defined as:
+ * - Not null or undefined.
+ * - Starts with a single forward slash ("/").
+ * - Does not start with double forward slashes ("//").
+ *
+ * @param target - The target URL to check.
+ * @returns True if the target is a safe redirect, false otherwise.
+ */
+export const isSafeRedirect = (target: string | null | undefined) => {
+  if (!target) return false;
+  if (!target.startsWith("/")) return false;
+  if (target.startsWith("//")) return false;
+
+  return true;
+};

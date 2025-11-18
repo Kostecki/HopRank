@@ -3,6 +3,7 @@ import type { InferSelectModel } from "drizzle-orm";
 import type {
   beers,
   criteria,
+  pendingRedirects,
   ratings,
   sessionBeers,
   sessionCriteria,
@@ -41,3 +42,6 @@ export type InsertRatings = InferSelectModel<typeof ratings>;
 
 export type SelectSessionState = InferSelectModel<typeof sessionState>;
 export type InsertSessionState = InferSelectModel<typeof sessionState>;
+
+export type PendingRedirects = InferSelectModel<typeof pendingRedirects>;
+export type InsertPendingRedirects = InferSelectModel<typeof pendingRedirects>;

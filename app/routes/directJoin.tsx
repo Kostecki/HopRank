@@ -3,6 +3,7 @@ import { redirect } from "react-router";
 
 import type { Route } from "./+types/directJoin";
 
+import { commitSession, getSession } from "~/auth/session.server";
 import { userSessionGet } from "~/auth/users.server";
 import {
   joinSessionByCode,
@@ -10,6 +11,7 @@ import {
   SessionStateNotFoundError,
 } from "~/database/utils/joinSessionByCode.server";
 import { JOIN_CODE_PATTERN, normalizeJoinCode } from "~/utils/join";
+import { isSafeRedirect } from "~/utils/utils";
 
 export async function loader({ params, request }: Route.LoaderArgs) {
   const rawCode = params?.joinCode;
@@ -24,10 +26,18 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 
   const user = await userSessionGet(request);
   if (!user) {
-    const loginUrl = new URL(request.url);
-    loginUrl.pathname = "/auth/login";
-    loginUrl.searchParams.set("next", request.url);
-    return redirect(loginUrl.toString());
+    const url = new URL(request.url);
+    const redirectTo = url.pathname + (url.search || "");
+
+    const session = await getSession(request.headers.get("Cookie"));
+    if (isSafeRedirect(redirectTo)) {
+      session.set("redirectTo", redirectTo);
+    }
+    const cookie = await commitSession(session);
+
+    return redirect("/auth/login", {
+      headers: { "Set-Cookie": cookie },
+    });
   }
 
   try {
