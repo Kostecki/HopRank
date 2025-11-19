@@ -6,10 +6,6 @@ import { criteria } from "./schema.server";
 const seedCriteria = async () => {
   const criteriaData = [
     { name: "Rating", weight: 1.0, description: "Bare den helt simple score" },
-    { name: "Kriterie 2", weight: 1.0, description: "Noget om Kriteria #2" },
-    { name: "Kriterie 3", weight: 1.0, description: "Noget om Kriteria #3" },
-    { name: "Kriterie 4", weight: 1.0, description: "Noget om Kriteria #4" },
-    { name: "Kriterie 5", weight: 1.0, description: "Noget om Kriteria #5" },
   ];
 
   const [existingCriteria] = await db.select({ count: count() }).from(criteria);
