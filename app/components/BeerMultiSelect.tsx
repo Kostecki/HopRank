@@ -19,12 +19,12 @@ import { useFetcher } from "react-router";
 import type { BeerOption } from "~/types/misc";
 import type { RatedBeers } from "~/types/session";
 
-import type { SelectBeers } from "~/database/schema.types";
+import type { BeersModel } from "~/database/schema.types";
 
 type InputProps = {
   selectedBeers: BeerOption[];
   setSelectedBeers: (value: BeerOption[]) => void;
-  sessionBeers?: SelectBeers[] | RatedBeers[];
+  sessionBeers?: BeersModel[] | RatedBeers[];
   currentBeerId?: number;
 } & BoxProps;
 
@@ -46,7 +46,7 @@ const getSelectedPills = (
 const getComboboxOptions = (
   options: BeerOption[],
   selectedBeers: BeerOption[],
-  sessionBeers?: SelectBeers[] | RatedBeers[],
+  sessionBeers?: BeersModel[] | RatedBeers[],
   currentBeerId?: number
 ) => {
   return options.map((option) => {

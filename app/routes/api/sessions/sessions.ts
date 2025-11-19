@@ -10,7 +10,7 @@ import {
   sessionState,
   sessions,
 } from "~/database/schema.server";
-import type { SelectSessions } from "~/database/schema.types";
+import type { SessionsModel } from "~/database/schema.types";
 import { addBeersToSession } from "~/database/utils/addBeersToSession.server";
 import { joinSessionById } from "~/database/utils/joinSessionById.server";
 import { generateJoinCode } from "~/utils/utils";
@@ -45,7 +45,7 @@ export async function action({ request }: Route.ActionArgs) {
     }
   }
 
-  let session: SelectSessions;
+  let session: SessionsModel;
   try {
     const name = String(sessionName);
     const [createdSession] = await db
