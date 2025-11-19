@@ -3,6 +3,7 @@ export type SocketEventMap = {
   "session:users-changed": undefined;
   "session:beer-changed": undefined;
   "session:vote": undefined;
+  "session:started": undefined;
 
   // Global events
   "sessions:created": { sessionId: number };

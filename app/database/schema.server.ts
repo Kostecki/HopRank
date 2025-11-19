@@ -134,6 +134,15 @@ export const sessionState = sqliteTable("session_state", {
     .$onUpdate(() => sql`CURRENT_TIMESTAMP`),
 });
 
+export const pendingRedirects = sqliteTable("pending_redirects", {
+  email: text("email").primaryKey(),
+  redirectTo: text("redirect_to").notNull(),
+  createdAt: text("created_at")
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
+  expiresAt: integer("expires_at").notNull(),
+});
+
 // Relations
 export const sessionUsersRelations = relations(sessionUsers, ({ one }) => ({
   user: one(users, {
