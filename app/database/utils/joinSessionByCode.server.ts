@@ -26,9 +26,6 @@ export async function joinSessionByCode({
 }): Promise<JoinSessionResult> {
   const code = joinCode.trim().toUpperCase();
 
-  console.log(
-    `Attempting to join session with code: ${code} for user ID: ${userId}`
-  );
   const session = await db.query.sessions.findFirst({
     where: eq(sessions.joinCode, code),
     with: {
@@ -50,7 +47,6 @@ export async function joinSessionByCode({
   }
 
   const isFinished = state.status === SessionStatus.finished;
-  console.log(`Session status is finished: ${isFinished}`);
 
   const existing = await db.query.sessionUsers.findFirst({
     where: and(
@@ -59,26 +55,16 @@ export async function joinSessionByCode({
       eq(sessionUsers.active, true)
     ),
   });
-  console.log(`Existing user in session: ${!!existing}`);
 
   const alreadyJoined = !!existing;
-  console.log(`User already joined: ${alreadyJoined}`);
 
   if (!alreadyJoined && !isFinished) {
-    console.log(`User is joining session ID: ${session.id}`);
     await joinSessionById({ sessionId: session.id, userId });
 
     // Emit events only when a user newly joins and session isn't finished
-    console.log(
-      `Emitting session and global events for session ID: ${session.id}`
-    );
     emitSessionEvent(session.id, "session:users-changed");
     emitGlobalEvent("sessions:users-changed", { sessionId: session.id });
   }
-
-  console.log(
-    `Join session by code result: session ID ${session.id}, readOnly: ${isFinished}, alreadyJoined: ${alreadyJoined}`
-  );
   return {
     session: { id: session.id, name: session.name, status: state.status },
     readOnly: isFinished,
