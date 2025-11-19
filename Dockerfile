@@ -64,6 +64,9 @@ FROM node:23-alpine AS runner
 
 RUN apk add tzdata
 
+# Install pnpm globally
+RUN npm install -g pnpm
+
 WORKDIR /app
 
 # Ensure the database folder exists
@@ -74,7 +77,12 @@ COPY --from=prod-deps /app/node_modules ./node_modules
 COPY --from=build /app/build ./build
 COPY --from=build /app/public ./public
 COPY --from=build /app/app/database/migrations ./database/migrations
+COPY --from=build /app/drizzle.config.ts ./drizzle.config.ts
 COPY package.json pnpm-lock.yaml ./
+COPY start.sh ./
+
+# Make the start script executable
+RUN chmod +x start.sh
 
 # Rebuild native modules for Alpine/musl
 RUN npm rebuild better-sqlite3
@@ -94,4 +102,4 @@ ENV NODE_ENV=production
 EXPOSE 3000 4000
 
 # Start the app
-CMD ["npm", "start"]
+CMD ["./start.sh"]
