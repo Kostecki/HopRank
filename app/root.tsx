@@ -161,7 +161,7 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   let stack: string | undefined;
 
   if (isRouteErrorResponse(error)) {
-    message = error.status === 404 ? "404" : "Fejl";
+    message = error.status === 404 ? "404" : "Noget gik galt!";
     details =
       error.status === 404
         ? "Siden du leder efter findes desværre ikke."
@@ -172,7 +172,7 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   }
 
   return (
-    <Container style={{ textAlign: "center", paddingTop: 75 }}>
+    <Container style={{ textAlign: "center", paddingTop: 75 }} h="100vh">
       <Title order={1} c="black" mb="md">
         {message}
       </Title>

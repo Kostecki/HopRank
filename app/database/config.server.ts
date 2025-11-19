@@ -9,6 +9,7 @@ import { invariant } from "~/utils/invariant";
 import {
   beers,
   criteria,
+  pendingRedirects,
   ratings,
   sessionBeers,
   sessionBeersRelations,
@@ -43,6 +44,7 @@ export const db = drizzle(new Database(DATABASE_PATH), {
     sessionCriteriaRelations,
     ratings,
     sessionState,
+    pendingRedirects,
   },
 });
 

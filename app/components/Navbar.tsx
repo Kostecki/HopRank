@@ -29,7 +29,7 @@ import {
 } from "~/types/session";
 import type { SessionUser } from "~/types/user";
 
-import type { SelectSessionBeersWithBeer } from "~/database/schema.types";
+import type { SessionBeersWithBeerModel } from "~/database/schema.types";
 import { createProfileLink } from "~/utils/untappd";
 
 import ModalAddBeers, { ModalAddBeersTrigger } from "./modals/ModalAddBeers";
@@ -37,7 +37,7 @@ import ModalAddBeers, { ModalAddBeersTrigger } from "./modals/ModalAddBeers";
 type InputProps = {
   user: SessionUser;
   sessionProgress: SessionProgress | null;
-  sessionBeers: SelectSessionBeersWithBeer[];
+  sessionBeers: SessionBeersWithBeerModel[];
   closeMobile: () => void;
   closeDesktop: () => void;
 };
@@ -50,13 +50,10 @@ export default function Navbar({
   closeDesktop,
 }: InputProps) {
   const navigate = useNavigate();
-  const [localSessionBeers, setLocalSessionBeers] = useState(sessionBeers);
-
   const location = useLocation();
 
-  useEffect(() => {
-    setLocalSessionBeers(sessionBeers);
-  }, [sessionBeers]);
+  const [localSessionBeers, setLocalSessionBeers] = useState(sessionBeers);
+  const [origin, setOrigin] = useState("");
 
   const inProgressSession =
     sessionProgress?.status === SessionStatus.active ||
@@ -103,6 +100,14 @@ export default function Navbar({
     .filter((beer) => beer.addedByUserId === user?.id)
     .sort((a, b) => (b.order ?? 0) - (a.order ?? 0));
 
+  useEffect(() => {
+    setLocalSessionBeers(sessionBeers);
+  }, [sessionBeers]);
+
+  useEffect(() => {
+    setOrigin(window.location.origin);
+  }, []);
+
   const UserListItem = ({ user }: { user: SessionProgressUser }) => {
     const firstLetter = user.email.slice(0, 1).toUpperCase();
 
@@ -145,7 +150,7 @@ export default function Navbar({
     );
   };
 
-  const ListItem = ({ beer }: { beer: SelectSessionBeersWithBeer }) => {
+  const ListItem = ({ beer }: { beer: SessionBeersWithBeerModel }) => {
     const {
       beer: { id, name, breweryName },
     } = beer;
@@ -183,17 +188,35 @@ export default function Navbar({
     <ModalAddBeers sessionProgress={sessionProgress}>
       <Box>
         <Stack gap="0">
-          <Text ta="center" fw={500}>
+          <Text ta="center" fw={500} size="lg">
             {sessionProgress.sessionName}
           </Text>
 
           <CopyButton value={sessionProgress.joinCode}>
             {({ copied, copy }) => (
-              <Tooltip label="Kopier kode" position="bottom">
-                <Button color="slateIndigo" variant="white" onClick={copy}>
-                  {copied ? "Kopieret" : sessionProgress.joinCode}
-                </Button>
-              </Tooltip>
+              <Button c="slateIndigo" variant="white" size="xs" onClick={copy}>
+                <Text
+                  ta="center"
+                  c="dimmed"
+                  size="sm"
+                  onClick={copy}
+                  style={{ cursor: "pointer" }}
+                >
+                  {copied
+                    ? "Pin kopieret"
+                    : `Pinkode: ${sessionProgress.joinCode}`}
+                </Text>
+              </Button>
+            )}
+          </CopyButton>
+
+          <CopyButton value={`${origin}/j/${sessionProgress.joinCode}`}>
+            {({ copied, copy }) => (
+              <Button c="slateIndigo" variant="white" size="xs" onClick={copy}>
+                <Text size="sm" fs="italic">
+                  {copied ? "Link kopieret" : "Del direkte link til smagning"}
+                </Text>
+              </Button>
             )}
           </CopyButton>
 
@@ -207,7 +230,7 @@ export default function Navbar({
             fw={500}
             onClick={handleLeaveSession}
           >
-            Forlad smagningen
+            Forlad smagning
           </Button>
 
           {sessionProgress.users.length > 0 && (
@@ -244,12 +267,16 @@ export default function Navbar({
 
               <Divider opacity={0.5} mb="md" />
 
-              {usersBeers.length > 0 && (
+              {usersBeers.length > 0 ? (
                 <List spacing="xs" size="sm" pl={0}>
                   {usersBeers.map((beer) => (
                     <ListItem key={beer.beerId} beer={beer} />
                   ))}
                 </List>
+              ) : (
+                <Text c="dimmed" fs="italic" ta="center">
+                  Der er ikke tilføjet nogle øl
+                </Text>
               )}
             </>
           )}

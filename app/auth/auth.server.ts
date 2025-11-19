@@ -6,8 +6,10 @@ import type { SessionUser } from "~/types/user";
 
 import { findOrCreateUserByEmail } from "~/database/utils/findOrCreateUserByEmail.server";
 import { invariant } from "~/utils/invariant";
+import { isSafeRedirect } from "~/utils/utils";
 
 import { sendMagicLinkEmail } from "./email.server";
+import { consumePendingRedirect } from "./pending-redirect.server";
 import { commitSession, getSession } from "./session.server";
 import { UntappdStrategy } from "./untappd-strategy.server";
 
@@ -21,9 +23,21 @@ const commitSessionUser = async (request: Request, user: SessionUser) => {
   const session = await getSession(request.headers.get("Cookie"));
   session.set("user", user);
 
+  let redirectTarget = "/sessions";
+  const redirectTo = session.get("redirectTo");
+  if (isSafeRedirect(redirectTo)) {
+    redirectTarget = redirectTo as string;
+
+    if (typeof session.unset === "function") {
+      session.unset("redirectTo");
+    } else {
+      session.set("redirectTo", undefined);
+    }
+  }
+
   const sessionCookie = await commitSession(session);
 
-  throw redirect("/", {
+  throw redirect(redirectTarget, {
     headers: {
       "Set-Cookie": sessionCookie,
     },
@@ -53,7 +67,13 @@ authenticator.use(
         ...(process.env.NODE_ENV === "production" ? { secure: true } : {}),
       },
       sendTOTP: async ({ email, code, magicLink }) => {
-        await sendMagicLinkEmail({ email, code, magicLink });
+        const redirectTo = await consumePendingRedirect(email);
+        const url = new URL(magicLink, APP_URL);
+        if (redirectTo && isSafeRedirect(redirectTo)) {
+          url.searchParams.set("redirect_to", redirectTo);
+        }
+
+        await sendMagicLinkEmail({ email, code, magicLink: url.toString() });
       },
     },
     async ({ email, request }) => {

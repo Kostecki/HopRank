@@ -10,13 +10,15 @@ import {
 import { useForm } from "@mantine/form";
 import { IconAt } from "@tabler/icons-react";
 import { useState } from "react";
-import { Link, useFetcher } from "react-router";
+import { Link, useFetcher, useLocation } from "react-router";
 
 import styles from "./styles.module.css";
 
 export default function LoginForm() {
   const [isRotating, setIsRotating] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  const location = useLocation();
 
   const fetcher = useFetcher();
   const isSubmitting = fetcher.state !== "idle" || fetcher.formData != null;
@@ -40,9 +42,10 @@ export default function LoginForm() {
     const formData = new FormData();
     formData.append("email", email);
 
+    const actionUrl = `/auth/login${location.search || ""}`;
     fetcher.submit(formData, {
       method: "POST",
-      action: "/auth/login",
+      action: actionUrl,
     });
   };
 
@@ -64,7 +67,7 @@ export default function LoginForm() {
 
       <Button
         component={Link}
-        to="/auth/untappd"
+        to={`/auth/untappd${location.search || ""}`}
         color="untappd"
         fullWidth
         loading={isLoading}

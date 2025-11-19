@@ -10,12 +10,12 @@ import {
 } from "@mantine/core";
 import { useEffect, useState } from "react";
 
-import type { SelectCriteria as SelectCriteriaType } from "~/database/schema.types";
+import type { CriteriaModel } from "~/database/schema.types";
 
 import { criteriaGroups } from "./NewSession";
 
 type InputProps = {
-  criteria: SelectCriteriaType[];
+  criteria: CriteriaModel[];
   activeCriteria: number[];
   setActiveCriteria: React.Dispatch<React.SetStateAction<number[]>>;
 };
