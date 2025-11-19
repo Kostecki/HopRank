@@ -76,7 +76,7 @@ RUN mkdir -p /app/database
 COPY --from=prod-deps /app/node_modules ./node_modules
 COPY --from=build /app/build ./build
 COPY --from=build /app/public ./public
-COPY --from=build /app/app/database/migrations ./database/migrations
+COPY --from=build /app/app/database/migrations ./app/database/migrations
 COPY --from=build /app/drizzle.config.ts ./drizzle.config.ts
 COPY package.json pnpm-lock.yaml ./
 COPY start.sh ./
