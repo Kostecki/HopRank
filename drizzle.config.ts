@@ -1,9 +1,9 @@
 import { defineConfig } from "drizzle-kit";
 
-import { invariant } from "~/utils/invariant";
-
 const DATABASE_PATH = process.env.DATABASE_PATH;
-invariant(DATABASE_PATH, "DATABASE_PATH must be set in .env");
+if (!DATABASE_PATH) {
+  throw new Error("DATABASE_PATH must be set in environment variables");
+}
 
 export default defineConfig({
   out: "./app/database/migrations",
