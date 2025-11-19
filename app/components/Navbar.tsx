@@ -50,13 +50,10 @@ export default function Navbar({
   closeDesktop,
 }: InputProps) {
   const navigate = useNavigate();
-  const [localSessionBeers, setLocalSessionBeers] = useState(sessionBeers);
-
   const location = useLocation();
 
-  useEffect(() => {
-    setLocalSessionBeers(sessionBeers);
-  }, [sessionBeers]);
+  const [localSessionBeers, setLocalSessionBeers] = useState(sessionBeers);
+  const [origin, setOrigin] = useState("");
 
   const inProgressSession =
     sessionProgress?.status === SessionStatus.active ||
@@ -102,6 +99,14 @@ export default function Navbar({
   const usersBeers = localSessionBeers
     .filter((beer) => beer.addedByUserId === user?.id)
     .sort((a, b) => (b.order ?? 0) - (a.order ?? 0));
+
+  useEffect(() => {
+    setLocalSessionBeers(sessionBeers);
+  }, [sessionBeers]);
+
+  useEffect(() => {
+    setOrigin(window.location.origin);
+  }, []);
 
   const UserListItem = ({ user }: { user: SessionProgressUser }) => {
     const firstLetter = user.email.slice(0, 1).toUpperCase();
@@ -187,11 +192,15 @@ export default function Navbar({
             {sessionProgress.sessionName}
           </Text>
 
-          <CopyButton value={sessionProgress.joinCode}>
+          <CopyButton value={`${origin}/j/${sessionProgress.joinCode}`}>
             {({ copied, copy }) => (
-              <Tooltip label="Kopier kode" position="bottom">
-                <Button color="slateIndigo" variant="white" onClick={copy}>
-                  {copied ? "Kopieret" : sessionProgress.joinCode}
+              <Tooltip label="Kopier link" position="bottom">
+                <Button variant="white" onClick={copy}>
+                  <Text size="sm" fs="italic" c="slateIndigo">
+                    {copied
+                      ? "Kopieret"
+                      : `${origin}/j/${sessionProgress.joinCode}`}
+                  </Text>
                 </Button>
               </Tooltip>
             )}
@@ -244,12 +253,16 @@ export default function Navbar({
 
               <Divider opacity={0.5} mb="md" />
 
-              {usersBeers.length > 0 && (
+              {usersBeers.length > 0 ? (
                 <List spacing="xs" size="sm" pl={0}>
                   {usersBeers.map((beer) => (
                     <ListItem key={beer.beerId} beer={beer} />
                   ))}
                 </List>
+              ) : (
+                <Text c="dimmed" fs="italic" ta="center">
+                  Der er ikke tilføjet nogle øl
+                </Text>
               )}
             </>
           )}
