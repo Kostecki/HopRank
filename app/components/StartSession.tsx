@@ -7,15 +7,13 @@ import {
   Stack,
   Text,
 } from "@mantine/core";
+import { AnimatePresence, motion } from "motion/react";
 
 import type { SessionProgress } from "~/types/session";
 import type { SessionUser } from "~/types/user";
 
 import dayjs from "~/utils/dayjs";
 import { capitalizeFirstLetter } from "~/utils/utils";
-
-// import styles from "./StartSession.module.css";
-// TODO: Add animation
 
 type InputProps = {
   user: SessionUser;
@@ -50,20 +48,31 @@ export function StartSession({ user, session }: InputProps) {
         </Stack>
 
         <Group justify="center" mt="lg">
-          {session.users.map((user) => {
-            const firstLetter = user.email.slice(0, 1).toUpperCase();
+          <AnimatePresence>
+            {session.users.map((user) => {
+              const firstLetter = user.email.slice(0, 1).toUpperCase();
 
-            return (
-              <Group key={user.id}>
-                <Avatar
-                  src={user?.avatarURL}
-                  name={user.username ?? user.name ?? firstLetter}
-                  color="initials"
-                  size="lg"
-                />
-              </Group>
-            );
-          })}
+              return (
+                <motion.div
+                  key={user.id}
+                  layout
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <Group key={user.id}>
+                    <Avatar
+                      src={user?.avatarURL}
+                      name={user.username ?? user.name ?? firstLetter}
+                      color="initials"
+                      size="lg"
+                    />
+                  </Group>
+                </motion.div>
+              );
+            })}
+          </AnimatePresence>
         </Group>
 
         {(session.createdBy === user.id || user.admin) && (

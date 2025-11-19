@@ -9,7 +9,7 @@ import { userSessionGet } from "~/auth/users.server";
 import { BeerCard } from "~/components/BeerCard";
 import { BeerCardDetails } from "~/components/BeerCardDetails";
 import EmptySession from "~/components/EmptySession";
-import { StartSession } from "~/components/StartSession/StartSession";
+import { StartSession } from "~/components/StartSession";
 import UpNext from "~/components/UpNext";
 import { db } from "~/database/config.server";
 import { sessionCriteria } from "~/database/schema.server";
