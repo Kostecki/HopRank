@@ -6,6 +6,7 @@ import {
   Group,
   Stack,
   Text,
+  Tooltip,
 } from "@mantine/core";
 import { AnimatePresence, motion } from "motion/react";
 
@@ -62,12 +63,14 @@ export function StartSession({ user, session }: InputProps) {
                   transition={{ duration: 0.3 }}
                 >
                   <Group key={user.id}>
-                    <Avatar
-                      src={user?.avatarURL}
-                      name={user.username ?? user.name ?? firstLetter}
-                      color="initials"
-                      size="lg"
-                    />
+                    <Tooltip label={user.name}>
+                      <Avatar
+                        src={user?.avatarURL}
+                        name={user.username ?? user.name ?? firstLetter}
+                        color="initials"
+                        size="lg"
+                      />
+                    </Tooltip>
                   </Group>
                 </motion.div>
               );
@@ -78,7 +81,7 @@ export function StartSession({ user, session }: InputProps) {
         {(session.createdBy === user.id || user.admin) && (
           <>
             <Divider my="xs" />
-            <Button onClick={handleStartSession} color="slateIndigo">
+            <Button onClick={handleStartSession} variant="gradient">
               Start Smagning
             </Button>
           </>
