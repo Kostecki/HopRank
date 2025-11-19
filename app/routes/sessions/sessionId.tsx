@@ -2,7 +2,7 @@ import { Accordion } from "@mantine/core";
 import { eq } from "drizzle-orm";
 import { redirect, useLoaderData, useRevalidator } from "react-router";
 
-import { type SessionProgress, SessionStatus } from "~/types/session";
+import { SessionStatus } from "~/types/session";
 import type { Route } from "./+types/sessionId";
 
 import { userSessionGet } from "~/auth/users.server";
@@ -13,6 +13,7 @@ import { StartSession } from "~/components/StartSession";
 import UpNext from "~/components/UpNext";
 import { db } from "~/database/config.server";
 import { sessionCriteria } from "~/database/schema.server";
+import { getSessionProgress } from "~/database/utils/getSessionProgress.server";
 import { useDebouncedSocketEvent } from "~/hooks/useDebouncedSocketEvent";
 import { extractSessionId, getPageTitle } from "~/utils/utils";
 
@@ -32,18 +33,11 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     return redirect("/auth/login");
   }
 
-  const url = new URL(request.url);
-  const origin = `${url.protocol}//${url.host}`;
-  const progressResponse = await fetch(
-    `${origin}/api/sessions/${sessionId}/progress`,
-    {
-      // TODO: Do this in a better way?
-      headers: {
-        cookie: request.headers.get("cookie") || "",
-      },
-    }
-  );
-  const sessionProgress = (await progressResponse.json()) as SessionProgress;
+  const sessionProgress = await getSessionProgress({ request, sessionId });
+  if (sessionProgress.statusCode === 404) {
+    return redirect("/sessions");
+  }
+
   if (sessionProgress.status === SessionStatus.finished) {
     return redirect("view");
   }

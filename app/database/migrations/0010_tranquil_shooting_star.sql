@@ -1,1 +1,0 @@
-ALTER TABLE `session_users` DROP COLUMN `last_untappd_checkin_id`;

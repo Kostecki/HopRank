@@ -27,8 +27,8 @@ export const users = sqliteTable("users", {
     .notNull()
     .default(sql`CURRENT_TIMESTAMP`),
   lastUpdatedAt: text("last_updated_at")
-    .default(sql`CURRENT_TIMESTAMP`)
-    .$onUpdate(() => sql`CURRENT_TIMESTAMP`),
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
 });
 
 export const sessions = sqliteTable(
@@ -37,7 +37,9 @@ export const sessions = sqliteTable(
     id: integer("id").primaryKey({ autoIncrement: true }),
     name: text("name").notNull(),
     joinCode: text("join_code").notNull().unique(),
-    createdBy: integer("created_by").references(() => users.id),
+    createdBy: integer("created_by")
+      .notNull()
+      .references(() => users.id),
     createdAt: text("created_at")
       .notNull()
       .default(sql`CURRENT_TIMESTAMP`),
@@ -68,9 +70,9 @@ export const beers = sqliteTable("beers", {
   createdAt: text("created_at")
     .notNull()
     .default(sql`CURRENT_TIMESTAMP`),
-  lastUpdatedAt: text("last_updated_at").$onUpdate(
-    () => sql`(CURRENT_TIMESTAMP)`
-  ),
+  lastUpdatedAt: text("last_updated_at")
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
 });
 
 export const sessionBeers = sqliteTable("session_beers", {
@@ -79,7 +81,11 @@ export const sessionBeers = sqliteTable("session_beers", {
   beerId: integer("beer_id").references(() => beers.id),
   addedByUserId: integer("added_by_user_id").references(() => users.id),
   order: integer("order"),
-  status: text("status").notNull().default(SessionBeerStatus.waiting),
+  status: text({
+    enum: Object.values(SessionBeerStatus) as [string, ...string[]],
+  })
+    .notNull()
+    .default(SessionBeerStatus.waiting),
   createdAt: text("created_at")
     .notNull()
     .default(sql`CURRENT_TIMESTAMP`),
@@ -128,10 +134,12 @@ export const sessionState = sqliteTable("session_state", {
     .references(() => sessions.id),
   currentBeerId: integer("current_beer_id").references(() => beers.id),
   currentBeerOrder: integer("current_beer_order"),
-  status: text("status").notNull().default(SessionStatus.created),
+  status: text({ enum: Object.values(SessionStatus) as [string, ...string[]] })
+    .notNull()
+    .default(SessionStatus.created),
   lastUpdatedAt: text("last_updated_at")
-    .default(sql`CURRENT_TIMESTAMP`)
-    .$onUpdate(() => sql`CURRENT_TIMESTAMP`),
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
 });
 
 export const pendingRedirects = sqliteTable("pending_redirects", {
