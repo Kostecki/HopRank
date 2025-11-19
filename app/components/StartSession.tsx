@@ -9,11 +9,13 @@ import {
   Tooltip,
 } from "@mantine/core";
 import { AnimatePresence, motion } from "motion/react";
+import { useState } from "react";
 
 import type { SessionProgress } from "~/types/session";
 import type { SessionUser } from "~/types/user";
 
 import dayjs from "~/utils/dayjs";
+import { showDangerToast, showSuccessToast } from "~/utils/toasts";
 import { capitalizeFirstLetter } from "~/utils/utils";
 
 type InputProps = {
@@ -22,8 +24,27 @@ type InputProps = {
 };
 
 export function StartSession({ user, session }: InputProps) {
+  const [loading, setLoading] = useState(false);
+
   const handleStartSession = async () => {
-    console.log("Starting session...");
+    setLoading(true);
+
+    try {
+      const response = await fetch(`/api/sessions/${session.sessionId}/start`, {
+        method: "POST",
+      });
+      const result = await response.json();
+
+      if (response.ok) {
+        showSuccessToast("Smagning startet");
+      } else {
+        showDangerToast(result.message);
+      }
+    } catch (error) {
+      showDangerToast(String(error));
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -81,7 +102,11 @@ export function StartSession({ user, session }: InputProps) {
         {(session.createdBy === user.id || user.admin) && (
           <>
             <Divider my="xs" />
-            <Button onClick={handleStartSession} variant="gradient">
+            <Button
+              onClick={handleStartSession}
+              variant="gradient"
+              loading={loading}
+            >
               Start Smagning
             </Button>
           </>

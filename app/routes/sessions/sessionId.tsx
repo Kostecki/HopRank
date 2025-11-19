@@ -93,6 +93,7 @@ export default function Session() {
   useDebouncedSocketEvent(
     [
       "sessions:created",
+      "session:started",
       "session:users-changed",
       "session:beer-changed",
       "session:vote",
