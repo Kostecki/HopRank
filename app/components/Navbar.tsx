@@ -188,21 +188,35 @@ export default function Navbar({
     <ModalAddBeers sessionProgress={sessionProgress}>
       <Box>
         <Stack gap="0">
-          <Text ta="center" fw={500}>
+          <Text ta="center" fw={500} size="lg">
             {sessionProgress.sessionName}
           </Text>
 
+          <CopyButton value={sessionProgress.joinCode}>
+            {({ copied, copy }) => (
+              <Button c="slateIndigo" variant="white" size="xs" onClick={copy}>
+                <Text
+                  ta="center"
+                  c="dimmed"
+                  size="sm"
+                  onClick={copy}
+                  style={{ cursor: "pointer" }}
+                >
+                  {copied
+                    ? "Pin kopieret"
+                    : `Pinkode: ${sessionProgress.joinCode}`}
+                </Text>
+              </Button>
+            )}
+          </CopyButton>
+
           <CopyButton value={`${origin}/j/${sessionProgress.joinCode}`}>
             {({ copied, copy }) => (
-              <Tooltip label="Kopier link" position="bottom">
-                <Button variant="white" onClick={copy}>
-                  <Text size="sm" fs="italic" c="slateIndigo">
-                    {copied
-                      ? "Kopieret"
-                      : `${origin}/j/${sessionProgress.joinCode}`}
-                  </Text>
-                </Button>
-              </Tooltip>
+              <Button c="slateIndigo" variant="white" size="xs" onClick={copy}>
+                <Text size="sm" fs="italic">
+                  {copied ? "Link kopieret" : "Del direkte link til smagning"}
+                </Text>
+              </Button>
             )}
           </CopyButton>
 
