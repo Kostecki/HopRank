@@ -16,12 +16,18 @@ import { isSafeRedirect } from "~/utils/utils";
 export async function loader({ params, request }: Route.LoaderArgs) {
   const rawCode = params?.joinCode;
   if (!rawCode) {
-    throw new Response("Join code is required", { status: 400 });
+    throw new Response("Join code is required", {
+      status: 400,
+      statusText: "En pinkode er påkrævet for at deltage i en smagning",
+    });
   }
 
   const joinCode = normalizeJoinCode(rawCode);
   if (!JOIN_CODE_PATTERN.test(joinCode)) {
-    throw new Response("Invalid join code format", { status: 400 });
+    throw new Response("Invalid join code format", {
+      status: 400,
+      statusText: "Pinkoden er ugyldig",
+    });
   }
 
   const user = await userSessionGet(request);
