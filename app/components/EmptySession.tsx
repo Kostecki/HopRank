@@ -4,13 +4,13 @@ import { useFetcher, useParams } from "react-router";
 
 import type { BeerOption } from "~/types/misc";
 
-import type { BeersModel } from "~/database/schema.types";
+import type { SelectBeers } from "~/database/schema.types";
 
 import BeerMultiSelect from "./BeerMultiSelect";
 
 export default function EmptySession() {
   const { sessionId } = useParams();
-  const [sessionBeers, setSessionBeers] = useState<BeersModel[]>([]);
+  const [sessionBeers, setSessionBeers] = useState<SelectBeers[]>([]);
   const [selectedBeers, setSelectedBeers] = useState<BeerOption[]>([]);
 
   const fetcher = useFetcher();

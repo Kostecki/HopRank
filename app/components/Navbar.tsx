@@ -29,7 +29,7 @@ import {
 } from "~/types/session";
 import type { SessionUser } from "~/types/user";
 
-import type { SessionBeersWithBeerModel } from "~/database/schema.types";
+import type { SelectSessionBeersWithBeer } from "~/database/schema.types";
 import { createProfileLink } from "~/utils/untappd";
 
 import ModalAddBeers, { ModalAddBeersTrigger } from "./modals/ModalAddBeers";
@@ -37,7 +37,7 @@ import ModalAddBeers, { ModalAddBeersTrigger } from "./modals/ModalAddBeers";
 type InputProps = {
   user: SessionUser;
   sessionProgress: SessionProgress | null;
-  sessionBeers: SessionBeersWithBeerModel[];
+  sessionBeers: SelectSessionBeersWithBeer[];
   closeMobile: () => void;
   closeDesktop: () => void;
 };
@@ -150,7 +150,7 @@ export default function Navbar({
     );
   };
 
-  const ListItem = ({ beer }: { beer: SessionBeersWithBeerModel }) => {
+  const ListItem = ({ beer }: { beer: SelectSessionBeersWithBeer }) => {
     const {
       beer: { id, name, breweryName },
     } = beer;

@@ -9,7 +9,7 @@ import { userSessionGet } from "~/auth/users.server";
 import { Header } from "~/components/Header";
 import Navbar from "~/components/Navbar";
 import { SocketProvider } from "~/context/SocketContext";
-import type { SessionBeersWithBeerModel } from "~/database/schema.types";
+import type { SelectSessionBeersWithBeer } from "~/database/schema.types";
 import { extractSessionId } from "~/utils/utils";
 
 export async function loader({ params, request }: Route.LoaderArgs) {
@@ -24,7 +24,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   const origin = `${url.protocol}//${url.host}`;
 
   let sessionProgress = null;
-  let sessionBeers: SessionBeersWithBeerModel[] = [];
+  let sessionBeers: SelectSessionBeersWithBeer[] = [];
   if (sessionId) {
     const sessionProgressResponse = await fetch(
       `${origin}/api/sessions/${sessionId}/progress`
@@ -34,7 +34,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
     const beersResponse = await fetch(
       `${origin}/api/sessions/${sessionId}/list-beers`
     );
-    sessionBeers = (await beersResponse.json()) as SessionBeersWithBeerModel[];
+    sessionBeers = (await beersResponse.json()) as SelectSessionBeersWithBeer[];
   }
 
   return {
