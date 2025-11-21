@@ -84,7 +84,6 @@ export default function Navbar({
         method: "POST",
         action: `/api/sessions/${sessionId}/leave`,
       });
-      navigate("/sessions");
     }
   };
 
@@ -133,6 +132,14 @@ export default function Navbar({
     setPendingBeersSnapshot(null);
     console.error("Failed to remove beer", result);
   }, [removeFetcher.state, removeFetcher.data, pendingBeersSnapshot]);
+
+  useEffect(() => {
+    if (leaveFetcher.state !== "idle") return;
+    const result = leaveFetcher.data as { success?: boolean } | undefined;
+    if (result?.success) {
+      navigate("/sessions");
+    }
+  }, [leaveFetcher.state, leaveFetcher.data, navigate]);
 
   const UserListItem = ({ user }: { user: SessionProgressUser }) => {
     const firstLetter = user.email.slice(0, 1).toUpperCase();
