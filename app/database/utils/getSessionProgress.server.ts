@@ -1,6 +1,7 @@
 import { and, eq, inArray } from "drizzle-orm";
 
-import { SessionBeerStatus, SessionStatus } from "~/types/session";
+import type { SessionProgressUser } from "~/types/session";
+import { SessionBeerStatus } from "~/types/session";
 
 import { userSessionGet } from "~/auth/users.server";
 import { db } from "~/database/config.server";
@@ -13,12 +14,25 @@ import {
   sessionUsers,
   users,
 } from "~/database/schema.server";
+import type { SelectUsers } from "~/database/schema.types";
 import { getBeerInfo } from "~/utils/untappd";
 
 const beerInfoCache = new Map<
   number,
   Awaited<ReturnType<typeof getBeerInfo>>
 >();
+
+const toSessionProgressUser = (user: SelectUsers): SessionProgressUser => ({
+  id: user.id,
+  email: user.email,
+  admin: user.admin,
+  name: user.name,
+  untappdId: user.untappdId,
+  username: user.username,
+  avatarURL: user.avatarURL,
+  createdAt: user.createdAt,
+  lastUpdatedAt: user.lastUpdatedAt,
+});
 
 async function getCachedBeerInfo(beerId: number, accessToken: string) {
   const cachedInfo = beerInfoCache.get(beerId);
@@ -73,9 +87,6 @@ export async function getSessionProgress({
   const userIds = activeSessionUsers
     .map((su) => su.userId)
     .filter((id): id is number => id !== null);
-  const usersForSession = await db.query.users.findMany({
-    where: inArray(users.id, userIds),
-  });
 
   const ratingsForSession = await db.query.ratings.findMany({
     where: eq(ratings.sessionId, sessionId),
@@ -88,9 +99,6 @@ export async function getSessionProgress({
         .filter((id): id is number => id != null)
     )
   );
-  const userCountByVotes = await db.query.users.findMany({
-    where: inArray(users.id, uniqueUserIds),
-  });
 
   const sessionBeerRowsNotEmpty = sessionBeerRows.filter(
     (sb): sb is typeof sb & { beer: NonNullable<typeof sb.beer> } =>
@@ -110,6 +118,27 @@ export async function getSessionProgress({
       weight: row.criterion.weight,
       description: row.criterion.description,
     }));
+
+  // Compute overall average score per criterion across all rated beers (excluding current beer in progress)
+  const ratedBeerIds = new Set(
+    sessionBeerRowsNotEmpty
+      .filter((sb) => sb.status === SessionBeerStatus.rated)
+      .map((sb) => sb.beer.id)
+  );
+  const scoredCriteria = criteriaList.map((criterion) => {
+    const criterionRatings = allRatings.filter(
+      (r) => r.criterionId === criterion.id && ratedBeerIds.has(r.beerId ?? -1)
+    );
+    const avg =
+      criterionRatings.reduce((sum, r) => sum + r.score, 0) /
+      (criterionRatings.length || 1);
+    return {
+      criterionId: criterion.id,
+      name: criterion.name,
+      weight: criterion.weight,
+      averageScore: avg,
+    };
+  });
 
   const currentBeerRow = sessionBeerRowsNotEmpty.find(
     (sb) =>
@@ -132,6 +161,24 @@ export async function getSessionProgress({
       userRatings.map((r) => [r.criterionId, r.score])
     );
   }
+
+  // Build a set of all userIds who added beers to include them in users list even if not active or voted.
+  const beerAdderIds = new Set<number>(
+    sessionBeerRowsNotEmpty
+      .map((sb) => sb.addedByUserId)
+      .filter((id): id is number => typeof id === "number")
+  );
+
+  // Merge active users, voting users, and beer adders to ensure avatar/name resolution
+  const unionUserIds = new Set<number>([
+    ...beerAdderIds,
+    ...userIds,
+    ...uniqueUserIds,
+  ]);
+  const allRelevantUsersRaw = await db.query.users.findMany({
+    where: inArray(users.id, [...unionUserIds]),
+  });
+  const allRelevantUsers = allRelevantUsersRaw.map(toSessionProgressUser);
 
   const ratedBeers = sessionBeerRowsNotEmpty
     .filter(
@@ -162,10 +209,9 @@ export async function getSessionProgress({
       });
 
       const averageScore = totalWeight > 0 ? totalWeighted / totalWeight : 0;
-      const uniqueVoters = new Set(
+      const votesCount = new Set(
         allRatings.filter((r) => r.beerId === beer.id).map((r) => r.userId)
       ).size;
-
       return {
         beerId: beer.id,
         untappdBeerId: beer.untappdBeerId,
@@ -177,26 +223,57 @@ export async function getSessionProgress({
         averageScore,
         criteriaBreakdown,
         addedByUserId,
-        votesCount: uniqueVoters,
+        votesCount,
       };
     })
     .sort((a, b) => b.averageScore - a.averageScore);
 
   const currentBeerData = currentBeerRow?.beer
-    ? {
-        beerId: currentBeerRow.beer.id,
-        untappdBeerId: currentBeerRow.beer.untappdBeerId,
-        name: currentBeerRow.beer.name,
-        breweryName: currentBeerRow.beer.breweryName,
-        style: currentBeerRow.beer.style,
-        label: currentBeerRow.beer.label,
-        order: state?.currentBeerOrder ?? 0,
-        currentVoteCount: uniqueUserVotes,
-        totalPossibleVoteCount: expectedVotes,
-        userRatings: user ? userRatingsById : undefined,
-        userHadBeer: false,
-        addedByUserId: currentBeerRow.addedByUserId,
-      }
+    ? (() => {
+        const currentBeerRatings = allRatings.filter(
+          (r) => r.beerId === currentBeerRow.beer.id
+        );
+
+        let totalWeightedCurrent = 0;
+        let totalWeightCurrent = 0;
+        const criteriaBreakdown = criteriaList.map((criterion) => {
+          const scores = currentBeerRatings.filter(
+            (rating) => rating.criterionId === criterion.id
+          );
+          const avg =
+            scores.reduce((sum, rating) => sum + rating.score, 0) /
+            (scores.length || 1);
+          totalWeightedCurrent += avg * criterion.weight;
+          totalWeightCurrent += criterion.weight;
+          return {
+            criterionId: criterion.id,
+            name: criterion.name,
+            weight: criterion.weight,
+            averageScore: avg,
+          };
+        });
+        const averageScore =
+          totalWeightCurrent > 0
+            ? totalWeightedCurrent / totalWeightCurrent
+            : 0;
+        return {
+          beerId: currentBeerRow.beer.id,
+          untappdBeerId: currentBeerRow.beer.untappdBeerId,
+          name: currentBeerRow.beer.name,
+          breweryName: currentBeerRow.beer.breweryName,
+          style: currentBeerRow.beer.style,
+          label: currentBeerRow.beer.label,
+          order: state?.currentBeerOrder ?? 0,
+          currentVoteCount: uniqueUserVotes,
+          totalPossibleVoteCount: expectedVotes,
+          userRatings: user ? userRatingsById : {},
+          userHadBeer: false,
+          addedByUserId: currentBeerRow.addedByUserId,
+          averageScore,
+          criteriaBreakdown,
+          votesCount: uniqueUserVotes,
+        };
+      })()
     : null;
 
   let userHadBeer = false;
@@ -208,9 +285,7 @@ export async function getSessionProgress({
     userHadBeer = beerInfo?.stats?.user_count > 0;
   }
 
-  const inProgressSession =
-    state?.status === SessionStatus.active ||
-    state?.status === SessionStatus.created;
+  // (Removed inProgressSession; unified user collection used regardless of status)
 
   return {
     sessionId,
@@ -221,8 +296,8 @@ export async function getSessionProgress({
     joinCode: session.joinCode,
     beersTotalCount: sessionBeerRowsNotEmpty.length,
     beersRatedCount: ratedBeers.length,
-    users: inProgressSession ? usersForSession : userCountByVotes,
-    sessionCriteria: criteriaList,
+    users: allRelevantUsers,
+    scoredCriteria,
     currentBeer: currentBeerData ? { ...currentBeerData, userHadBeer } : null,
     ratedBeers,
   };

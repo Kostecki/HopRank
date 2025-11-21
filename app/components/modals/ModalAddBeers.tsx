@@ -7,8 +7,8 @@ import type { BeerOption } from "~/types/misc";
 import type { SessionProgress } from "~/types/session";
 
 import type {
-  BeersModel,
-  SessionBeersWithBeerModel,
+  SelectBeers,
+  SelectSessionBeersWithBeer,
 } from "~/database/schema.types";
 
 import BeerMultiSelect from "../BeerMultiSelect";
@@ -46,7 +46,7 @@ export default function ModalAddBeers({
 }: InputProps) {
   const [opened, { open, close }] = useDisclosure(false);
   const [selectedBeers, setSelectedBeers] = useState<BeerOption[]>([]);
-  const [sessionBeers, setSessionBeers] = useState<BeersModel[]>([]);
+  const [sessionBeers, setSessionBeers] = useState<SelectBeers[]>([]);
 
   const params = useParams();
   const { sessionId } = params;
@@ -66,7 +66,7 @@ export default function ModalAddBeers({
 
     if (sessionId) {
       const response = await fetch(`/api/sessions/${sessionId}/list-beers`);
-      const data = (await response.json()) as SessionBeersWithBeerModel[];
+      const data = (await response.json()) as SelectSessionBeersWithBeer[];
 
       const beers = data.map((item) => item.beer);
       setSessionBeers(beers);
@@ -80,7 +80,7 @@ export default function ModalAddBeers({
   useEffect(() => {
     const fetchBeers = async () => {
       const response = await fetch(`/api/sessions/${sessionId}/list-beers`);
-      const data = (await response.json()) as SessionBeersWithBeerModel[];
+      const data = (await response.json()) as SelectSessionBeersWithBeer[];
 
       const beers = data.map((beer) => beer.beer);
       setSessionBeers(beers);

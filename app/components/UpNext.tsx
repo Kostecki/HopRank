@@ -1,6 +1,6 @@
 import { Anchor, Box, type BoxProps } from "@mantine/core";
 
-import type { SessionCriterion, SessionProgress } from "~/types/session";
+import type { Criterion, SessionProgress } from "~/types/session";
 import type { SessionUser } from "~/types/user";
 
 import { createBeerLink } from "~/utils/untappd";
@@ -11,13 +11,13 @@ import NewVote from "./NewVote";
 type InputProps = {
   user: SessionUser;
   session: SessionProgress;
-  sessionCriteria: SessionCriterion[];
+  criteria: Criterion[];
 } & BoxProps;
 
 export default function UpNext({
   user,
   session,
-  sessionCriteria,
+  criteria,
   ...props
 }: InputProps) {
   if (!session) {
@@ -38,11 +38,7 @@ export default function UpNext({
         <BeerCard session={session} />
       </Anchor>
 
-      <NewVote
-        user={user}
-        session={session}
-        sessionCriteria={sessionCriteria}
-      />
+      <NewVote user={user} session={session} criteria={criteria} />
     </Box>
   );
 }

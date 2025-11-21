@@ -1,23 +1,18 @@
 import { Avatar, Card, Flex, Image, rem, Text, ThemeIcon } from "@mantine/core";
 
-import type {
-  RatedBeers,
-  SessionProgress,
-  SessionProgressUser,
-} from "~/types/session";
+import type { RatedBeers, SessionProgress } from "~/types/session";
 
 import { createBeerLink } from "~/utils/untappd";
 
 type inputProps = {
   session: SessionProgress;
-  users: SessionProgressUser[];
 };
 
 // Colors for 1st, 2nd, 3rd place: Gold, Silver, Bronze
 // Ordered by podium display order: 2nd, 1st, 3rd
 const placementColors = ["#BFC9D6", "#E9C46A", "#C0893A"];
 
-export default function MedalPodium({ session, users }: inputProps) {
+export default function MedalPodium({ session }: inputProps) {
   const { ratedBeers } = session;
 
   // heights for podium positions
@@ -46,7 +41,11 @@ export default function MedalPodium({ session, users }: inputProps) {
         const place = i === 1 ? 1 : i === 0 ? 2 : 3;
         const bg = placementColors[i];
         const height = displayHeights[i] || rem(120);
-        const addedBy = users.find((user) => user.id === beer?.addedByUserId);
+        const addedByUserId = beer?.addedByUserId;
+
+        const user = session.users.find((u) => u.id === addedByUserId);
+        const addedByName = user?.name || "";
+        const addedByAvatarURL = user?.avatarURL || null;
 
         return (
           <Flex
@@ -79,9 +78,9 @@ export default function MedalPodium({ session, users }: inputProps) {
                     size={56}
                     radius={999}
                     pos="absolute"
-                    src={addedBy?.avatarURL}
-                    alt={addedBy?.name}
-                    name={addedBy?.name}
+                    src={addedByAvatarURL}
+                    alt={addedByName}
+                    name={addedByName}
                     bdrs="50%"
                     bd="4px solid white"
                     top={rem(-35)}

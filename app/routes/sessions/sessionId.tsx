@@ -42,11 +42,11 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     return redirect("view");
   }
 
-  const sessionCriteriaWithDetails = await db.query.sessionCriteria.findMany({
+  const criteriaWithDetails = await db.query.sessionCriteria.findMany({
     where: eq(sessionCriteria.sessionId, sessionId),
     with: { criterion: true },
   });
-  const sessionCriteriaSimple = sessionCriteriaWithDetails
+  const criteria = criteriaWithDetails
     .filter(
       (
         row
@@ -63,13 +63,12 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   return {
     user,
     sessionProgress,
-    sessionCriteriaSimple,
+    criteria,
   };
 }
 
 export default function Session() {
-  const { user, sessionProgress, sessionCriteriaSimple } =
-    useLoaderData<typeof loader>();
+  const { user, sessionProgress, criteria } = useLoaderData<typeof loader>();
 
   const { revalidate } = useRevalidator();
 
@@ -108,7 +107,7 @@ export default function Session() {
         <UpNext
           user={user}
           session={sessionProgress}
-          sessionCriteria={sessionCriteriaSimple}
+          criteria={criteria}
           mb="xl"
         />
       )}

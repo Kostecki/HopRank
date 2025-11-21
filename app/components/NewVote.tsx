@@ -21,7 +21,7 @@ import { IconCheck } from "@tabler/icons-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useFetcher, useParams } from "react-router";
 
-import type { SessionCriterion, SessionProgress } from "~/types/session";
+import type { Criterion, SessionProgress } from "~/types/session";
 import type { SessionUser } from "~/types/user";
 
 import { useGeolocation } from "~/hooks/useGeolocation";
@@ -35,14 +35,10 @@ import VenueSearch from "./VenueSearch";
 type InputProps = {
   user: SessionUser;
   session: SessionProgress;
-  sessionCriteria: SessionCriterion[];
+  criteria: Criterion[];
 };
 
-export default function NewVote({
-  user,
-  session,
-  sessionCriteria,
-}: InputProps) {
+export default function NewVote({ user, session, criteria }: InputProps) {
   const voteFetcher = useFetcher();
 
   const { sessionId } = useParams();
@@ -66,7 +62,7 @@ export default function NewVote({
     Object.keys(session.currentBeer?.userRatings ?? {}).length > 0;
 
   const ratingsForm = useForm({
-    initialValues: sessionCriteria.reduce(
+    initialValues: criteria.reduce(
       (acc, key) => {
         acc[key.name] =
           session.currentBeer?.userRatings?.[key.id] ?? defaultValue;
@@ -132,11 +128,9 @@ export default function NewVote({
         sessionId: Number(sessionId),
         userId: user.id,
         beerId: session.currentBeer?.beerId,
-        untappdBeerId: session.currentBeer?.untappdBeerId,
-        ratings: Object.entries(values).map(([name, rating]) => ({
-          id: sessionCriteria.find((r) => r.name === name)?.id,
-          name,
-          rating,
+        ratings: Object.entries(values).map(([name, score]) => ({
+          criterionId: criteria.find((r) => r.name === name)?.id as number,
+          score,
         })),
       };
 
@@ -153,8 +147,8 @@ export default function NewVote({
   };
 
   const calculatedTotalScore = useMemo(() => {
-    return calculateVoteScore(ratingsForm.values, sessionCriteria);
-  }, [ratingsForm.values, sessionCriteria]);
+    return calculateVoteScore(ratingsForm.values, criteria);
+  }, [ratingsForm.values, criteria]);
   const [debouncedTotalScore] = useDebouncedValue(calculatedTotalScore, 200);
 
   useEffect(() => {
@@ -174,7 +168,7 @@ export default function NewVote({
     <Paper withBorder radius="md" p="md" pt="lg" mt={-10}>
       <form onSubmit={ratingsForm.onSubmit(handleSubmit)}>
         <Stack>
-          {sessionCriteria.map((criterion) => (
+          {criteria.map((criterion) => (
             <RatingSlider
               key={criterion.id}
               form={ratingsForm}

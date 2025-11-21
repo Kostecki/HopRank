@@ -1,71 +1,72 @@
-export type SessionProgressUser = {
-  id: number;
-  createdAt: string;
-  lastUpdatedAt: string;
-  untappdId?: number;
-  username?: string;
-  email: string;
-  name?: string;
-  avatarURL?: string;
-  admin: boolean;
-};
+import type { UserPublic } from "~/types/user";
 
-export type SessionCriteria = {
-  criterionId: number;
-  name: string;
-  weight: number;
+import type {
+  SelectBeers,
+  SelectCriteria,
+  SelectSessionState,
+  SelectSessions,
+} from "~/database/schema.types";
+
+// Base row type aliases (from Drizzle) for clarity.
+type BaseBeer = SelectBeers;
+type BaseSession = SelectSessions;
+type BaseSessionState = SelectSessionState;
+type BaseCriterion = SelectCriteria;
+
+// User shape used in session progress (renamed/filtered from raw user row).
+export type SessionProgressUser = UserPublic;
+
+// Aggregated criterion score used when showing overall scoring breakdowns.
+export type ScoredCriterion = {
+  criterionId: BaseCriterion["id"];
+  name: BaseCriterion["name"];
+  weight: BaseCriterion["weight"];
   averageScore: number;
 };
 
+// Rated beer view-model (id renamed to beerId, plus computed fields)
 export type RatedBeers = {
-  beerId: number;
-  untappdBeerId: number;
-  name: string;
-  breweryName: string;
-  style: string;
-  label: string;
-  addedByUserId: number;
-  order: number;
+  beerId: BaseBeer["id"];
+  untappdBeerId: BaseBeer["untappdBeerId"];
+  name: BaseBeer["name"];
+  breweryName: BaseBeer["breweryName"];
+  style: BaseBeer["style"];
+  label: BaseBeer["label"];
+  addedByUserId: number | null;
+  order: number | null;
   averageScore: number;
-  criteriaBreakdown: SessionCriteria[];
+  criteriaBreakdown: ScoredCriterion[];
+  votesCount: number;
 };
 
-export type CurrentBeer = {
-  beerId: number;
-  untappdBeerId: number;
-  name: string;
-  breweryName: string;
-  style: string;
-  label: string;
-  order: number;
+export type CurrentBeer = RatedBeers & {
   currentVoteCount: number;
   totalPossibleVoteCount: number;
   userRatings: Record<number, number>;
-  addedByUserId: number;
   userHadBeer?: boolean;
 };
 
+// Aggregated session state view-model combining session + state + computed counts.
 export type SessionProgress = {
-  sessionId: number;
-  sessionName: string;
-  status: string | null | undefined;
-  createdAt: string;
-  createdBy: number;
-  joinCode: string;
+  sessionId: BaseSession["id"];
+  sessionName: BaseSession["name"];
+  status: BaseSessionState["status"] | null | undefined;
+  createdAt: BaseSession["createdAt"];
+  createdBy: BaseSession["createdBy"];
+  joinCode: BaseSession["joinCode"];
   beersTotalCount: number;
   beersRatedCount: number;
   users: SessionProgressUser[];
-  sessionCriteria: SessionCriteria[];
+  scoredCriteria: ScoredCriterion[];
   currentBeer: CurrentBeer | null;
   ratedBeers: RatedBeers[];
 };
 
-export type SessionCriterion = {
-  id: number;
-  name: string;
-  description: string;
-  weight: number;
-};
+// Raw criterion (no aggregated score) used in forms/UI; derive directly from table.
+export type Criterion = Pick<
+  BaseCriterion,
+  "id" | "name" | "description" | "weight"
+>;
 
 export const SessionStatus = {
   created: "created",

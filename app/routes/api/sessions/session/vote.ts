@@ -48,9 +48,13 @@ export async function action({ request, params }: Route.ActionArgs) {
     );
   }
 
-  for (const rating of vote.ratings) {
+  for (const r of vote.ratings) {
     const { sessionId, beerId, userId } = vote;
-    const { id: criterionId, rating: score } = rating;
+    const { criterionId, score } = r;
+
+    if (typeof criterionId !== "number") {
+      return data({ message: "Invalid criterion in vote" }, { status: 400 });
+    }
 
     try {
       await db
@@ -70,7 +74,7 @@ export async function action({ request, params }: Route.ActionArgs) {
             ratings.criterionId,
           ],
           set: {
-            score: score,
+            score,
           },
         });
     } catch (error) {

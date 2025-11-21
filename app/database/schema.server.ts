@@ -51,7 +51,9 @@ export const sessionUsers = sqliteTable(
   "session_users",
   {
     id: integer("id").primaryKey({ autoIncrement: true }),
-    sessionId: integer("session_id").references(() => sessions.id),
+    sessionId: integer("session_id")
+      .notNull()
+      .references(() => sessions.id),
     active: integer({ mode: "boolean" }).notNull().default(false),
     userId: integer("user_id")
       .notNull()
@@ -77,10 +79,16 @@ export const beers = sqliteTable("beers", {
 
 export const sessionBeers = sqliteTable("session_beers", {
   id: integer("id").primaryKey({ autoIncrement: true }),
-  sessionId: integer("session_id").references(() => sessions.id),
-  beerId: integer("beer_id").references(() => beers.id),
-  addedByUserId: integer("added_by_user_id").references(() => users.id),
-  order: integer("order"),
+  sessionId: integer("session_id")
+    .notNull()
+    .references(() => sessions.id),
+  beerId: integer("beer_id")
+    .notNull()
+    .references(() => beers.id),
+  addedByUserId: integer("added_by_user_id")
+    .notNull()
+    .references(() => users.id),
+  order: integer("order"), // Not null?
   status: text({
     enum: Object.values(SessionBeerStatus) as [string, ...string[]],
   })
@@ -101,18 +109,30 @@ export const criteria = sqliteTable("criteria", {
 
 export const sessionCriteria = sqliteTable("session_criteria", {
   id: integer("id").primaryKey({ autoIncrement: true }),
-  sessionId: integer("session_id").references(() => sessions.id),
-  criterionId: integer("criterion_id").references(() => criteria.id),
+  sessionId: integer("session_id")
+    .notNull()
+    .references(() => sessions.id),
+  criterionId: integer("criterion_id")
+    .notNull()
+    .references(() => criteria.id),
 });
 
 export const ratings = sqliteTable(
   "ratings",
   {
     id: integer("id").primaryKey({ autoIncrement: true }),
-    sessionId: integer("session_id").references(() => sessions.id),
-    beerId: integer("beer_id").references(() => beers.id),
-    userId: integer("user_id").references(() => users.id),
-    criterionId: integer("criterion_id").references(() => criteria.id),
+    sessionId: integer("session_id")
+      .notNull()
+      .references(() => sessions.id),
+    beerId: integer("beer_id")
+      .notNull()
+      .references(() => beers.id),
+    userId: integer("user_id")
+      .notNull()
+      .references(() => users.id),
+    criterionId: integer("criterion_id")
+      .notNull()
+      .references(() => criteria.id),
     score: integer("score").notNull(),
     createdAt: text("created_at")
       .notNull()
@@ -131,6 +151,7 @@ export const ratings = sqliteTable(
 export const sessionState = sqliteTable("session_state", {
   sessionId: integer("session_id")
     .primaryKey()
+    .notNull()
     .references(() => sessions.id),
   currentBeerId: integer("current_beer_id").references(() => beers.id),
   currentBeerOrder: integer("current_beer_order"),
@@ -144,7 +165,7 @@ export const sessionState = sqliteTable("session_state", {
 
 export const pendingRedirects = sqliteTable("pending_redirects", {
   email: text("email").primaryKey(),
-  redirectTo: text("redirect_to").notNull(),
+  redirectTo: text("redirect_to").notNull().notNull(),
   createdAt: text("created_at")
     .notNull()
     .default(sql`CURRENT_TIMESTAMP`),
