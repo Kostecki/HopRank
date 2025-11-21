@@ -54,5 +54,6 @@ if (!process.env.VITE) {
   httpServer.listen(PORT, () => {
     console.log();
     console.log(`WebSocket server active on: ${WS_URL}`);
+    console.log();
   });
 }

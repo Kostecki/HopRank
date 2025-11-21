@@ -10,5 +10,6 @@ echo "Running database migrations..."
 pnpm migrate
 
 # Start the application
+printf "\n\n"
 echo "Starting the server..."
 exec pnpm start
