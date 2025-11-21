@@ -1,14 +1,10 @@
 # Base for dev/build
-FROM node:25-slim AS base
+FROM node:24-slim AS base
 RUN npm install -g pnpm
 WORKDIR /app
 
-# Install all (dev) deps with build tools
+# Install all (dev) deps
 FROM base AS deps
-RUN apt-get update \
-  && apt-get install -y --no-install-recommends python3 make g++ ca-certificates \
-  && rm -rf /var/lib/apt/lists/*
-
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
 # Use a cache for the pnpm store to speed subsequent builds
@@ -47,8 +43,8 @@ FROM deps AS prod-deps
 # Prune uses the existing node_modules from deps
 RUN pnpm prune --prod
 
-# Final runtime image (Debian slim)
-FROM node:25-slim AS runner
+# Final runtime image
+FROM node:24-slim AS runner
 RUN apt-get update \
   && apt-get install -y --no-install-recommends tzdata tini ca-certificates \
   && rm -rf /var/lib/apt/lists/*
