@@ -127,6 +127,7 @@ export function UserMenu({ user }: InputProps) {
             Drizzle Studio
           </Menu.Item>
         )}
+        <Menu.Divider />
         <Menu.Item
           component="a"
           href="/auth/logout"
