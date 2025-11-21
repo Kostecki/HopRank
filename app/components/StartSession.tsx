@@ -102,13 +102,19 @@ export function StartSession({ user, session }: InputProps) {
         {(session.createdBy === user.id || user.admin) && (
           <>
             <Divider my="xs" />
-            <Button
-              onClick={handleStartSession}
-              variant="gradient"
-              loading={loading}
+            <Tooltip
+              label="Tilføj mindst én øl for at starte smagningen"
+              disabled={session.beersTotalCount > 0}
             >
-              Start Smagning
-            </Button>
+              <Button
+                onClick={handleStartSession}
+                variant="gradient"
+                loading={loading}
+                disabled={session.beersTotalCount === 0}
+              >
+                Start Smagning
+              </Button>
+            </Tooltip>
           </>
         )}
       </Stack>
