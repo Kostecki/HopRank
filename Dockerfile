@@ -4,16 +4,12 @@ FROM node:25-slim AS base
 RUN npm install -g pnpm
 
 # -----------------------------------
-# Install development dependencies
+# Install development dependencies (use workspace config)
 FROM base AS deps
 WORKDIR /app
 
-# Copy only package manifests first
-COPY package.json pnpm-lock.yaml ./
-
-# Approve build scripts for specific packages
-RUN pnpm approve-builds better-sqlite3 esbuild
-
+# Copy manifests + workspace config BEFORE pnpm commands
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile
 
 # -----------------------------------
@@ -23,8 +19,6 @@ WORKDIR /app
 
 # Copy app source folder
 COPY app/ ./app
-
-# Copy config files
 COPY public/ ./public
 COPY vite.config.ts tsconfig.json drizzle.config.ts postcss.config.cjs react-router.config.ts theme.ts ./
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
@@ -56,12 +50,13 @@ RUN pnpm run build
 
 # -----------------------------------
 # Install production-only dependencies
-FROM base AS prod-deps
+FROM node:25-alpine AS prod-deps
+RUN apk add --no-cache tzdata python3 make g++
+RUN npm install -g pnpm
 WORKDIR /app
 
-COPY package.json pnpm-lock.yaml ./
-
-RUN pnpm approve-builds better-sqlite3 esbuild
+# Copy manifests + workspace config BEFORE pnpm commands
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
 RUN pnpm install --prod --frozen-lockfile
 
@@ -69,7 +64,7 @@ RUN pnpm install --prod --frozen-lockfile
 # Final runtime image
 FROM node:25-alpine AS runner
 
-RUN apk add --no-cache tzdata python3 make g++
+RUN apk add --no-cache tzdata tini
 
 # Install pnpm globally
 RUN npm install -g pnpm
@@ -90,14 +85,6 @@ COPY start.sh ./
 
 # Make the start script executable
 RUN chmod +x start.sh
-
-# Rebuild native modules for Alpine/musl
-RUN npm rebuild better-sqlite3
-
-# Cleanup and install tini
-RUN apk add --no-cache tini \
-  && npm cache clean --force \
-  && rm -rf /root/.npm /root/.pnpm-store /tmp/*
 
 # Setup tini for correct signal handling
 ENTRYPOINT ["/sbin/tini", "--"]
