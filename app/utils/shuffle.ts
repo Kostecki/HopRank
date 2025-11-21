@@ -3,7 +3,7 @@ import { and, eq, ne } from "drizzle-orm";
 import { SessionBeerStatus } from "~/types/session";
 
 import { db } from "~/database/config.server";
-import { sessionBeers } from "~/database/schema.server";
+import { beers, sessionBeers } from "~/database/schema.server";
 
 type BeerRow = {
   id: number;
@@ -57,27 +57,28 @@ const shuffle = <T>(array: T[]) => {
  * @param sessionId - The ID of the session whose beers should be shuffled.
  */
 export const shuffleBeersInSession = async (sessionId: number) => {
-  const rows = await db.query.sessionBeers.findMany({
-    where: and(
-      eq(sessionBeers.sessionId, sessionId),
-      eq(sessionBeers.status, SessionBeerStatus.waiting)
-    ),
-    with: { beer: true },
-  });
+  const rows = await db
+    .select({
+      sessionBeer: sessionBeers,
+      beer: beers,
+    })
+    .from(sessionBeers)
+    .innerJoin(beers, eq(sessionBeers.beerId, beers.id))
+    .where(
+      and(
+        eq(sessionBeers.sessionId, sessionId),
+        eq(sessionBeers.status, SessionBeerStatus.waiting)
+      )
+    );
 
-  const complete: BeerRow[] = rows
-    .filter(
-      (row): row is typeof row & { beer: NonNullable<typeof row.beer> } =>
-        row.beer !== null
-    )
-    .map((row) => ({
-      id: row.id,
-      beerId: row.beer.id,
-      addedByUserId: row.addedByUserId,
-      breweryName: row.beer.breweryName,
-      style: row.beer.style,
-      order: row.order,
-    }));
+  const complete: BeerRow[] = rows.map(({ sessionBeer, beer }) => ({
+    id: sessionBeer.id,
+    beerId: beer.id,
+    addedByUserId: sessionBeer.addedByUserId,
+    breweryName: beer.breweryName,
+    style: beer.style,
+    order: sessionBeer.order,
+  }));
 
   let best: BeerRow[] = complete;
   let bestScore = scoreBeerOrder(complete);

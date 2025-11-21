@@ -36,7 +36,7 @@ export function Header({
   const { revalidate } = useRevalidator();
 
   useDebouncedSocketEvent(
-    ["session:users-changed"],
+    "session:users-changed",
     () => revalidate(),
     session?.sessionId
   );

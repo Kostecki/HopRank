@@ -1,5 +1,5 @@
 import { and, eq } from "drizzle-orm";
-import { data, redirect } from "react-router";
+import { data } from "react-router";
 
 import type { Route } from "./+types/leave";
 
@@ -36,7 +36,7 @@ export async function action({ request, params }: Route.ActionArgs) {
       sessionId,
     });
 
-    return redirect("/");
+    return data({ success: true });
   } catch (error) {
     console.error("Error leaving session:", error);
 

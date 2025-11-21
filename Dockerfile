@@ -1,78 +1,60 @@
-# -----------------------------------
-# Base image with pnpm installed
+# Base for dev/build
 FROM node:24-slim AS base
 RUN npm install -g pnpm
+WORKDIR /app
 
-# -----------------------------------
-# Install development dependencies
+# Install all (dev) deps
 FROM base AS deps
-WORKDIR /app
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
-# Copy only package manifests first
-COPY package.json pnpm-lock.yaml ./
-RUN pnpm install --frozen-lockfile
+# Use a cache for the pnpm store to speed subsequent builds
+RUN --mount=type=cache,target=/root/.pnpm-store \
+    pnpm install --frozen-lockfile
 
-# -----------------------------------
-# Build the app (frontend + backend)
+# Build the app (frontend + backend) with env injection
 FROM deps AS build
-WORKDIR /app
-
-# Copy app source folder
 COPY app/ ./app
-
-# Copy config files
 COPY public/ ./public
 COPY vite.config.ts tsconfig.json drizzle.config.ts postcss.config.cjs react-router.config.ts theme.ts ./
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
-# Inject public build-time environment variables
+# Build-time public env variables
 ARG VITE_WS_URL
-ENV VITE_WS_URL=$VITE_WS_URL
-
 ARG VITE_ALGOLIA_APP_ID
-ENV VITE_ALGOLIA_APP_ID=$VITE_ALGOLIA_APP_ID
-
-ARG VITE_ALGOLIA_API_KEY
-ENV VITE_ALGOLIA_API_KEY=$VITE_ALGOLIA_API_KEY
-
+ARG VITE_ALGOLIA_API_K
 ARG VITE_UMAMI_SRC_URL
-ENV VITE_UMAMI_SRC_URL=$VITE_UMAMI_SRC_URL
-
 ARG VITE_UMAMI_WEBSITE_ID
-ENV VITE_UMAMI_WEBSITE_ID=$VITE_UMAMI_WEBSITE_ID
-
 ARG VITE_LATEST_COMMIT_HASH
-ENV VITE_LATEST_COMMIT_HASH=$VITE_LATEST_COMMIT_HASH
-
 ARG VITE_LATEST_COMMIT_MESSAGE
-ENV VITE_LATEST_COMMIT_MESSAGE=$VITE_LATEST_COMMIT_MESSAGE
 
-# Build the frontend + backend
+# Export so Vite can read process.env.* during build
+ENV VITE_WS_URL=$VITE_WS_URL \
+    VITE_ALGOLIA_APP_ID=$VITE_ALGOLIA_APP_ID \
+    VITE_ALGOLIA_API_K=$VITE_ALGOLIA_API_K \
+    VITE_UMAMI_SRC_URL=$VITE_UMAMI_SRC_URL \
+    VITE_UMAMI_WEBSITE_ID=$VITE_UMAMI_WEBSITE_ID \
+    VITE_LATEST_COMMIT_HASH=$VITE_LATEST_COMMIT_HASH \
+    VITE_LATEST_COMMIT_MESSAGE=$VITE_LATEST_COMMIT_MESSAGE
+
 RUN pnpm run build
 
-# -----------------------------------
-# Install production-only dependencies
-FROM base AS prod-deps
-WORKDIR /app
+# Prune dev deps to production-only
+FROM deps AS prod-deps
+# Prune uses the existing node_modules from deps
+RUN pnpm prune --prod
 
-COPY package.json pnpm-lock.yaml ./
-RUN pnpm install --prod --frozen-lockfile
-
-# -----------------------------------
 # Final runtime image
-FROM node:23-alpine AS runner
-
-RUN apk add tzdata
-
-# Install pnpm globally
+FROM node:24-slim AS runner
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends tzdata tini ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
 RUN npm install -g pnpm
-
 WORKDIR /app
 
 # Ensure the database folder exists
 RUN mkdir -p /app/database
 
-# Copy only runtime artifacts
+# Copy runtime artifacts
 COPY --from=prod-deps /app/node_modules ./node_modules
 COPY --from=build /app/build ./build
 COPY --from=build /app/public ./public
@@ -80,26 +62,9 @@ COPY --from=build /app/app/database/migrations ./app/database/migrations
 COPY --from=build /app/drizzle.config.ts ./drizzle.config.ts
 COPY package.json pnpm-lock.yaml ./
 COPY start.sh ./
-
-# Make the start script executable
 RUN chmod +x start.sh
 
-# Rebuild native modules for Alpine/musl
-RUN npm rebuild better-sqlite3
-
-# Cleanup and install tini
-RUN apk add --no-cache tini \
-  && npm cache clean --force \
-  && rm -rf /root/.npm /root/.pnpm-store /tmp/*
-
-# Setup tini for correct signal handling
-ENTRYPOINT ["/sbin/tini", "--"]
-
-# Set environment to production
+ENTRYPOINT ["/usr/bin/tini", "--"]
 ENV NODE_ENV=production
-
-# Expose app port
 EXPOSE 3000 4000
-
-# Start the app
 CMD ["./start.sh"]

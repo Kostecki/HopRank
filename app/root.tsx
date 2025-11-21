@@ -12,7 +12,6 @@ import { Notifications } from "@mantine/notifications";
 import { useEffect } from "react";
 import {
   data,
-  isRouteErrorResponse,
   Link,
   Links,
   type LoaderFunctionArgs,
@@ -39,6 +38,8 @@ import "./app.css";
 import type { Route } from "./+types/root";
 
 import { startCron } from "~/utils/cron.server";
+
+import { normalizeRouteError } from "./utils/errors";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -156,33 +157,21 @@ export default function App() {
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-  let message = "Hov!";
-  let details = "En uventet fejl opstod";
-  let stack: string | undefined;
-
-  if (isRouteErrorResponse(error)) {
-    message = error.status === 404 ? "404" : "Noget gik galt!";
-    details =
-      error.status === 404
-        ? "Siden du leder efter findes desværre ikke."
-        : error.statusText || details;
-  } else if (import.meta.env.DEV && error && error instanceof Error) {
-    details = error.message;
-    stack = error.stack;
-  }
+  const isDev = import.meta.env.DEV;
+  const norm = normalizeRouteError(error, isDev);
 
   return (
     <Container style={{ textAlign: "center", paddingTop: 75 }} h="100vh">
       <Title order={1} c="black" mb="md">
-        {message}
+        {norm.title}
       </Title>
       <Text size="xl" c="dimmed" mb="xl">
-        {details}
+        {norm.message}
       </Text>
 
-      {stack && (
+      {norm.devStack && (
         <pre style={{ padding: "16px", overflowX: "auto" }}>
-          <Code block>{stack}</Code>
+          + <Code block>{norm.devStack}</Code>
         </pre>
       )}
 

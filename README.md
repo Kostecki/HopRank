@@ -86,7 +86,7 @@ Create a `.env` file with the required environment variables. Below is a consoli
 | `UNTAPPD_CLIENT_SECRET` | Untappd OAuth client secret |
 | `DATABASE_PATH` | Path to the SQLite database file (e.g. `./data/database.db`) |
 | `VITE_ALGOLIA_APP_ID` | Algolia application ID for beer search |
-| `VITE_ALGOLIA_API_KEY` | Algolia search-only API key |
+| `VITE_ALGOLIA_API_K` | Algolia search-only API key |
 | `VITE_WS_URL` | WebSocket endpoint used by the client (e.g. `ws://localhost:5173`) |
 
 #### Optional / Feature-Specific
@@ -122,7 +122,7 @@ UNTAPPD_CLIENT_SECRET=your_untappd_client_secret
 
 # Algolia (Beer Search)
 VITE_ALGOLIA_APP_ID=your_algolia_app_id
-VITE_ALGOLIA_API_KEY=your_algolia_api_key
+VITE_ALGOLIA_API_K=your_algolia_api_key
 
 # WebSockets
 VITE_WS_URL=ws://localhost:5173
@@ -232,7 +232,7 @@ The application supports the following production environment variables:
 ```env
 VITE_WS_URL=wss://your-domain.com
 VITE_ALGOLIA_APP_ID=production_algolia_app_id
-VITE_ALGOLIA_API_KEY=production_algolia_api_key
+VITE_ALGOLIA_API_K=production_algolia_api_key
 VITE_UMAMI_SRC_URL=analytics_url
 VITE_UMAMI_WEBSITE_ID=analytics_id
 ```

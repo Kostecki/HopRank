@@ -1,9 +1,7 @@
 import { and, eq, inArray } from "drizzle-orm";
-import { data } from "react-router";
 
 import type { SessionProgressUser } from "~/types/session";
 import { SessionBeerStatus } from "~/types/session";
-import type { Route } from "./+types/progress";
 
 import { userSessionGet } from "~/auth/users.server";
 import { db } from "~/database/config.server";
@@ -19,7 +17,6 @@ import {
 } from "~/database/schema.server";
 import type { SelectUsers } from "~/database/schema.types";
 import { getBeerInfo } from "~/utils/untappd";
-import { extractSessionId } from "~/utils/utils";
 
 const beerInfoCache = new Map<
   number,
@@ -38,18 +35,21 @@ const toSessionProgressUser = (user: SelectUsers): SessionProgressUser => ({
   lastUpdatedAt: user.lastUpdatedAt,
 });
 
-export async function getCachedBeerInfo(beerId: number, accessToken: string) {
-  if (beerInfoCache.has(beerId)) {
-    return beerInfoCache.get(beerId);
-  }
-
-  const data = await getBeerInfo(beerId, accessToken);
-  beerInfoCache.set(beerId, data);
-  return data;
+async function getCachedBeerInfo(beerId: number, accessToken: string) {
+  const cachedInfo = beerInfoCache.get(beerId);
+  if (cachedInfo) return cachedInfo;
+  const info = await getBeerInfo(beerId, accessToken);
+  beerInfoCache.set(beerId, info);
+  return info;
 }
 
-export async function loader({ request, params }: Route.LoaderArgs) {
-  const sessionId = extractSessionId(params.sessionId);
+export async function getSessionProgress({
+  request,
+  sessionId,
+}: {
+  request: Request;
+  sessionId: number;
+}) {
   const user = await userSessionGet(request);
 
   const [
@@ -81,29 +81,21 @@ export async function loader({ request, params }: Route.LoaderArgs) {
       .from(sessionBeers)
       .innerJoin(beers, eq(sessionBeers.beerId, beers.id))
       .where(eq(sessionBeers.sessionId, sessionId)),
-    db.query.ratings.findMany({
-      where: eq(ratings.sessionId, sessionId),
-    }),
-    db.query.sessions.findFirst({
-      where: eq(sessions.id, sessionId),
-    }),
+    db.query.ratings.findMany({ where: eq(ratings.sessionId, sessionId) }),
+    db.query.sessions.findFirst({ where: eq(sessions.id, sessionId) }),
   ]);
 
   if (!session) {
-    return data({ message: "Session not found" }, { status: 404 });
+    return { statusCode: 404, error: "Session not found" } as const;
   }
 
-  const userIds = activeSessionUsers.map((su) => su.userId);
-  const activeIds = userIds.filter((id): id is number => id !== null);
+  const userIds = activeSessionUsers
+    .map((su) => su.userId)
+    .filter((id): id is number => id !== null);
 
-  // Count session users from ratings for finished sessions
-  // Shows who participated in the session
-  // Get ratings, extract unique userIds, fetch those users
   const ratingsForSession = await db.query.ratings.findMany({
     where: eq(ratings.sessionId, sessionId),
-    columns: {
-      userId: true,
-    },
+    columns: { userId: true },
   });
   const uniqueUserIds = Array.from(
     new Set(
@@ -111,7 +103,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
         .map((r) => r.userId)
         .filter((id): id is number => id != null)
     )
-  ) as readonly number[];
+  );
 
   const sessionBeerRowsWithBeer = sessionBeerRows.map(
     ({ sessionBeer, beer }) => ({
@@ -131,13 +123,14 @@ export async function loader({ request, params }: Route.LoaderArgs) {
       id: row.criterion.id,
       name: row.criterion.name,
       weight: row.criterion.weight,
+      description: row.criterion.description,
     }));
 
-  // Compute overall average score per criterion across rated beers (excluding current beer)
+  // Compute overall average score per criterion across all rated beers (excluding current beer in progress)
   const ratedBeerIds = new Set(
     sessionBeerRowsWithBeer
-      .filter((sessionBeer) => sessionBeer.status === SessionBeerStatus.rated)
-      .map((sessionBeer) => sessionBeer.beer.id)
+      .filter((sb) => sb.status === SessionBeerStatus.rated)
+      .map((sb) => sb.beer.id)
   );
   const scoredCriteria = criteriaList.map((criterion) => {
     const criterionRatings = allRatings.filter(
@@ -171,21 +164,22 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     const userRatings = allRatings.filter(
       (r) => r.userId === user.id && r.beerId === state.currentBeerId
     );
-
     userRatingsById = Object.fromEntries(
       userRatings.map((r) => [r.criterionId, r.score])
     );
   }
 
-  // Build unified user list including adders to ensure podium avatar resolution
+  // Build a set of all userIds who added beers to include them in users list even if not active or voted.
   const beerAdderIds = new Set<number>(
     sessionBeerRowsWithBeer
       .map((sb) => sb.addedByUserId)
       .filter((id): id is number => typeof id === "number")
   );
+
+  // Merge active users, voting users, and beer adders to ensure avatar/name resolution
   const unionUserIds = new Set<number>([
     ...beerAdderIds,
-    ...activeIds,
+    ...userIds,
     ...uniqueUserIds,
   ]);
   const allRelevantUsersRaw = await db.query.users.findMany({
@@ -211,10 +205,8 @@ export async function loader({ request, params }: Route.LoaderArgs) {
         const avg =
           scores.reduce((sum, rating) => sum + rating.score, 0) /
           (scores.length || 1);
-
         totalWeighted += avg * criterion.weight;
         totalWeight += criterion.weight;
-
         return {
           criterionId: criterion.id,
           name: criterion.name,
@@ -227,7 +219,6 @@ export async function loader({ request, params }: Route.LoaderArgs) {
       const votesCount = new Set(
         allRatings.filter((r) => r.beerId === beer.id).map((r) => r.userId)
       ).size;
-
       return {
         beerId: beer.id,
         untappdBeerId: beer.untappdBeerId,
@@ -249,6 +240,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
         const currentBeerRatings = allRatings.filter(
           (r) => r.beerId === currentBeerRow.beer.id
         );
+
         let totalWeightedCurrent = 0;
         let totalWeightCurrent = 0;
         const criteriaBreakdown = criteriaList.map((criterion) => {
@@ -291,18 +283,18 @@ export async function loader({ request, params }: Route.LoaderArgs) {
       })()
     : null;
 
-  // Check if the current beer has already been checked in by the user
   let userHadBeer = false;
   if (currentBeerData && user?.untappd) {
     const beerInfo = await getCachedBeerInfo(
       currentBeerData.untappdBeerId,
       user.untappd.accessToken
     );
-
     userHadBeer = beerInfo?.stats?.user_count > 0;
   }
 
-  return data({
+  // (Removed inProgressSession; unified user collection used regardless of status)
+
+  return {
     sessionId,
     sessionName: session.name,
     status: state?.status,
@@ -313,7 +305,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     beersRatedCount: ratedBeers.length,
     users: allRelevantUsers,
     scoredCriteria,
-    currentBeer: { ...currentBeerData, userHadBeer },
+    currentBeer: currentBeerData ? { ...currentBeerData, userHadBeer } : null,
     ratedBeers,
-  });
+  };
 }

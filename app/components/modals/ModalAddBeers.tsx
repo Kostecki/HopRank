@@ -1,21 +1,24 @@
 import { Box, Button, Modal, Stack } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { createContext, useContext, useEffect, useState } from "react";
-import { useFetcher, useParams } from "react-router";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { useFetcher } from "react-router";
 
 import type { BeerOption } from "~/types/misc";
 import type { SessionProgress } from "~/types/session";
 
 import type {
-  BeersModel,
-  SessionBeersWithBeerModel,
+  SelectBeers,
+  SelectSessionBeersWithBeer,
 } from "~/database/schema.types";
+import { showDangerToast, showSuccessToast } from "~/utils/toasts";
 
 import BeerMultiSelect from "../BeerMultiSelect";
 
 type InputProps = {
   children: React.ReactNode;
   sessionProgress?: SessionProgress;
+  sessionBeers: SelectSessionBeersWithBeer[];
+  onBeersUpdated?: () => void;
 };
 
 const ModalAddBeersContext = createContext<() => void>(() => {});
@@ -43,53 +46,58 @@ export function ModalAddBeersTrigger({
 export default function ModalAddBeers({
   children,
   sessionProgress,
+  sessionBeers,
+  onBeersUpdated,
 }: InputProps) {
   const [opened, { open, close }] = useDisclosure(false);
   const [selectedBeers, setSelectedBeers] = useState<BeerOption[]>([]);
-  const [sessionBeers, setSessionBeers] = useState<BeersModel[]>([]);
 
-  const params = useParams();
-  const { sessionId } = params;
+  const submitFetcher = useFetcher();
 
-  const fetcher = useFetcher();
+  const sessionId = sessionProgress?.sessionId;
+
+  const selectableSessionBeers = useMemo<SelectBeers[]>(
+    () => sessionBeers.map((item) => item.beer),
+    [sessionBeers]
+  );
 
   const handleSubmit = async () => {
     if (!selectedBeers.length) return;
+    if (!sessionId) return;
 
     const formData = new FormData();
     formData.append("beers", JSON.stringify(selectedBeers));
 
-    await fetch(`/api/sessions/${sessionId}/add`, {
+    submitFetcher.submit(formData, {
       method: "POST",
-      body: formData,
+      action: `/api/sessions/${sessionId}/add`,
     });
-
-    if (sessionId) {
-      const response = await fetch(`/api/sessions/${sessionId}/list-beers`);
-      const data = (await response.json()) as SessionBeersWithBeerModel[];
-
-      const beers = data.map((item) => item.beer);
-      setSessionBeers(beers);
-    }
 
     // Clear selection and close modal
     setSelectedBeers([]);
     close();
   };
 
-  useEffect(() => {
-    const fetchBeers = async () => {
-      const response = await fetch(`/api/sessions/${sessionId}/list-beers`);
-      const data = (await response.json()) as SessionBeersWithBeerModel[];
+  const { data, state } = submitFetcher;
 
-      const beers = data.map((beer) => beer.beer);
-      setSessionBeers(beers);
+  useEffect(() => {
+    if (state !== "idle" || !data) return;
+
+    const result = data as { success?: boolean; message?: string };
+    const fetcherWithReset = submitFetcher as typeof submitFetcher & {
+      reset?: () => void;
     };
 
-    if (sessionId) {
-      fetchBeers();
+    if (result.success) {
+      showSuccessToast("Øl tilføjet til smagningen");
+      onBeersUpdated?.();
+      fetcherWithReset.reset?.();
+      return;
     }
-  }, [sessionId]);
+
+    showDangerToast(result.message ? result.message : "Kunne ikke tilføje øl");
+    fetcherWithReset.reset?.();
+  }, [state, data, submitFetcher, onBeersUpdated]);
 
   return (
     <ModalAddBeersContext.Provider value={open}>
@@ -107,7 +115,7 @@ export default function ModalAddBeers({
               <BeerMultiSelect
                 selectedBeers={selectedBeers}
                 setSelectedBeers={setSelectedBeers}
-                sessionBeers={sessionBeers}
+                sessionBeers={selectableSessionBeers}
                 currentBeerId={sessionProgress?.currentBeer?.beerId}
               />
 
@@ -116,7 +124,7 @@ export default function ModalAddBeers({
                 fullWidth
                 radius="md"
                 onClick={handleSubmit}
-                loading={fetcher.state === "submitting"}
+                loading={state !== "idle"}
                 disabled={selectedBeers.length === 0}
               >
                 Tilføj valgte øl

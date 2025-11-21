@@ -18,10 +18,10 @@ import {
 import { useForm } from "@mantine/form";
 import { useDebouncedValue } from "@mantine/hooks";
 import { IconCheck } from "@tabler/icons-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useFetcher, useParams } from "react-router";
 
-import type { SessionCriterion, SessionProgress } from "~/types/session";
+import type { Criterion, SessionProgress } from "~/types/session";
 import type { SessionUser } from "~/types/user";
 
 import { useGeolocation } from "~/hooks/useGeolocation";
@@ -35,15 +35,12 @@ import VenueSearch from "./VenueSearch";
 type InputProps = {
   user: SessionUser;
   session: SessionProgress;
-  sessionCriteria: SessionCriterion[];
+  criteria: Criterion[];
 };
 
-export default function NewVote({
-  user,
-  session,
-  sessionCriteria,
-}: InputProps) {
+export default function NewVote({ user, session, criteria }: InputProps) {
   const voteFetcher = useFetcher();
+  const untappdFetcher = useFetcher();
 
   const { sessionId } = useParams();
 
@@ -66,7 +63,7 @@ export default function NewVote({
     Object.keys(session.currentBeer?.userRatings ?? {}).length > 0;
 
   const ratingsForm = useForm({
-    initialValues: sessionCriteria.reduce(
+    initialValues: criteria.reduce(
       (acc, key) => {
         acc[key.name] =
           session.currentBeer?.userRatings?.[key.id] ?? defaultValue;
@@ -76,12 +73,12 @@ export default function NewVote({
     ),
   });
 
-  const openInApp = () => {
+  const openInApp = useCallback(() => {
     if (!checkinId) return;
 
     const checkinUrl = `untappd://checkin/${checkinId}`;
     window.open(checkinUrl, "_self");
-  };
+  }, [checkinId]);
 
   const handleSubmit = async (values: typeof ratingsForm.values) => {
     setIsSubmitting(true);
@@ -108,35 +105,20 @@ export default function NewVote({
           formDataUntappd.append("rating", calculatedTotalScore.toString());
         }
 
-        const checkInResponse = await fetch("/api/untappd/check-in", {
+        untappdFetcher.submit(formDataUntappd, {
           method: "POST",
-          body: formDataUntappd,
+          encType: "multipart/form-data",
+          action: "/api/untappd/check-in",
         });
-
-        const checkInData = await checkInResponse.json();
-
-        if (checkInResponse.ok && checkInData.success) {
-          setCheckinId(checkInData.data.checkinId);
-          setEnableUntappdCheckin(false);
-          setComment("");
-
-          if (openInUntappd) {
-            openInApp();
-          }
-        } else {
-          showDangerToast("Untappd check-in fejlede");
-        }
       }
 
       const vote = {
         sessionId: Number(sessionId),
         userId: user.id,
         beerId: session.currentBeer?.beerId,
-        untappdBeerId: session.currentBeer?.untappdBeerId,
-        ratings: Object.entries(values).map(([name, rating]) => ({
-          id: sessionCriteria.find((r) => r.name === name)?.id,
-          name,
-          rating,
+        ratings: Object.entries(values).map(([name, score]) => ({
+          criterionId: criteria.find((r) => r.name === name)?.id as number,
+          score,
         })),
       };
 
@@ -153,8 +135,8 @@ export default function NewVote({
   };
 
   const calculatedTotalScore = useMemo(() => {
-    return calculateVoteScore(ratingsForm.values, sessionCriteria);
-  }, [ratingsForm.values, sessionCriteria]);
+    return calculateVoteScore(ratingsForm.values, criteria);
+  }, [ratingsForm.values, criteria]);
   const [debouncedTotalScore] = useDebouncedValue(calculatedTotalScore, 200);
 
   useEffect(() => {
@@ -170,11 +152,41 @@ export default function NewVote({
     setIsMobile(isMobileOrTablet());
   }, []);
 
+  useEffect(() => {
+    if (untappdFetcher.state !== "idle") return;
+
+    const responseData = untappdFetcher.data as
+      | { success: true; data: { checkinId: number } }
+      | { message?: string }
+      | undefined;
+
+    if (!responseData) {
+      return;
+    }
+
+    if ("success" in responseData && responseData.success) {
+      setCheckinId(responseData.data.checkinId);
+      setEnableUntappdCheckin(false);
+      setComment("");
+
+      if (openInUntappd) {
+        openInApp();
+      }
+      return;
+    }
+
+    const errorMessage =
+      "message" in responseData
+        ? (responseData.message ?? "Untappd check-in fejlede")
+        : "Untappd check-in fejlede";
+    showDangerToast(errorMessage);
+  }, [untappdFetcher.state, untappdFetcher.data, openInUntappd, openInApp]);
+
   return (
     <Paper withBorder radius="md" p="md" pt="lg" mt={-10}>
       <form onSubmit={ratingsForm.onSubmit(handleSubmit)}>
         <Stack>
-          {sessionCriteria.map((criterion) => (
+          {criteria.map((criterion) => (
             <RatingSlider
               key={criterion.id}
               form={ratingsForm}

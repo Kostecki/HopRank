@@ -1,5 +1,6 @@
 import { AppShell, Container } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
+import { eq } from "drizzle-orm";
 import { Outlet, useLoaderData } from "react-router";
 
 import type { SessionProgress } from "~/types/session";
@@ -9,7 +10,10 @@ import { userSessionGet } from "~/auth/users.server";
 import { Header } from "~/components/Header";
 import Navbar from "~/components/Navbar";
 import { SocketProvider } from "~/context/SocketContext";
-import type { SessionBeersWithBeerModel } from "~/database/schema.types";
+import { db } from "~/database/config.server";
+import { beers, sessionBeers } from "~/database/schema.server";
+import type { SelectSessionBeersWithBeer } from "~/database/schema.types";
+import { getSessionProgress } from "~/database/utils/getSessionProgress.server";
 import { extractSessionId } from "~/utils/utils";
 
 export async function loader({ params, request }: Route.LoaderArgs) {
@@ -20,28 +24,35 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 
   const user = await userSessionGet(request);
 
-  const url = new URL(request.url);
-  const origin = `${url.protocol}//${url.host}`;
-
-  let sessionProgress = null;
-  let sessionBeers: SessionBeersWithBeerModel[] = [];
+  let sessionProgress: SessionProgress | null = null;
+  let sessionBeersList: SelectSessionBeersWithBeer[] = [];
   if (sessionId) {
-    const sessionProgressResponse = await fetch(
-      `${origin}/api/sessions/${sessionId}/progress`
-    );
-    sessionProgress = (await sessionProgressResponse.json()) as SessionProgress;
+    const [sessionProgressResult, sessionBeersResult] = await Promise.all([
+      getSessionProgress({ request, sessionId }),
+      db
+        .select({
+          sessionBeer: sessionBeers,
+          beer: beers,
+        })
+        .from(sessionBeers)
+        .innerJoin(beers, eq(sessionBeers.beerId, beers.id))
+        .where(eq(sessionBeers.sessionId, sessionId)),
+    ]);
 
-    const beersResponse = await fetch(
-      `${origin}/api/sessions/${sessionId}/list-beers`
-    );
-    sessionBeers = (await beersResponse.json()) as SessionBeersWithBeerModel[];
+    if (!("statusCode" in sessionProgressResult)) {
+      sessionProgress = sessionProgressResult;
+    }
+
+    sessionBeersList = sessionBeersResult.map(({ sessionBeer, beer }) => ({
+      ...sessionBeer,
+      beer,
+    }));
   }
 
   return {
-    sessionId,
     user,
     sessionProgress,
-    sessionBeers,
+    sessionBeers: sessionBeersList,
   };
 }
 

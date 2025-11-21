@@ -1,4 +1,4 @@
-import type { InferSelectModel } from "drizzle-orm";
+import type { InferInsertModel, InferSelectModel } from "drizzle-orm";
 
 import type {
   beers,
@@ -13,25 +13,35 @@ import type {
   users,
 } from "./schema.server";
 
-export type UsersModel = InferSelectModel<typeof users>;
+export type SelectUsers = InferSelectModel<typeof users>;
+export type InsertUsers = InferInsertModel<typeof users>;
 
-export type SessionsModel = InferSelectModel<typeof sessions>;
+export type SelectSessions = InferSelectModel<typeof sessions>;
+export type InsertSessions = InferInsertModel<typeof sessions>;
 
-export type SessionUsersModel = InferSelectModel<typeof sessionUsers>;
+export type SelectSessionUsers = InferSelectModel<typeof sessionUsers>;
+export type InsertSessionUsers = InferInsertModel<typeof sessionUsers>;
 
-export type BeersModel = InferSelectModel<typeof beers>;
+export type SelectBeers = InferSelectModel<typeof beers>;
+export type InsertBeers = InferInsertModel<typeof beers>;
 
-export type SessionBeersModel = InferSelectModel<typeof sessionBeers>;
-export type SessionBeersWithBeerModel = SessionBeersModel & {
-  beer: BeersModel;
+export type SelectSessionBeers = InferSelectModel<typeof sessionBeers>;
+export type SelectSessionBeersWithBeer = SelectSessionBeers & {
+  beer: SelectBeers;
 };
+export type InsertSessionBeers = InferInsertModel<typeof sessionBeers>;
 
-export type CriteriaModel = InferSelectModel<typeof criteria>;
+export type SelectCriteria = InferSelectModel<typeof criteria>;
+export type InsertCriteria = InferInsertModel<typeof criteria>;
 
-export type SessionCriteriaModel = InferSelectModel<typeof sessionCriteria>;
+export type SelectSessionCriteria = InferSelectModel<typeof sessionCriteria>;
+export type InsertSessionCriteria = InferInsertModel<typeof sessionCriteria>;
 
-export type RatingsModel = InferSelectModel<typeof ratings>;
+export type SelectRatings = InferSelectModel<typeof ratings>;
+export type InsertRatings = InferInsertModel<typeof ratings>;
 
-export type SessionStateModel = InferSelectModel<typeof sessionState>;
+export type SelectSessionState = InferSelectModel<typeof sessionState>;
+export type InsertSessionState = InferInsertModel<typeof sessionState>;
 
-export type PendingRedirectsModel = InferSelectModel<typeof pendingRedirects>;
+export type SelectPendingRedirects = InferSelectModel<typeof pendingRedirects>;
+export type InsertPendingRedirects = InferInsertModel<typeof pendingRedirects>;

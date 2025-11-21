@@ -9,6 +9,7 @@ import {
   Text,
 } from "@mantine/core";
 import { useEffect, useState } from "react";
+import { useFetcher } from "react-router";
 
 import type { RatedBeers } from "~/types/session";
 import type { ScrapedBeer } from "~/types/untappd";
@@ -25,22 +26,25 @@ export function BeerCardDetails({ beer }: InputProps) {
 
   const [fetching, setFetching] = useState(true);
   const [beerDetails, setBeerDetails] = useState<ScrapedBeer>();
+  const beerFetcher = useFetcher();
 
   useEffect(() => {
-    const fetchBeerDetails = async () => {
-      setFetching(true);
+    if (!untappdBeerId) return;
 
-      const beerDetails = await fetch(`/api/untappd/beer/${untappdBeerId}`);
-      const data = (await beerDetails.json()) as ScrapedBeer;
+    setFetching(true);
+    beerFetcher.load(`/api/untappd/beer/${untappdBeerId}`);
+  }, [beerFetcher, untappdBeerId]);
 
-      setTimeout(() => {
-        setBeerDetails(data);
-        setFetching(false);
-      }, 2000);
-    };
+  useEffect(() => {
+    if (beerFetcher.state !== "idle" || !beerFetcher.data) {
+      return;
+    }
 
-    fetchBeerDetails();
-  }, [untappdBeerId]);
+    setTimeout(() => {
+      setBeerDetails(beerFetcher.data as ScrapedBeer);
+      setFetching(false);
+    }, 2000);
+  }, [beerFetcher.state, beerFetcher.data]);
 
   return (
     <Paper withBorder radius="md" p="md" pt="lg" mt={-10}>
@@ -51,49 +55,61 @@ export function BeerCardDetails({ beer }: InputProps) {
           overlayProps={{ radius: "sm", blur: 2 }}
           loaderProps={{ color: "slateIndigo" }}
         />
-        <SimpleGrid cols={criteriaBreakdown.length}>
-          {criteriaBreakdown.map(({ name, averageScore: score }) => (
-            <Stack gap={0} align="center" key={name}>
-              <Text fw={400}>{name}</Text>
-              <Text fw="bold">{displayScore(score)}</Text>
-            </Stack>
-          ))}
+        <SimpleGrid cols={1}>
+          <Text c="dimmed" size="xs" fs="italic">
+            Smagning
+          </Text>
+
+          <SimpleGrid cols={criteriaBreakdown.length}>
+            {criteriaBreakdown.map(({ name, averageScore: score }) => (
+              <Stack gap={0} align="center" key={name}>
+                <Text fw={400}>{name}</Text>
+                <Text fw="bold">{displayScore(score)}</Text>
+              </Stack>
+            ))}
+          </SimpleGrid>
         </SimpleGrid>
 
         <Divider opacity={0.3} my="md" />
 
-        <SimpleGrid cols={3}>
-          <Box>
-            <Text ta="center" fw={400}>
-              Checkins
-            </Text>
-            <Text ta="center" fw="bold">
-              {formatCount(beerDetails?.checkins?.total)}
-            </Text>
-          </Box>
-          <Box>
-            <Text ta="center" fw={400}>
-              Unikke
-            </Text>
-            <Text ta="center" fw="bold">
-              {formatCount(beerDetails?.checkins?.unique)}
-            </Text>
-          </Box>
-          <Box>
-            <Text ta="center" fw={400}>
-              Rating
-            </Text>
-            <Text ta="center" fw="bold">
-              {beerDetails?.rating.value ? (
-                <>
-                  {displayScore(beerDetails.rating.value)} (
-                  {formatCount(beerDetails.rating.count)})
-                </>
-              ) : (
-                "-"
-              )}
-            </Text>
-          </Box>
+        <SimpleGrid cols={1}>
+          <Text c="dimmed" size="xs" fs="italic">
+            Untappd
+          </Text>
+
+          <SimpleGrid cols={3}>
+            <Box>
+              <Text ta="center" fw={400}>
+                Checkins
+              </Text>
+              <Text ta="center" fw="bold">
+                {formatCount(beerDetails?.checkins?.total)}
+              </Text>
+            </Box>
+            <Box>
+              <Text ta="center" fw={400}>
+                Unikke
+              </Text>
+              <Text ta="center" fw="bold">
+                {formatCount(beerDetails?.checkins?.unique)}
+              </Text>
+            </Box>
+            <Box>
+              <Text ta="center" fw={400}>
+                Rating
+              </Text>
+              <Text ta="center" fw="bold">
+                {beerDetails?.rating.value ? (
+                  <>
+                    {displayScore(beerDetails.rating.value)} (
+                    {formatCount(beerDetails.rating.count)})
+                  </>
+                ) : (
+                  "-"
+                )}
+              </Text>
+            </Box>
+          </SimpleGrid>
         </SimpleGrid>
       </Box>
 

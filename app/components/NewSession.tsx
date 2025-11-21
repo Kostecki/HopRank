@@ -14,13 +14,13 @@ import { useFetcher } from "react-router";
 
 import type { BeerOption } from "~/types/misc";
 
-import type { CriteriaModel } from "~/database/schema.types";
+import type { SelectCriteria } from "~/database/schema.types";
 
 import BeerMultiSelect from "./BeerMultiSelect";
 import SelectRatings from "./SelectRatings";
 
 type InputProps = {
-  criteria: CriteriaModel[];
+  criteria: SelectCriteria[];
 } & BoxProps;
 
 export const criteriaGroups = [

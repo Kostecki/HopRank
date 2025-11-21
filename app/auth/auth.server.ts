@@ -4,6 +4,7 @@ import { TOTPStrategy } from "remix-auth-totp";
 
 import type { SessionUser } from "~/types/user";
 
+import type { SelectUsers } from "~/database/schema.types";
 import { findOrCreateUserByEmail } from "~/database/utils/findOrCreateUserByEmail.server";
 import { invariant } from "~/utils/invariant";
 import { isSafeRedirect } from "~/utils/utils";
@@ -18,6 +19,18 @@ export const authenticator = new Authenticator<SessionUser>();
 export const isUntappdUser = (user: SessionUser) => {
   return !!user.untappd;
 };
+
+const toSessionUserBase = (user: SelectUsers) => ({
+  id: user.id,
+  email: user.email,
+  admin: user.admin,
+  name: user.name,
+  untappdId: user.untappdId,
+  username: user.username,
+  avatarURL: user.avatarURL,
+  createdAt: user.createdAt,
+  lastUpdatedAt: user.lastUpdatedAt,
+});
 
 const commitSessionUser = async (request: Request, user: SessionUser) => {
   const session = await getSession(request.headers.get("Cookie"));
@@ -78,12 +91,7 @@ authenticator.use(
     },
     async ({ email, request }) => {
       const user = await findOrCreateUserByEmail(email);
-      const sessionUser = {
-        id: user.id,
-        email: user.email,
-        admin: user.admin,
-        name: user.name,
-      };
+      const sessionUser = toSessionUserBase(user);
 
       return await commitSessionUser(request, sessionUser);
     }
@@ -116,9 +124,7 @@ authenticator.use(
         avatar
       );
       const sessionUser = {
-        id: user.id,
-        email: user.email,
-        admin: user.admin,
+        ...toSessionUserBase(user),
         untappd: {
           id: untappdId,
           username: userName,

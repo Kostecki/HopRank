@@ -1,8 +1,10 @@
 import { Accordion } from "@mantine/core";
 import { eq } from "drizzle-orm";
+import { useMemo } from "react";
 import { redirect, useLoaderData, useRevalidator } from "react-router";
 
-import { type SessionProgress, SessionStatus } from "~/types/session";
+import { SessionStatus } from "~/types/session";
+import type { SocketEvent } from "~/types/websocket";
 import type { Route } from "./+types/sessionId";
 
 import { userSessionGet } from "~/auth/users.server";
@@ -12,8 +14,11 @@ import EmptySession from "~/components/EmptySession";
 import { StartSession } from "~/components/StartSession";
 import UpNext from "~/components/UpNext";
 import { db } from "~/database/config.server";
-import { sessionCriteria } from "~/database/schema.server";
+import { beers, sessionBeers, sessionCriteria } from "~/database/schema.server";
+import type { SelectBeers } from "~/database/schema.types";
+import { getSessionProgress } from "~/database/utils/getSessionProgress.server";
 import { useDebouncedSocketEvent } from "~/hooks/useDebouncedSocketEvent";
+import { ERROR_CODES, errorJson } from "~/utils/errors";
 import { extractSessionId, getPageTitle } from "~/utils/utils";
 
 export function meta() {
@@ -32,27 +37,36 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     return redirect("/auth/login");
   }
 
-  const url = new URL(request.url);
-  const origin = `${url.protocol}//${url.host}`;
-  const progressResponse = await fetch(
-    `${origin}/api/sessions/${sessionId}/progress`,
-    {
-      // TODO: Do this in a better way?
-      headers: {
-        cookie: request.headers.get("cookie") || "",
-      },
-    }
-  );
-  const sessionProgress = (await progressResponse.json()) as SessionProgress;
+  const sessionProgress = await getSessionProgress({ request, sessionId });
+  // Handle not-found shape without assuming the property exists on the success type
+  if ("statusCode" in sessionProgress && sessionProgress.statusCode === 404) {
+    throw errorJson(404, { errorCode: ERROR_CODES.SESSION_NOT_FOUND });
+  }
+
   if (sessionProgress.status === SessionStatus.finished) {
     return redirect("view");
   }
 
-  const sessionCriteriaWithDetails = await db.query.sessionCriteria.findMany({
-    where: eq(sessionCriteria.sessionId, sessionId),
-    with: { criterion: true },
-  });
-  const sessionCriteriaSimple = sessionCriteriaWithDetails
+  const [criteriaWithDetails, sessionBeerRows] = await Promise.all([
+    db.query.sessionCriteria.findMany({
+      where: eq(sessionCriteria.sessionId, sessionId),
+      with: { criterion: true },
+    }),
+    db
+      .select({
+        sessionBeer: sessionBeers,
+        beer: beers,
+      })
+      .from(sessionBeers)
+      .innerJoin(beers, eq(sessionBeers.beerId, beers.id))
+      .where(eq(sessionBeers.sessionId, sessionId)),
+  ]);
+
+  const sessionBeersList: SelectBeers[] = sessionBeerRows.map(
+    ({ beer }) => beer
+  );
+
+  const criteria = criteriaWithDetails
     .filter(
       (
         row
@@ -69,15 +83,27 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   return {
     user,
     sessionProgress,
-    sessionCriteriaSimple,
+    criteria,
+    sessionBeers: sessionBeersList,
   };
 }
 
 export default function Session() {
-  const { user, sessionProgress, sessionCriteriaSimple } =
+  const { user, sessionProgress, criteria, sessionBeers } =
     useLoaderData<typeof loader>();
 
   const { revalidate } = useRevalidator();
+
+  const socketEvents = useMemo<SocketEvent[]>(
+    () => [
+      "sessions:created",
+      "session:started",
+      "session:users-changed",
+      "session:beer-changed",
+      "session:vote",
+    ],
+    []
+  );
 
   const hasCurrentBeer =
     sessionProgress.status === SessionStatus.active &&
@@ -91,20 +117,16 @@ export default function Session() {
     !hasCurrentBeer;
 
   useDebouncedSocketEvent(
-    [
-      "sessions:created",
-      "session:started",
-      "session:users-changed",
-      "session:beer-changed",
-      "session:vote",
-    ],
+    socketEvents,
     async () => revalidate(),
     sessionProgress.sessionId
   );
 
   return (
     <>
-      {emptySession && <EmptySession />}
+      {emptySession && (
+        <EmptySession sessionBeers={sessionBeers} onBeersUpdated={revalidate} />
+      )}
 
       {!emptySession && sessionProgress.status === SessionStatus.created && (
         <StartSession user={user} session={sessionProgress} />
@@ -114,7 +136,7 @@ export default function Session() {
         <UpNext
           user={user}
           session={sessionProgress}
-          sessionCriteria={sessionCriteriaSimple}
+          criteria={criteria}
           mb="xl"
         />
       )}

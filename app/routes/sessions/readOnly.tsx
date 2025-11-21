@@ -1,12 +1,13 @@
 import { Box, Flex, Grid, Group, Paper, Table, Text } from "@mantine/core";
+import { useMemo } from "react";
 import { useLoaderData, useRevalidator } from "react-router";
 
-import type { SessionProgress, SessionProgressUser } from "~/types/session";
+import type { SessionProgress } from "~/types/session";
+import type { SocketEvent } from "~/types/websocket";
 import type { Route } from "./+types/readOnly";
 
 import MedalPodium from "~/components/MedalPodium";
-import { db } from "~/database/config.server";
-import { users } from "~/database/schema.server";
+import { getSessionProgress } from "~/database/utils/getSessionProgress.server";
 import { useDebouncedSocketEvent } from "~/hooks/useDebouncedSocketEvent";
 import { createBeerLink } from "~/utils/untappd";
 import { extractSessionId, getPageTitle } from "~/utils/utils";
@@ -21,29 +22,19 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   }
 
   const sessionId = extractSessionId(params.sessionId);
+  const sessionProgressResult = await getSessionProgress({
+    request,
+    sessionId,
+  });
 
-  const url = new URL(request.url);
-  const origin = `${url.protocol}//${url.host}`;
-  const progressResponse = await fetch(
-    `${origin}/api/sessions/${sessionId}/progress`,
-    {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }
-  );
-
-  if (!progressResponse.ok) {
-    throw new Response("Failed to fetch session progress", { status: 500 });
+  if ("statusCode" in sessionProgressResult) {
+    throw new Response("Session not found", {
+      status: sessionProgressResult.statusCode ?? 404,
+    });
   }
 
-  const sessionProgress = (await progressResponse.json()) as SessionProgress;
-  const allUsers = await db.select().from(users);
-
-  return {
-    sessionProgress,
-    allUsers: allUsers as SessionProgressUser[],
-  };
+  const sessionProgress: SessionProgress = sessionProgressResult;
+  return { sessionProgress };
 }
 
 const viewBeerUntappd = (untappdBeerId: number) => {
@@ -52,17 +43,22 @@ const viewBeerUntappd = (untappdBeerId: number) => {
 };
 
 export default function SessionView() {
-  const { sessionProgress, allUsers } = useLoaderData<typeof loader>();
+  const { sessionProgress } = useLoaderData<typeof loader>();
 
   const { revalidate } = useRevalidator();
 
-  useDebouncedSocketEvent(
-    [
+  const socketEvents = useMemo<SocketEvent[]>(
+    () => [
       "sessions:created",
       "session:users-changed",
       "session:beer-changed",
       "session:vote",
     ],
+    []
+  );
+
+  useDebouncedSocketEvent(
+    socketEvents,
     async () => revalidate(),
     sessionProgress.sessionId
   );
@@ -70,7 +66,9 @@ export default function SessionView() {
   const nonPodiumBeers = sessionProgress.ratedBeers.slice(3);
 
   const tableRows = nonPodiumBeers.map((beer, index) => {
-    const addedBy = allUsers.find((user) => user.id === beer.addedByUserId);
+    const beerAddedByUserId = beer.addedByUserId;
+    const user = sessionProgress.users.find((u) => u.id === beerAddedByUserId);
+    const addedByName = user?.name || "";
 
     return (
       <Table.Tr
@@ -80,7 +78,7 @@ export default function SessionView() {
         <Table.Td ta="center">{index + 4}</Table.Td>
         <Table.Td ta="center">{beer.name}</Table.Td>
         <Table.Td ta="center">{beer.breweryName}</Table.Td>
-        <Table.Td ta="center">{addedBy?.name}</Table.Td>
+        <Table.Td ta="center">{addedByName}</Table.Td>
         <Table.Td ta="center">{beer.averageScore}</Table.Td>
       </Table.Tr>
     );
@@ -90,7 +88,7 @@ export default function SessionView() {
 
   return (
     <Box data-breakout m="md" p="md">
-      <MedalPodium session={sessionProgress} users={allUsers} />
+      <MedalPodium session={sessionProgress} />
 
       {!hasRatings && (
         <Flex justify="center" mt="xl">

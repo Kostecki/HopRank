@@ -1,1 +1,0 @@
-ALTER TABLE `beers` RENAME COLUMN "label_image" TO "label";

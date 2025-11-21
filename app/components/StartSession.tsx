@@ -9,7 +9,8 @@ import {
   Tooltip,
 } from "@mantine/core";
 import { AnimatePresence, motion } from "motion/react";
-import { useState } from "react";
+import { useEffect } from "react";
+import { useFetcher } from "react-router";
 
 import type { SessionProgress } from "~/types/session";
 import type { SessionUser } from "~/types/user";
@@ -24,28 +25,37 @@ type InputProps = {
 };
 
 export function StartSession({ user, session }: InputProps) {
-  const [loading, setLoading] = useState(false);
+  const startFetcher = useFetcher();
 
   const handleStartSession = async () => {
-    setLoading(true);
-
-    try {
-      const response = await fetch(`/api/sessions/${session.sessionId}/start`, {
-        method: "POST",
-      });
-      const result = await response.json();
-
-      if (response.ok) {
-        showSuccessToast("Smagning startet");
-      } else {
-        showDangerToast(result.message);
-      }
-    } catch (error) {
-      showDangerToast(String(error));
-    } finally {
-      setLoading(false);
-    }
+    startFetcher.submit(null, {
+      method: "POST",
+      action: `/api/sessions/${session.sessionId}/start`,
+    });
   };
+
+  useEffect(() => {
+    if (startFetcher.state !== "idle" || !startFetcher.data) {
+      return;
+    }
+
+    const result = startFetcher.data as
+      | { success: true }
+      | { message?: string };
+
+    if ("success" in result && result.success) {
+      showSuccessToast("Smagning startet");
+      return;
+    }
+
+    const errorMessage =
+      "message" in result
+        ? (result.message ?? "Der skete en fejl")
+        : "Der skete en fejl";
+    showDangerToast(errorMessage);
+  }, [startFetcher.state, startFetcher.data]);
+
+  const isSubmitting = startFetcher.state !== "idle";
 
   return (
     <Card shadow="lg" padding="lg" radius="md" ta="center">
@@ -102,13 +112,19 @@ export function StartSession({ user, session }: InputProps) {
         {(session.createdBy === user.id || user.admin) && (
           <>
             <Divider my="xs" />
-            <Button
-              onClick={handleStartSession}
-              variant="gradient"
-              loading={loading}
+            <Tooltip
+              label="Tilføj mindst én øl for at starte smagningen"
+              disabled={session.beersTotalCount > 0}
             >
-              Start Smagning
-            </Button>
+              <Button
+                onClick={handleStartSession}
+                variant="gradient"
+                loading={isSubmitting}
+                disabled={session.beersTotalCount === 0}
+              >
+                Start Smagning
+              </Button>
+            </Tooltip>
           </>
         )}
       </Stack>
