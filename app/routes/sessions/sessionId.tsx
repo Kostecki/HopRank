@@ -1,8 +1,10 @@
 import { Accordion } from "@mantine/core";
 import { eq } from "drizzle-orm";
+import { useMemo } from "react";
 import { redirect, useLoaderData, useRevalidator } from "react-router";
 
 import { SessionStatus } from "~/types/session";
+import type { SocketEvent } from "~/types/websocket";
 import type { Route } from "./+types/sessionId";
 
 import { userSessionGet } from "~/auth/users.server";
@@ -74,6 +76,17 @@ export default function Session() {
 
   const { revalidate } = useRevalidator();
 
+  const socketEvents = useMemo<SocketEvent[]>(
+    () => [
+      "sessions:created",
+      "session:started",
+      "session:users-changed",
+      "session:beer-changed",
+      "session:vote",
+    ],
+    []
+  );
+
   const hasCurrentBeer =
     sessionProgress.status === SessionStatus.active &&
     sessionProgress.currentBeer &&
@@ -86,13 +99,7 @@ export default function Session() {
     !hasCurrentBeer;
 
   useDebouncedSocketEvent(
-    [
-      "sessions:created",
-      "session:started",
-      "session:users-changed",
-      "session:beer-changed",
-      "session:vote",
-    ],
+    socketEvents,
     async () => revalidate(),
     sessionProgress.sessionId
   );

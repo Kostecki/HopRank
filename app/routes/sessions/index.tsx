@@ -1,8 +1,10 @@
 import { Paper } from "@mantine/core";
 import { and, eq } from "drizzle-orm";
+import { useMemo } from "react";
 import { redirect, useLoaderData, useRevalidator } from "react-router";
 
 import { SessionStatus } from "~/types/session";
+import type { SocketEvent } from "~/types/websocket";
 import type { Route } from "./+types";
 
 import { userSessionGet } from "~/auth/users.server";
@@ -95,20 +97,22 @@ export default function Sessions() {
     )
     .map((s) => s.id);
 
-  useDebouncedSocketEvent(
-    [
+  const socketEvents = useMemo<SocketEvent[]>(
+    () => [
       "sessions:created",
       "sessions:deleted",
       "sessions:users-changed",
       "sessions:beer-changed",
     ],
-    (payload: { sessionId: number }) => {
-      // Revalidate if event is global or if the sessionId is in the active sessions
-      if (!payload || activeUserSessionIds.includes(payload.sessionId)) {
-        revalidate();
-      }
-    }
+    []
   );
+
+  useDebouncedSocketEvent(socketEvents, (payload?: { sessionId: number }) => {
+    // Revalidate if event is global or if the sessionId is in the active sessions
+    if (!payload || activeUserSessionIds.includes(payload.sessionId)) {
+      revalidate();
+    }
+  });
 
   const inProgressSessions = sessionSummaries.filter(
     (s) =>

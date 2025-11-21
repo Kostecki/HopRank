@@ -22,12 +22,12 @@ io.on("connection", (socket) => {
   socket.on("join-session", (id) => {
     socket.join(`session:${id}`);
     console.log();
-    console.log(`Client ${socket.id} joined session:${id}`);
+    console.log(`Client ${socket.id} joined session: ${id}`);
   });
 
   socket.on("leave-session", (id) => {
     socket.leave(`session:${id}`);
-    console.log(`Client ${socket.id} left session:${id}`);
+    console.log(`Client ${socket.id} left session: ${id}`);
   });
 
   socket.on("disconnect", (reason) => {

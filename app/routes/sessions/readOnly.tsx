@@ -1,7 +1,9 @@
 import { Box, Flex, Grid, Group, Paper, Table, Text } from "@mantine/core";
+import { useMemo } from "react";
 import { useLoaderData, useRevalidator } from "react-router";
 
 import type { SessionProgress } from "~/types/session";
+import type { SocketEvent } from "~/types/websocket";
 import type { Route } from "./+types/readOnly";
 
 import MedalPodium from "~/components/MedalPodium";
@@ -49,13 +51,18 @@ export default function SessionView() {
 
   const { revalidate } = useRevalidator();
 
-  useDebouncedSocketEvent(
-    [
+  const socketEvents = useMemo<SocketEvent[]>(
+    () => [
       "sessions:created",
       "session:users-changed",
       "session:beer-changed",
       "session:vote",
     ],
+    []
+  );
+
+  useDebouncedSocketEvent(
+    socketEvents,
     async () => revalidate(),
     sessionProgress.sessionId
   );
