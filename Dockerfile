@@ -10,6 +10,10 @@ WORKDIR /app
 
 # Copy only package manifests first
 COPY package.json pnpm-lock.yaml ./
+
+# Approve build scripts for specific packages
+RUN pnpm approve-builds better-sqlite3 esbuild
+
 RUN pnpm install --frozen-lockfile
 
 # -----------------------------------
@@ -56,6 +60,9 @@ FROM base AS prod-deps
 WORKDIR /app
 
 COPY package.json pnpm-lock.yaml ./
+
+RUN pnpm approve-builds better-sqlite3 esbuild
+
 RUN pnpm install --prod --frozen-lockfile
 
 # -----------------------------------
