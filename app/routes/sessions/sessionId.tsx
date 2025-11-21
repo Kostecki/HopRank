@@ -15,6 +15,7 @@ import { db } from "~/database/config.server";
 import { sessionCriteria } from "~/database/schema.server";
 import { getSessionProgress } from "~/database/utils/getSessionProgress.server";
 import { useDebouncedSocketEvent } from "~/hooks/useDebouncedSocketEvent";
+import { ERROR_CODES, errorJson } from "~/utils/errors";
 import { extractSessionId, getPageTitle } from "~/utils/utils";
 
 export function meta() {
@@ -34,8 +35,9 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   }
 
   const sessionProgress = await getSessionProgress({ request, sessionId });
-  if (sessionProgress.statusCode === 404) {
-    return redirect("/sessions");
+  // Handle not-found shape without assuming the property exists on the success type
+  if ("statusCode" in sessionProgress && sessionProgress.statusCode === 404) {
+    throw errorJson(404, { errorCode: ERROR_CODES.SESSION_NOT_FOUND });
   }
 
   if (sessionProgress.status === SessionStatus.finished) {
