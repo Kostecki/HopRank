@@ -81,12 +81,6 @@ export default function SessionsTable({
     >
       <Table.Td tt="capitalize">{session.name}</Table.Td>
 
-      {!readOnly && stateActive && (
-        <Table.Td ta="center" lts={2}>
-          {session.joinCode}
-        </Table.Td>
-      )}
-
       {stateActive ? (
         <Table.Td ta="center">{session.participants}</Table.Td>
       ) : (
@@ -138,9 +132,6 @@ export default function SessionsTable({
         <Table.Thead>
           <Table.Tr>
             <Table.Th>Smagning</Table.Th>
-            {!readOnly && stateActive && (
-              <Table.Th ta="center">Pinkode</Table.Th>
-            )}
             <Table.Th ta="center">
               {stateActive ? "Deltagere" : "Oprettet"}
             </Table.Th>
