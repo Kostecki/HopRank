@@ -62,7 +62,7 @@ RUN pnpm install --prod --frozen-lockfile
 # Final runtime image
 FROM node:25-alpine AS runner
 
-RUN apk add tzdata
+RUN apk add --no-cache tzdata python3 make g++
 
 # Install pnpm globally
 RUN npm install -g pnpm
