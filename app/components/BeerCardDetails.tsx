@@ -51,49 +51,61 @@ export function BeerCardDetails({ beer }: InputProps) {
           overlayProps={{ radius: "sm", blur: 2 }}
           loaderProps={{ color: "slateIndigo" }}
         />
-        <SimpleGrid cols={criteriaBreakdown.length}>
-          {criteriaBreakdown.map(({ name, averageScore: score }) => (
-            <Stack gap={0} align="center" key={name}>
-              <Text fw={400}>{name}</Text>
-              <Text fw="bold">{displayScore(score)}</Text>
-            </Stack>
-          ))}
+        <SimpleGrid cols={1}>
+          <Text c="dimmed" size="xs" fs="italic">
+            Smagning
+          </Text>
+
+          <SimpleGrid cols={criteriaBreakdown.length}>
+            {criteriaBreakdown.map(({ name, averageScore: score }) => (
+              <Stack gap={0} align="center" key={name}>
+                <Text fw={400}>{name}</Text>
+                <Text fw="bold">{displayScore(score)}</Text>
+              </Stack>
+            ))}
+          </SimpleGrid>
         </SimpleGrid>
 
         <Divider opacity={0.3} my="md" />
 
-        <SimpleGrid cols={3}>
-          <Box>
-            <Text ta="center" fw={400}>
-              Checkins
-            </Text>
-            <Text ta="center" fw="bold">
-              {formatCount(beerDetails?.checkins?.total)}
-            </Text>
-          </Box>
-          <Box>
-            <Text ta="center" fw={400}>
-              Unikke
-            </Text>
-            <Text ta="center" fw="bold">
-              {formatCount(beerDetails?.checkins?.unique)}
-            </Text>
-          </Box>
-          <Box>
-            <Text ta="center" fw={400}>
-              Rating
-            </Text>
-            <Text ta="center" fw="bold">
-              {beerDetails?.rating.value ? (
-                <>
-                  {displayScore(beerDetails.rating.value)} (
-                  {formatCount(beerDetails.rating.count)})
-                </>
-              ) : (
-                "-"
-              )}
-            </Text>
-          </Box>
+        <SimpleGrid cols={1}>
+          <Text c="dimmed" size="xs" fs="italic">
+            Untappd
+          </Text>
+
+          <SimpleGrid cols={3}>
+            <Box>
+              <Text ta="center" fw={400}>
+                Checkins
+              </Text>
+              <Text ta="center" fw="bold">
+                {formatCount(beerDetails?.checkins?.total)}
+              </Text>
+            </Box>
+            <Box>
+              <Text ta="center" fw={400}>
+                Unikke
+              </Text>
+              <Text ta="center" fw="bold">
+                {formatCount(beerDetails?.checkins?.unique)}
+              </Text>
+            </Box>
+            <Box>
+              <Text ta="center" fw={400}>
+                Rating
+              </Text>
+              <Text ta="center" fw="bold">
+                {beerDetails?.rating.value ? (
+                  <>
+                    {displayScore(beerDetails.rating.value)} (
+                    {formatCount(beerDetails.rating.count)})
+                  </>
+                ) : (
+                  "-"
+                )}
+              </Text>
+            </Box>
+          </SimpleGrid>
         </SimpleGrid>
       </Box>
 
