@@ -14,7 +14,8 @@ import EmptySession from "~/components/EmptySession";
 import { StartSession } from "~/components/StartSession";
 import UpNext from "~/components/UpNext";
 import { db } from "~/database/config.server";
-import { sessionCriteria } from "~/database/schema.server";
+import { beers, sessionBeers, sessionCriteria } from "~/database/schema.server";
+import type { SelectBeers } from "~/database/schema.types";
 import { getSessionProgress } from "~/database/utils/getSessionProgress.server";
 import { useDebouncedSocketEvent } from "~/hooks/useDebouncedSocketEvent";
 import { ERROR_CODES, errorJson } from "~/utils/errors";
@@ -46,10 +47,25 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     return redirect("view");
   }
 
-  const criteriaWithDetails = await db.query.sessionCriteria.findMany({
-    where: eq(sessionCriteria.sessionId, sessionId),
-    with: { criterion: true },
-  });
+  const [criteriaWithDetails, sessionBeerRows] = await Promise.all([
+    db.query.sessionCriteria.findMany({
+      where: eq(sessionCriteria.sessionId, sessionId),
+      with: { criterion: true },
+    }),
+    db
+      .select({
+        sessionBeer: sessionBeers,
+        beer: beers,
+      })
+      .from(sessionBeers)
+      .innerJoin(beers, eq(sessionBeers.beerId, beers.id))
+      .where(eq(sessionBeers.sessionId, sessionId)),
+  ]);
+
+  const sessionBeersList: SelectBeers[] = sessionBeerRows.map(
+    ({ beer }) => beer
+  );
+
   const criteria = criteriaWithDetails
     .filter(
       (
@@ -68,11 +84,13 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     user,
     sessionProgress,
     criteria,
+    sessionBeers: sessionBeersList,
   };
 }
 
 export default function Session() {
-  const { user, sessionProgress, criteria } = useLoaderData<typeof loader>();
+  const { user, sessionProgress, criteria, sessionBeers } =
+    useLoaderData<typeof loader>();
 
   const { revalidate } = useRevalidator();
 
@@ -106,7 +124,9 @@ export default function Session() {
 
   return (
     <>
-      {emptySession && <EmptySession />}
+      {emptySession && (
+        <EmptySession sessionBeers={sessionBeers} onBeersUpdated={revalidate} />
+      )}
 
       {!emptySession && sessionProgress.status === SessionStatus.created && (
         <StartSession user={user} session={sessionProgress} />

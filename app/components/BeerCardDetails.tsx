@@ -9,6 +9,7 @@ import {
   Text,
 } from "@mantine/core";
 import { useEffect, useState } from "react";
+import { useFetcher } from "react-router";
 
 import type { RatedBeers } from "~/types/session";
 import type { ScrapedBeer } from "~/types/untappd";
@@ -25,22 +26,25 @@ export function BeerCardDetails({ beer }: InputProps) {
 
   const [fetching, setFetching] = useState(true);
   const [beerDetails, setBeerDetails] = useState<ScrapedBeer>();
+  const beerFetcher = useFetcher();
 
   useEffect(() => {
-    const fetchBeerDetails = async () => {
-      setFetching(true);
+    if (!untappdBeerId) return;
 
-      const beerDetails = await fetch(`/api/untappd/beer/${untappdBeerId}`);
-      const data = (await beerDetails.json()) as ScrapedBeer;
+    setFetching(true);
+    beerFetcher.load(`/api/untappd/beer/${untappdBeerId}`);
+  }, [beerFetcher, untappdBeerId]);
 
-      setTimeout(() => {
-        setBeerDetails(data);
-        setFetching(false);
-      }, 2000);
-    };
+  useEffect(() => {
+    if (beerFetcher.state !== "idle" || !beerFetcher.data) {
+      return;
+    }
 
-    fetchBeerDetails();
-  }, [untappdBeerId]);
+    setTimeout(() => {
+      setBeerDetails(beerFetcher.data as ScrapedBeer);
+      setFetching(false);
+    }, 2000);
+  }, [beerFetcher.state, beerFetcher.data]);
 
   return (
     <Paper withBorder radius="md" p="md" pt="lg" mt={-10}>

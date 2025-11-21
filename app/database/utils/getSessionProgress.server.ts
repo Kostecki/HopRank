@@ -6,6 +6,7 @@ import { SessionBeerStatus } from "~/types/session";
 import { userSessionGet } from "~/auth/users.server";
 import { db } from "~/database/config.server";
 import {
+  beers,
   ratings,
   sessionBeers,
   sessionCriteria,
@@ -72,10 +73,14 @@ export async function getSessionProgress({
       where: eq(sessionCriteria.sessionId, sessionId),
       with: { criterion: true },
     }),
-    db.query.sessionBeers.findMany({
-      where: eq(sessionBeers.sessionId, sessionId),
-      with: { beer: true },
-    }),
+    db
+      .select({
+        sessionBeer: sessionBeers,
+        beer: beers,
+      })
+      .from(sessionBeers)
+      .innerJoin(beers, eq(sessionBeers.beerId, beers.id))
+      .where(eq(sessionBeers.sessionId, sessionId)),
     db.query.ratings.findMany({ where: eq(ratings.sessionId, sessionId) }),
     db.query.sessions.findFirst({ where: eq(sessions.id, sessionId) }),
   ]);
@@ -100,9 +105,11 @@ export async function getSessionProgress({
     )
   );
 
-  const sessionBeerRowsNotEmpty = sessionBeerRows.filter(
-    (sb): sb is typeof sb & { beer: NonNullable<typeof sb.beer> } =>
-      sb.beer !== null
+  const sessionBeerRowsWithBeer = sessionBeerRows.map(
+    ({ sessionBeer, beer }) => ({
+      ...sessionBeer,
+      beer,
+    })
   );
 
   const criteriaList = sessionCriteriaRows
@@ -121,7 +128,7 @@ export async function getSessionProgress({
 
   // Compute overall average score per criterion across all rated beers (excluding current beer in progress)
   const ratedBeerIds = new Set(
-    sessionBeerRowsNotEmpty
+    sessionBeerRowsWithBeer
       .filter((sb) => sb.status === SessionBeerStatus.rated)
       .map((sb) => sb.beer.id)
   );
@@ -140,7 +147,7 @@ export async function getSessionProgress({
     };
   });
 
-  const currentBeerRow = sessionBeerRowsNotEmpty.find(
+  const currentBeerRow = sessionBeerRowsWithBeer.find(
     (sb) =>
       sb.beer.id === state?.currentBeerId &&
       sb.status !== SessionBeerStatus.rated
@@ -164,7 +171,7 @@ export async function getSessionProgress({
 
   // Build a set of all userIds who added beers to include them in users list even if not active or voted.
   const beerAdderIds = new Set<number>(
-    sessionBeerRowsNotEmpty
+    sessionBeerRowsWithBeer
       .map((sb) => sb.addedByUserId)
       .filter((id): id is number => typeof id === "number")
   );
@@ -180,7 +187,7 @@ export async function getSessionProgress({
   });
   const allRelevantUsers = allRelevantUsersRaw.map(toSessionProgressUser);
 
-  const ratedBeers = sessionBeerRowsNotEmpty
+  const ratedBeers = sessionBeerRowsWithBeer
     .filter(
       (sb) =>
         sb.status === SessionBeerStatus.rated &&
@@ -294,7 +301,7 @@ export async function getSessionProgress({
     createdAt: session.createdAt,
     createdBy: session.createdBy,
     joinCode: session.joinCode,
-    beersTotalCount: sessionBeerRowsNotEmpty.length,
+    beersTotalCount: sessionBeerRowsWithBeer.length,
     beersRatedCount: ratedBeers.length,
     users: allRelevantUsers,
     scoredCriteria,

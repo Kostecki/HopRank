@@ -18,7 +18,7 @@ import {
 import { useForm } from "@mantine/form";
 import { useDebouncedValue } from "@mantine/hooks";
 import { IconCheck } from "@tabler/icons-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useFetcher, useParams } from "react-router";
 
 import type { Criterion, SessionProgress } from "~/types/session";
@@ -40,6 +40,7 @@ type InputProps = {
 
 export default function NewVote({ user, session, criteria }: InputProps) {
   const voteFetcher = useFetcher();
+  const untappdFetcher = useFetcher();
 
   const { sessionId } = useParams();
 
@@ -72,12 +73,12 @@ export default function NewVote({ user, session, criteria }: InputProps) {
     ),
   });
 
-  const openInApp = () => {
+  const openInApp = useCallback(() => {
     if (!checkinId) return;
 
     const checkinUrl = `untappd://checkin/${checkinId}`;
     window.open(checkinUrl, "_self");
-  };
+  }, [checkinId]);
 
   const handleSubmit = async (values: typeof ratingsForm.values) => {
     setIsSubmitting(true);
@@ -104,24 +105,11 @@ export default function NewVote({ user, session, criteria }: InputProps) {
           formDataUntappd.append("rating", calculatedTotalScore.toString());
         }
 
-        const checkInResponse = await fetch("/api/untappd/check-in", {
+        untappdFetcher.submit(formDataUntappd, {
           method: "POST",
-          body: formDataUntappd,
+          encType: "multipart/form-data",
+          action: "/api/untappd/check-in",
         });
-
-        const checkInData = await checkInResponse.json();
-
-        if (checkInResponse.ok && checkInData.success) {
-          setCheckinId(checkInData.data.checkinId);
-          setEnableUntappdCheckin(false);
-          setComment("");
-
-          if (openInUntappd) {
-            openInApp();
-          }
-        } else {
-          showDangerToast("Untappd check-in fejlede");
-        }
       }
 
       const vote = {
@@ -163,6 +151,36 @@ export default function NewVote({ user, session, criteria }: InputProps) {
   useEffect(() => {
     setIsMobile(isMobileOrTablet());
   }, []);
+
+  useEffect(() => {
+    if (untappdFetcher.state !== "idle") return;
+
+    const responseData = untappdFetcher.data as
+      | { success: true; data: { checkinId: number } }
+      | { message?: string }
+      | undefined;
+
+    if (!responseData) {
+      return;
+    }
+
+    if ("success" in responseData && responseData.success) {
+      setCheckinId(responseData.data.checkinId);
+      setEnableUntappdCheckin(false);
+      setComment("");
+
+      if (openInUntappd) {
+        openInApp();
+      }
+      return;
+    }
+
+    const errorMessage =
+      "message" in responseData
+        ? (responseData.message ?? "Untappd check-in fejlede")
+        : "Untappd check-in fejlede";
+    showDangerToast(errorMessage);
+  }, [untappdFetcher.state, untappdFetcher.data, openInUntappd, openInApp]);
 
   return (
     <Paper withBorder radius="md" p="md" pt="lg" mt={-10}>

@@ -8,6 +8,7 @@ import type { Route } from "./+types/progress";
 import { userSessionGet } from "~/auth/users.server";
 import { db } from "~/database/config.server";
 import {
+  beers,
   ratings,
   sessionBeers,
   sessionCriteria,
@@ -72,10 +73,14 @@ export async function loader({ request, params }: Route.LoaderArgs) {
       where: eq(sessionCriteria.sessionId, sessionId),
       with: { criterion: true },
     }),
-    db.query.sessionBeers.findMany({
-      where: eq(sessionBeers.sessionId, sessionId),
-      with: { beer: true },
-    }),
+    db
+      .select({
+        sessionBeer: sessionBeers,
+        beer: beers,
+      })
+      .from(sessionBeers)
+      .innerJoin(beers, eq(sessionBeers.beerId, beers.id))
+      .where(eq(sessionBeers.sessionId, sessionId)),
     db.query.ratings.findMany({
       where: eq(ratings.sessionId, sessionId),
     }),
@@ -90,7 +95,6 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 
   const userIds = activeSessionUsers.map((su) => su.userId);
   const activeIds = userIds.filter((id): id is number => id !== null);
-  // (Removed usersForSession; unified list built later)
 
   // Count session users from ratings for finished sessions
   // Shows who participated in the session
@@ -108,11 +112,12 @@ export async function loader({ request, params }: Route.LoaderArgs) {
         .filter((id): id is number => id != null)
     )
   ) as readonly number[];
-  // (Removed userCountByVotes; unified list built later)
 
-  const sessionBeerRowsNotEmpty = sessionBeerRows.filter(
-    (sb): sb is typeof sb & { beer: NonNullable<typeof sb.beer> } =>
-      sb.beer !== null
+  const sessionBeerRowsWithBeer = sessionBeerRows.map(
+    ({ sessionBeer, beer }) => ({
+      ...sessionBeer,
+      beer,
+    })
   );
 
   const criteriaList = sessionCriteriaRows
@@ -130,9 +135,9 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 
   // Compute overall average score per criterion across rated beers (excluding current beer)
   const ratedBeerIds = new Set(
-    sessionBeerRowsNotEmpty
-      .filter((sb) => sb.status === SessionBeerStatus.rated)
-      .map((sb) => sb.beer.id)
+    sessionBeerRowsWithBeer
+      .filter((sessionBeer) => sessionBeer.status === SessionBeerStatus.rated)
+      .map((sessionBeer) => sessionBeer.beer.id)
   );
   const scoredCriteria = criteriaList.map((criterion) => {
     const criterionRatings = allRatings.filter(
@@ -149,7 +154,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     };
   });
 
-  const currentBeerRow = sessionBeerRowsNotEmpty.find(
+  const currentBeerRow = sessionBeerRowsWithBeer.find(
     (sb) =>
       sb.beer.id === state?.currentBeerId &&
       sb.status !== SessionBeerStatus.rated
@@ -174,7 +179,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 
   // Build unified user list including adders to ensure podium avatar resolution
   const beerAdderIds = new Set<number>(
-    sessionBeerRowsNotEmpty
+    sessionBeerRowsWithBeer
       .map((sb) => sb.addedByUserId)
       .filter((id): id is number => typeof id === "number")
   );
@@ -188,7 +193,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   });
   const allRelevantUsers = allRelevantUsersRaw.map(toSessionProgressUser);
 
-  const ratedBeers = sessionBeerRowsNotEmpty
+  const ratedBeers = sessionBeerRowsWithBeer
     .filter(
       (sb) =>
         sb.status === SessionBeerStatus.rated &&
@@ -304,7 +309,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     createdAt: session.createdAt,
     createdBy: session.createdBy,
     joinCode: session.joinCode,
-    beersTotalCount: sessionBeerRowsNotEmpty.length,
+    beersTotalCount: sessionBeerRowsWithBeer.length,
     beersRatedCount: ratedBeers.length,
     users: allRelevantUsers,
     scoredCriteria,

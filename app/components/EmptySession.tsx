@@ -5,17 +5,29 @@ import { useFetcher, useParams } from "react-router";
 import type { BeerOption } from "~/types/misc";
 
 import type { SelectBeers } from "~/database/schema.types";
+import { showDangerToast } from "~/utils/toasts";
 
 import BeerMultiSelect from "./BeerMultiSelect";
 
-export default function EmptySession() {
+type InputProps = {
+  sessionBeers: SelectBeers[];
+  onBeersUpdated?: () => void;
+};
+
+export default function EmptySession({
+  sessionBeers,
+  onBeersUpdated,
+}: InputProps) {
   const { sessionId } = useParams();
-  const [sessionBeers, setSessionBeers] = useState<SelectBeers[]>([]);
   const [selectedBeers, setSelectedBeers] = useState<BeerOption[]>([]);
 
   const fetcher = useFetcher();
 
   const handleSubmit = () => {
+    if (!sessionId) {
+      return;
+    }
+
     const formData = new FormData();
     formData.append("beers", JSON.stringify(selectedBeers));
 
@@ -27,15 +39,28 @@ export default function EmptySession() {
     setSelectedBeers([]);
   };
 
-  useEffect(() => {
-    const fetchBeers = async () => {
-      const response = await fetch(`/api/sessions/${sessionId}/list-beers`);
-      const beersList = await response.json();
-      setSessionBeers(beersList);
-    };
+  const { data, state } = fetcher;
 
-    fetchBeers();
-  }, [sessionId]);
+  useEffect(() => {
+    if (state !== "idle" || !data) {
+      return;
+    }
+
+    const result = data as { success?: boolean; message?: string };
+    const fetcherWithReset = fetcher as typeof fetcher & {
+      reset?: () => void;
+    };
+    if (result.success) {
+      onBeersUpdated?.();
+      fetcherWithReset.reset?.();
+      return;
+    }
+
+    if (result.message) {
+      showDangerToast(result.message);
+    }
+    fetcherWithReset.reset?.();
+  }, [state, data, fetcher, onBeersUpdated]);
 
   return (
     <Paper p="md" radius="md" withBorder mt={64}>
@@ -57,7 +82,7 @@ export default function EmptySession() {
         radius="md"
         onClick={handleSubmit}
         disabled={!selectedBeers.length}
-        loading={fetcher.state === "submitting"}
+        loading={state === "submitting"}
       >
         Tilføj øl til smagningen
       </Button>

@@ -19,7 +19,13 @@ import {
   IconTrash,
 } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router";
+import {
+  Link,
+  useFetcher,
+  useLocation,
+  useNavigate,
+  useRevalidator,
+} from "react-router";
 
 import {
   SessionBeerStatus,
@@ -51,9 +57,15 @@ export default function Navbar({
 }: InputProps) {
   const navigate = useNavigate();
   const location = useLocation();
+  const leaveFetcher = useFetcher();
+  const removeFetcher = useFetcher();
+  const { revalidate } = useRevalidator();
 
   const [localSessionBeers, setLocalSessionBeers] = useState(sessionBeers);
   const [origin, setOrigin] = useState("");
+  const [pendingBeersSnapshot, setPendingBeersSnapshot] = useState<
+    SelectSessionBeersWithBeer[] | null
+  >(null);
 
   const inProgressSession =
     sessionProgress?.status === SessionStatus.active ||
@@ -68,7 +80,10 @@ export default function Navbar({
       navigate("/sessions");
     } else {
       const sessionId = sessionProgress.sessionId;
-      await fetch(`/api/sessions/${sessionId}/leave`, { method: "POST" });
+      leaveFetcher.submit(null, {
+        method: "POST",
+        action: `/api/sessions/${sessionId}/leave`,
+      });
       navigate("/sessions");
     }
   };
@@ -79,21 +94,12 @@ export default function Navbar({
 
     const prevBeers = localSessionBeers;
     setLocalSessionBeers((prev) => prev.filter((b) => b.beerId !== beerId));
+    setPendingBeersSnapshot(prevBeers);
 
-    try {
-      const res = await fetch(`/api/sessions/${sessionId}/remove/${beerId}`, {
-        method: "POST",
-      });
-
-      if (!res.ok) {
-        // Rollback if request fails
-        setLocalSessionBeers(prevBeers);
-        console.error("Failed to remove beer");
-      }
-    } catch (err) {
-      setLocalSessionBeers(prevBeers);
-      console.error("Failed to remove beer", err);
-    }
+    removeFetcher.submit(null, {
+      method: "POST",
+      action: `/api/sessions/${sessionId}/remove/${beerId}`,
+    });
   };
 
   const usersBeers = localSessionBeers
@@ -107,6 +113,26 @@ export default function Navbar({
   useEffect(() => {
     setOrigin(window.location.origin);
   }, []);
+
+  useEffect(() => {
+    if (removeFetcher.state !== "idle" || !pendingBeersSnapshot) {
+      return;
+    }
+
+    const result = removeFetcher.data as
+      | { success: true }
+      | { message?: string }
+      | undefined;
+
+    if (!result || "success" in result) {
+      setPendingBeersSnapshot(null);
+      return;
+    }
+
+    setLocalSessionBeers(pendingBeersSnapshot);
+    setPendingBeersSnapshot(null);
+    console.error("Failed to remove beer", result);
+  }, [removeFetcher.state, removeFetcher.data, pendingBeersSnapshot]);
 
   const UserListItem = ({ user }: { user: SessionProgressUser }) => {
     const firstLetter = user.email.slice(0, 1).toUpperCase();
@@ -185,7 +211,11 @@ export default function Navbar({
   if (!sessionProgress) return "None";
 
   return (
-    <ModalAddBeers sessionProgress={sessionProgress}>
+    <ModalAddBeers
+      sessionProgress={sessionProgress}
+      sessionBeers={sessionBeers}
+      onBeersUpdated={revalidate}
+    >
       <Box>
         <Stack gap="0">
           <Text ta="center" fw={500} size="lg">
@@ -229,6 +259,7 @@ export default function Navbar({
             color="slateIndigo"
             fw={500}
             onClick={handleLeaveSession}
+            loading={leaveFetcher.state === "submitting"}
           >
             Forlad smagning
           </Button>

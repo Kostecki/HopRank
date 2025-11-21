@@ -7,6 +7,7 @@ import type { SocketEvent } from "~/types/websocket";
 import type { Route } from "./+types/readOnly";
 
 import MedalPodium from "~/components/MedalPodium";
+import { getSessionProgress } from "~/database/utils/getSessionProgress.server";
 import { useDebouncedSocketEvent } from "~/hooks/useDebouncedSocketEvent";
 import { createBeerLink } from "~/utils/untappd";
 import { extractSessionId, getPageTitle } from "~/utils/utils";
@@ -21,23 +22,18 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   }
 
   const sessionId = extractSessionId(params.sessionId);
+  const sessionProgressResult = await getSessionProgress({
+    request,
+    sessionId,
+  });
 
-  const url = new URL(request.url);
-  const origin = `${url.protocol}//${url.host}`;
-  const progressResponse = await fetch(
-    `${origin}/api/sessions/${sessionId}/progress`,
-    {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }
-  );
-
-  if (!progressResponse.ok) {
-    throw new Response("Failed to fetch session progress", { status: 500 });
+  if ("statusCode" in sessionProgressResult) {
+    throw new Response("Session not found", {
+      status: sessionProgressResult.statusCode ?? 404,
+    });
   }
 
-  const sessionProgress = (await progressResponse.json()) as SessionProgress;
+  const sessionProgress: SessionProgress = sessionProgressResult;
   return { sessionProgress };
 }
 
