@@ -32,7 +32,8 @@ export function messageFor(code: string): string {
 
 export function normalizeRouteError(
   error: unknown,
-  isDev: boolean
+  isDev: boolean,
+  isAdmin: boolean
 ): NormalizeError {
   let status: number | null = null;
   let code: string | null = null;
@@ -57,7 +58,8 @@ export function normalizeRouteError(
       code = possibleCode;
     }
 
-    if (isDev) {
+    if (isDev || isAdmin) {
+      console.log("isDev || isAdmin");
       devStack = error.stack;
     }
   }

@@ -20,6 +20,7 @@ import {
   Scripts,
   ScrollRestoration,
   useLoaderData,
+  useRouteLoaderData,
 } from "react-router";
 import { getToast } from "remix-toast";
 import { theme } from "theme";
@@ -157,8 +158,12 @@ export default function App() {
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
+  const rootData = useRouteLoaderData<typeof loader>("root");
+  const user = rootData?.user;
+
   const isDev = import.meta.env.DEV;
-  const norm = normalizeRouteError(error, isDev);
+  const isAdmin = user?.admin ?? false;
+  const norm = normalizeRouteError(error, isDev, isAdmin);
 
   return (
     <Container style={{ textAlign: "center", paddingTop: 75 }} h="100vh">
