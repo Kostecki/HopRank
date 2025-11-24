@@ -1,4 +1,4 @@
-import { Avatar, Card, Flex, Image, rem, Text, ThemeIcon } from "@mantine/core";
+import { Box, Card, Flex, Image, rem, Text, ThemeIcon } from "@mantine/core";
 
 import type { RatedBeers, SessionProgress } from "~/types/session";
 
@@ -16,7 +16,7 @@ export default function MedalPodium({ session }: inputProps) {
   const { ratedBeers } = session;
 
   // heights for podium positions
-  const heights = [rem(270), rem(230), rem(230)];
+  const heights = [rem(280), rem(250), rem(250)];
 
   // Only take the first 3 rated beers
   const topBeers: (RatedBeers | null)[] = ratedBeers.slice(0, 3);
@@ -41,11 +41,6 @@ export default function MedalPodium({ session }: inputProps) {
         const place = i === 1 ? 1 : i === 0 ? 2 : 3;
         const bg = placementColors[i];
         const height = displayHeights[i] || rem(120);
-        const addedByUserId = beer?.addedByUserId;
-
-        const user = session.users.find((u) => u.id === addedByUserId);
-        const addedByName = user?.name || "";
-        const addedByAvatarURL = user?.avatarURL || null;
 
         return (
           <Flex
@@ -59,12 +54,12 @@ export default function MedalPodium({ session }: inputProps) {
             <Flex
               direction="column"
               align="center"
-              justify={place === 1 ? "center" : "flex-end"}
+              justify={place === 1 ? "space-between" : "flex-end"}
               pos="relative"
               h={height}
               w="100%"
               bdrs="md"
-              pt="xl"
+              pt="lg"
               pb="sm"
               bg={`linear-gradient(180deg, ${bg} 0%, rgba(0,0,0,0.08) 100%)`}
               style={{
@@ -74,22 +69,6 @@ export default function MedalPodium({ session }: inputProps) {
             >
               {beer ? (
                 <>
-                  <Avatar
-                    size={56}
-                    radius={999}
-                    pos="absolute"
-                    src={addedByAvatarURL}
-                    alt={addedByName}
-                    name={addedByName}
-                    bdrs="50%"
-                    bd="4px solid white"
-                    top={rem(-35)}
-                    bg={bg}
-                    style={{
-                      boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
-                    }}
-                  />
-
                   <Card
                     withBorder
                     shadow="sm"
@@ -105,14 +84,19 @@ export default function MedalPodium({ session }: inputProps) {
                       maw={rem(100)}
                     />
                   </Card>
+                  <Box ta="center">
+                    <Text size="sm" c="gray.7">
+                      {beer.breweryName}
+                    </Text>
 
-                  <Text size="sm" c="gray.7">
-                    {beer.breweryName}
-                  </Text>
+                    <Text size="md" mt={3} fw={700} ta="center">
+                      {beer.name}
+                    </Text>
 
-                  <Text size="md" mt={3} fw={700} ta="center">
-                    {beer.name}
-                  </Text>
+                    <Text size="md" fw={700} mt={5} c="dimmed" fs="italic">
+                      {beer.averageScore}
+                    </Text>
+                  </Box>
                 </>
               ) : (
                 <Flex
