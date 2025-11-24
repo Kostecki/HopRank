@@ -7,7 +7,7 @@ import type { SessionUser } from "~/types/user";
 
 import { useDebouncedSocketEvent } from "~/hooks/useDebouncedSocketEvent";
 
-import { UserMenu } from "./UserMenu/UserMenu";
+import { UserMenu } from "./UserMenu";
 
 type InputProps = {
   user: SessionUser | null;

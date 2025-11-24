@@ -8,11 +8,11 @@ import type { SessionUser } from "~/types/user";
 import { useSocket } from "~/hooks/useSocket";
 import { createProfileLink } from "~/utils/untappd";
 
-import styles from "./UserMenu.module.css";
-
 type InputProps = {
   user: SessionUser;
 };
+
+type WSStatus = "undefined" | "connecting" | "connected" | "disconnected";
 
 const DB_URL = (() => {
   if (typeof window === "undefined") return "#"; // SSR safeguard
@@ -26,15 +26,28 @@ const DB_URL = (() => {
   return `${protocol}//db.${hostname}`;
 })();
 
+const getWSStatusColor = (status: WSStatus, avatar?: string) => {
+  const hasAvatar = Boolean(avatar);
+
+  switch (status) {
+    case "connected":
+      return `rgba(76, 175, 80, ${hasAvatar ? 1 : 0.5})`;
+    case "connecting":
+      return `rgba(255, 193, 7, ${hasAvatar ? 1 : 0.8})`;
+    case "disconnected":
+      return `rgba(244, 67, 54, ${hasAvatar ? 1 : 0.5})`;
+    default:
+      return `rgba(123, 123, 123, ${hasAvatar ? 1 : 0.5})`;
+  }
+};
+
 export function UserMenu({ user }: InputProps) {
   const { email, admin: isAdmin, untappd } = user;
 
   const firstLetter = email.slice(0, 1).toUpperCase();
 
   const [clientsCount, setClientsCount] = useState<number | null>(0);
-  const [WSStatus, setWSStatus] = useState<
-    "undefined" | "connecting" | "connected" | "disconnected"
-  >("undefined");
+  const [WSStatus, setWSStatus] = useState<WSStatus>("undefined");
 
   const socket = useSocket();
 
@@ -80,16 +93,8 @@ export function UserMenu({ user }: InputProps) {
           style={{
             cursor: "pointer",
             transition: "box-shadow 0.2s ease-in-out",
+            boxShadow: `0 0 5px 1px ${getWSStatusColor(WSStatus, untappd?.avatar)}`,
           }}
-          className={
-            WSStatus === "connected"
-              ? styles.glowPulseConnected
-              : WSStatus === "connecting"
-                ? styles.glowPulseConnecting
-                : WSStatus === "disconnected"
-                  ? styles.glowPulseDisconnected
-                  : styles.glowPulseUndefined
-          }
         />
       </Menu.Target>
 
