@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 
-type Location = {
+export type Location = {
   lat: number;
   lng: number;
 };
