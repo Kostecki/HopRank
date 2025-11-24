@@ -1,5 +1,6 @@
 import {
   ActionIcon,
+  Anchor,
   Avatar,
   Box,
   Button,
@@ -36,7 +37,7 @@ import {
 import type { SessionUser } from "~/types/user";
 
 import type { SelectSessionBeersWithBeer } from "~/database/schema.types";
-import { createProfileLink } from "~/utils/untappd";
+import { createBeerLink, createProfileLink } from "~/utils/untappd";
 
 import ModalAddBeers, { ModalAddBeersTrigger } from "./modals/ModalAddBeers";
 
@@ -185,22 +186,26 @@ export default function Navbar({
 
   const ListItem = ({ beer }: { beer: SelectSessionBeersWithBeer }) => {
     const {
-      beer: { id, name, breweryName },
+      beer: { id, name, breweryName, untappdBeerId },
     } = beer;
 
     const isDisabled =
       beer.status === SessionBeerStatus.rating ||
       beer.status === SessionBeerStatus.rated;
 
+    const untappdLink = createBeerLink(untappdBeerId);
+
     return (
       <Flex justify="space-between" pos="relative">
         <Stack gap={0} mb="sm">
-          <Text size="sm" fw="500" lineClamp={1}>
-            {name}
-          </Text>
-          <Text size="sm" c="dimmed" lineClamp={1}>
-            {breweryName}
-          </Text>
+          <Anchor underline="never" href={untappdLink} target="_blank">
+            <Text size="sm" fw="500" lineClamp={1} mr="xs" c="black">
+              {name}
+            </Text>
+            <Text size="sm" c="dimmed" lineClamp={1}>
+              {breweryName}
+            </Text>
+          </Anchor>
         </Stack>
 
         <ActionIcon
