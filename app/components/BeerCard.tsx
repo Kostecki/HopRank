@@ -1,10 +1,10 @@
+import { RingsProgress } from "@gfazioli/mantine-rings-progress";
 import {
   Box,
   Card,
   Flex,
   Grid,
   Image,
-  RingProgress,
   Stack,
   Text,
   Title,
@@ -83,25 +83,26 @@ export function BeerCard({ session, beer, rank }: InputProps) {
     const progress = (currentVoteCount / totalPossibleVoteCount) * 100;
 
     return (
-      <RingProgress
+      <RingsProgress
         size={70}
+        h={70}
+        w={70}
+        animate
         thickness={6}
+        roundCaps={false}
+        rings={[{ value: progress, color: "slateIndigo" }]}
+        animationDuration={500}
         label={
           <Text
             size="xs"
             ta="center"
             fw="600"
             style={{ pointerEvents: "none" }}
+            c="dimmed"
           >
             {`${currentVoteCount}/${totalPossibleVoteCount}`}
           </Text>
         }
-        sections={[
-          {
-            value: progress,
-            color: "slateIndigo",
-          },
-        ]}
       />
     );
   };

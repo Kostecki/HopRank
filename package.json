@@ -13,6 +13,7 @@
     "lint": "biome lint ."
   },
   "dependencies": {
+    "@gfazioli/mantine-rings-progress": "^2.3.6",
     "@mantine/core": "^8.3.7",
     "@mantine/form": "^8.3.7",
     "@mantine/hooks": "^8.3.7",
@@ -25,6 +26,7 @@
     "cheerio": "^1.1.2",
     "concurrently": "^9.2.1",
     "dayjs": "^1.11.19",
+    "drizzle-kit": "^0.31.7",
     "drizzle-orm": "^0.44.7",
     "isbot": "^5.1.32",
     "mjml": "^4.17.0",
@@ -40,8 +42,7 @@
     "remix-auth-totp": "^4.0.0",
     "remix-toast": "^3.3.0",
     "socket.io": "^4.8.1",
-    "socket.io-client": "^4.8.1",
-    "drizzle-kit": "^0.31.7"
+    "socket.io-client": "^4.8.1"
   },
   "devDependencies": {
     "@biomejs/biome": "2.3.5",

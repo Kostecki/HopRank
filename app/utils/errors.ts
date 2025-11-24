@@ -59,7 +59,6 @@ export function normalizeRouteError(
     }
 
     if (isDev || isAdmin) {
-      console.log("isDev || isAdmin");
       devStack = error.stack;
     }
   }
