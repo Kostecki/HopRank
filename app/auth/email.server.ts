@@ -61,12 +61,12 @@ export const sendMagicLinkEmail = async ({
 
     if (process.env.NODE_ENV !== "production") {
       console.log();
-      console.log("Code:", code);
-      console.log("Email URL:", nodemailer.getTestMessageUrl(info));
+      console.log("[Email] Code:", code);
+      console.log("[Email] URL:", nodemailer.getTestMessageUrl(info));
       console.log();
     }
   } catch (error) {
-    console.error("Failed to send email:", error);
+    console.error("[Email] Failed to send email:", error);
     throw new Error("Noget gik galt ved afsendelse af login-email. Prøv igen.");
   }
 };

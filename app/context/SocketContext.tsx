@@ -25,25 +25,25 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
 
     // Connection established
     s.on("connect", () => {
-      console.log("WebSocket Connected");
+      console.log("[WS] WebSocket Connected");
       console.log(" - Server:", WS_URL);
       console.log(" - Client ID:", s.id);
     });
 
     // Connection lost / reconnecting
     s.on("disconnect", (reason) => {
-      console.warn("WebSocket disconnected. Reason:", reason);
+      console.warn("[WS] WebSocket disconnected. Reason:", reason);
     });
 
     // Handle connection errors
     s.on("connect_error", (err) => {
-      console.error("WebSocket connection error:", err);
+      console.error("[WS] WebSocket connection error:", err);
     });
 
     // Clean up
     return () => {
       s.disconnect();
-      console.log("WebSocket disconnected (cleanup)");
+      console.log("[WS] WebSocket disconnected (cleanup)");
     };
   }, []);
 

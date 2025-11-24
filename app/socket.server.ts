@@ -12,7 +12,7 @@ export const io = new Server(httpServer, {
 
 io.on("connection", (socket) => {
   console.log();
-  console.log("Client Connected");
+  console.log("[WS] Client Connected");
   console.log(" - Client ID:", socket.id);
   console.log(" - Total Clients:", io.engine.clientsCount);
   console.log();
@@ -22,17 +22,17 @@ io.on("connection", (socket) => {
   socket.on("join-session", (id) => {
     socket.join(`session:${id}`);
     console.log();
-    console.log(`Client ${socket.id} joined session: ${id}`);
+    console.log(`[WS] Client ${socket.id} joined session: ${id}`);
   });
 
   socket.on("leave-session", (id) => {
     socket.leave(`session:${id}`);
-    console.log(`Client ${socket.id} left session: ${id}`);
+    console.log(`[WS] Client ${socket.id} left session: ${id}`);
   });
 
   socket.on("disconnect", (reason) => {
     console.log();
-    console.log("Client Disconnected");
+    console.log("[WS] Client Disconnected");
     console.log(" - Client ID:", socket.id);
     console.log(" - Reason:", reason);
     console.log(" - Total Clients:", io.engine.clientsCount);
@@ -40,7 +40,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("error", (err) => {
-    console.error("Socket error:", err);
+    console.error("[WS] Socket error:", err);
   });
 });
 
@@ -53,7 +53,7 @@ if (!process.env.VITE) {
 
   httpServer.listen(PORT, () => {
     console.log();
-    console.log(`WebSocket server active on: ${WS_URL}`);
+    console.log(`[WS] Server active on: ${WS_URL}`);
     console.log();
   });
 }

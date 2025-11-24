@@ -54,5 +54,7 @@ export const closeInactiveSessions = async () => {
     .set({ active: false })
     .where(inArray(sessionUsers.sessionId, staleSessions));
 
-  console.log(`Closed ${staleSessions.length} stale sessions.`);
+  console.log(
+    `[DB] Closed ${staleSessions.length} stale session${staleSessions.length !== 1 ? "s" : ""}.`
+  );
 };
