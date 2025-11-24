@@ -8,7 +8,7 @@ import {
   Stack,
   Text,
 } from "@mantine/core";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useFetcher } from "react-router";
 
 import type { RatedBeers } from "~/types/session";
@@ -26,14 +26,16 @@ export function BeerCardDetails({ beer }: InputProps) {
 
   const [fetching, setFetching] = useState(true);
   const [beerDetails, setBeerDetails] = useState<ScrapedBeer>();
+
   const beerFetcher = useFetcher();
+  const fetcherRef = useRef(beerFetcher);
 
   useEffect(() => {
     if (!untappdBeerId) return;
 
     setFetching(true);
-    beerFetcher.load(`/api/untappd/beer/${untappdBeerId}`);
-  }, [beerFetcher, untappdBeerId]);
+    fetcherRef.current.load(`/api/untappd/beer/${untappdBeerId}`);
+  }, [untappdBeerId]);
 
   useEffect(() => {
     if (beerFetcher.state !== "idle" || !beerFetcher.data) {
