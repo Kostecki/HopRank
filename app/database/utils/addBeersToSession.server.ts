@@ -1,6 +1,6 @@
 import { and, eq } from "drizzle-orm";
 
-import { SessionBeerStatus } from "~/types/session";
+import { SessionBeerStatus, SessionStatus } from "~/types/session";
 
 import { shuffleBeersInSession } from "~/utils/shuffle";
 
@@ -93,7 +93,7 @@ export const addBeersToSession = async (
     });
 
     // If there is no current beer then set the first beer in the session as the current beer
-    if (!state?.currentBeerId) {
+    if (!state?.currentBeerId && state?.status === SessionStatus.active) {
       const ordered = await db.query.sessionBeers.findMany({
         where: and(
           eq(sessionBeers.sessionId, sessionId),

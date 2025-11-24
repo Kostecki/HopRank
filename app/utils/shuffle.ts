@@ -54,6 +54,8 @@ const shuffle = <T>(array: T[]) => {
  * Shuffles the beers in a session to create a randomized, yet thoughtfully ordered sequence.
  * The shuffle algorithm aims to avoid placing beers from the same brewery, style, or added by the same user consecutively.
  *
+ * If the session has fewer than 2 beers, no changes are made.
+ *
  * @param sessionId - The ID of the session whose beers should be shuffled.
  */
 export const shuffleBeersInSession = async (sessionId: number) => {
@@ -70,6 +72,9 @@ export const shuffleBeersInSession = async (sessionId: number) => {
         eq(sessionBeers.status, SessionBeerStatus.waiting)
       )
     );
+
+  // No need to shuffle if fewer than 2 beers
+  if (rows.length < 2) return;
 
   const complete: BeerRow[] = rows.map(({ sessionBeer, beer }) => ({
     id: sessionBeer.id,
