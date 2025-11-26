@@ -7,7 +7,9 @@ import type { SocketEvent } from "~/types/websocket";
 import type { Route } from "./+types/readOnly";
 
 import MedalPodium from "~/components/MedalPodium";
+import SessionStats from "~/components/SessionStats";
 import { getSessionProgress } from "~/database/utils/getSessionProgress.server";
+import { getSessionStats } from "~/database/utils/getStats.server";
 import { useDebouncedSocketEvent } from "~/hooks/useDebouncedSocketEvent";
 import { groupRatedBeersByScore } from "~/utils/podium";
 import { createBeerLink } from "~/utils/untappd";
@@ -35,7 +37,24 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   }
 
   const sessionProgress: SessionProgress = sessionProgressResult;
-  return { sessionProgress };
+
+  // Highest Rater - Person with the highest average scores across all beers in the session
+  // Lowest Rater - Person with the lowest average scores across all beers in the session
+  // Average ABV - The average ABV of all beers in the session
+  // Average Rating - The average rating given across all beers in the session
+  // Most Popular Style - The beer style that appears most frequently in the session
+  // Number of different styles - Count of unique beer styles in the session
+
+  // TODO: handle empty session/no beers
+  // TODO: Tie handling
+
+  const sessionStats = await getSessionStats(sessionId);
+  console.log("Session Stats:", sessionStats);
+
+  return {
+    sessionProgress,
+    stats: {},
+  };
 }
 
 const viewBeerUntappd = (untappdBeerId: number) => {
@@ -44,7 +63,9 @@ const viewBeerUntappd = (untappdBeerId: number) => {
 };
 
 export default function SessionView() {
-  const { sessionProgress } = useLoaderData<typeof loader>();
+  const { sessionProgress, stats } = useLoaderData<typeof loader>();
+
+  console.log(stats);
 
   const { revalidate } = useRevalidator();
 
@@ -149,22 +170,26 @@ export default function SessionView() {
       )}
 
       {hasRatings && (
-        <Grid mt={50} justify="center" gutter="xl">
-          <Grid.Col span={10}>
-            <Table highlightOnHover>
-              <Table.Thead>
-                <Table.Tr>
-                  <Table.Th ta="center">#</Table.Th>
-                  <Table.Th ta="center">Øl</Table.Th>
-                  <Table.Th ta="center">Bryggeri</Table.Th>
-                  <Table.Th ta="center">Tilføjet af</Table.Th>
-                  <Table.Th ta="center">Score</Table.Th>
-                </Table.Tr>
-              </Table.Thead>
-              <Table.Tbody>{tableRows}</Table.Tbody>
-            </Table>
-          </Grid.Col>
-        </Grid>
+        <>
+          <SessionStats mt={50} />
+
+          <Grid mt={50} justify="center" gutter="xl">
+            <Grid.Col span={10}>
+              <Table highlightOnHover>
+                <Table.Thead>
+                  <Table.Tr>
+                    <Table.Th ta="center">#</Table.Th>
+                    <Table.Th ta="center">Øl</Table.Th>
+                    <Table.Th ta="center">Bryggeri</Table.Th>
+                    <Table.Th ta="center">Tilføjet af</Table.Th>
+                    <Table.Th ta="center">Score</Table.Th>
+                  </Table.Tr>
+                </Table.Thead>
+                <Table.Tbody>{tableRows}</Table.Tbody>
+              </Table>
+            </Grid.Col>
+          </Grid>
+        </>
       )}
     </Box>
   );
