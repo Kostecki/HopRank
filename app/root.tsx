@@ -34,6 +34,7 @@ import {
 } from "./utils/toasts";
 import "@mantine/core/styles.css";
 import "@mantine/notifications/styles.css";
+import "@mantine/carousel/styles.css";
 import "@gfazioli/mantine-rings-progress/styles.css";
 import "./app.css";
 

@@ -9,8 +9,9 @@ import type { Route } from "./+types/readOnly";
 import MedalPodium from "~/components/MedalPodium";
 import { getSessionProgress } from "~/database/utils/getSessionProgress.server";
 import { useDebouncedSocketEvent } from "~/hooks/useDebouncedSocketEvent";
+import { groupRatedBeersByScore } from "~/utils/podium";
 import { createBeerLink } from "~/utils/untappd";
-import { extractSessionId, getPageTitle } from "~/utils/utils";
+import { displayScore, extractSessionId, getPageTitle } from "~/utils/utils";
 
 export function meta() {
   return [{ title: getPageTitle("Smagning") }];
@@ -63,25 +64,44 @@ export default function SessionView() {
     sessionProgress.sessionId
   );
 
-  const nonPodiumBeers = sessionProgress.ratedBeers.slice(3);
+  const { podiumGroups, nonPodiumGroups } = useMemo(() => {
+    const rankedGroups = groupRatedBeersByScore(sessionProgress.ratedBeers);
+    const topGroups = rankedGroups.slice(0, 3);
+    const remainingGroups = rankedGroups.slice(topGroups.length);
 
-  const tableRows = nonPodiumBeers.map((beer, index) => {
-    const beerAddedByUserId = beer.addedByUserId;
-    const user = sessionProgress.users.find((u) => u.id === beerAddedByUserId);
-    const addedByName = user?.name || "";
+    return {
+      podiumGroups: topGroups,
+      nonPodiumGroups: remainingGroups,
+    };
+  }, [sessionProgress.ratedBeers]);
 
-    return (
-      <Table.Tr
-        key={beer.name}
-        onClick={() => viewBeerUntappd(beer.untappdBeerId)}
-      >
-        <Table.Td ta="center">{index + 4}</Table.Td>
-        <Table.Td ta="center">{beer.name}</Table.Td>
-        <Table.Td ta="center">{beer.breweryName}</Table.Td>
-        <Table.Td ta="center">{addedByName}</Table.Td>
-        <Table.Td ta="center">{beer.averageScore}</Table.Td>
-      </Table.Tr>
-    );
+  const tableRows = nonPodiumGroups.flatMap((group, groupIndex) => {
+    const rank = podiumGroups.length + groupIndex + 1;
+
+    return group.beers.map((beer, beerIndex) => {
+      const beerAddedByUserId = beer.addedByUserId;
+      const user = sessionProgress.users.find(
+        (sessionUser) => sessionUser.id === beerAddedByUserId
+      );
+      const addedByName = user?.name || "";
+
+      return (
+        <Table.Tr
+          key={`${rank}-${beer.untappdBeerId}`}
+          onClick={() => viewBeerUntappd(beer.untappdBeerId)}
+        >
+          {beerIndex === 0 && (
+            <Table.Td ta="center" rowSpan={group.beers.length} fw={600}>
+              {rank}
+            </Table.Td>
+          )}
+          <Table.Td ta="center">{beer.name}</Table.Td>
+          <Table.Td ta="center">{beer.breweryName}</Table.Td>
+          <Table.Td ta="center">{addedByName}</Table.Td>
+          <Table.Td ta="center">{displayScore(group.score)}</Table.Td>
+        </Table.Tr>
+      );
+    });
   });
 
   const hasRatings = sessionProgress.ratedBeers.length > 0;
@@ -130,7 +150,7 @@ export default function SessionView() {
 
       {hasRatings && (
         <Grid mt={50} justify="center" gutter="xl">
-          <Grid.Col span={8}>
+          <Grid.Col span={10}>
             <Table highlightOnHover>
               <Table.Thead>
                 <Table.Tr>
@@ -138,7 +158,7 @@ export default function SessionView() {
                   <Table.Th ta="center">Øl</Table.Th>
                   <Table.Th ta="center">Bryggeri</Table.Th>
                   <Table.Th ta="center">Tilføjet af</Table.Th>
-                  <Table.Th ta="center">Rating</Table.Th>
+                  <Table.Th ta="center">Score</Table.Th>
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>{tableRows}</Table.Tbody>

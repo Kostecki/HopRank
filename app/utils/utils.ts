@@ -66,9 +66,16 @@ export const wait = (ms: number): Promise<void> => {
  * @param score - The score to format (e.g., 3.75).
  * @returns {string} The formatted score (e.g., "3,75") or "-" if undefined.
  */
-export const displayScore = (score: number | undefined): string => {
+export const displayScore = (
+  score: number | undefined,
+  minDigits = 2,
+  maxDigits = 2
+): string => {
   if (score === undefined) return "-";
-  return score.toFixed(2).replace(".", ",");
+  return score.toLocaleString("da-DK", {
+    minimumFractionDigits: minDigits,
+    maximumFractionDigits: maxDigits,
+  });
 };
 
 /**

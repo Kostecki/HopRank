@@ -10,6 +10,7 @@ import {
 } from "@mantine/core";
 
 import type { Location } from "~/hooks/useGeolocation";
+import { displayScore } from "~/utils/utils";
 
 import VenueSearch from "./VenueSearch";
 
@@ -46,10 +47,6 @@ export function UntappdCheckinSection({
   accessToken,
   location,
 }: UntappdCheckinSectionProps) {
-  const displayScore = Number.isNaN(debouncedTotalScore)
-    ? "0.00"
-    : debouncedTotalScore;
-
   return (
     <Box mb="lg">
       <Grid align="center" gutter="xs">
@@ -68,7 +65,7 @@ export function UntappdCheckinSection({
         </Grid.Col>
         <Grid.Col span={2}>
           <Text size="xl" ta="center">
-            {displayScore}
+            {displayScore(debouncedTotalScore, 1, 2)}
           </Text>
           <Text c="dimmed" fs="italic" ta="center" size="sm" mt={-5}>
             Score
