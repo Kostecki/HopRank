@@ -20,7 +20,7 @@ export default function MedalPodium({ session }: inputProps) {
   const { ratedBeers } = session;
 
   // heights for podium positions in display order: 2nd, 1st, 3rd
-  const heights = [rem(260), rem(290), rem(260)];
+  const heights = [rem(265), rem(290), rem(265)];
 
   const rankedGroups = groupRatedBeersByScore(ratedBeers);
   const podiumSource = rankedGroups.slice(0, 3);
@@ -77,7 +77,7 @@ export default function MedalPodium({ session }: inputProps) {
           {beer.name}
         </Text>
 
-        <Text size="md" fw={700} mt={5} c="dimmed" fs="italic">
+        <Text size="md" fw={700} mt={5} c="dimmed" fs="italic" mb="lg">
           {displayScore(beer.averageScore)}
         </Text>
       </Box>
@@ -87,8 +87,8 @@ export default function MedalPodium({ session }: inputProps) {
   const renderEmptyPedestal = (place: number, bg: string, height: string) => (
     <Flex
       direction="column"
-      align="center"
       justify="center"
+      align="center"
       gap={6}
       h={height}
       w="100%"
@@ -131,11 +131,6 @@ export default function MedalPodium({ session }: inputProps) {
                     indicator: {
                       width: 7,
                       height: 7,
-                    },
-                    indicators: {
-                      display: "flex",
-                      justifyContent: "flex-end",
-                      marginRight: "15px",
                     },
                     control: {
                       backgroundColor: "unset",
