@@ -20,7 +20,7 @@ export default function SessionStatsCard({
   sessionStats,
   ...props
 }: InputProps) {
-  const { lowestRater, highestRater, avgAbv, avgRating, styleStats } =
+  const { lowestRaters, highestRaters, averageABV, averageRating, styleStats } =
     sessionStats;
 
   return (
@@ -32,18 +32,23 @@ export default function SessionStatsCard({
               <Text ta="center" fw="bold">
                 Topscorer
               </Text>
-              <Text ta="center">
-                {highestRater?.name} ({displayScore(highestRater?.avgScore)})
-              </Text>
+              {highestRaters.map((rater) => (
+                <Text ta="center" key={rater.userId}>
+                  {rater.name} ({displayScore(rater.avgScore)})
+                </Text>
+              ))}
             </Box>
             <Divider opacity={0.5} />
             <Box>
               <Text ta="center" fw="bold">
                 Bundscorer
               </Text>
-              <Text ta="center">
-                {lowestRater?.name} ({displayScore(lowestRater?.avgScore)})
-              </Text>
+              {lowestRaters.map((rater) => (
+                <Text ta="center" key={rater.userId}>
+                  {lowestRaters[0]?.name} (
+                  {displayScore(lowestRaters[0]?.avgScore)})
+                </Text>
+              ))}
             </Box>
           </Flex>
           <Flex justify="space-between" direction="column" h="100%">
@@ -51,14 +56,14 @@ export default function SessionStatsCard({
               <Text ta="center" fw="bold">
                 Gennemsnitsscore
               </Text>
-              <Text ta="center">{displayScore(avgRating)}</Text>
+              <Text ta="center">{displayScore(averageRating)}</Text>
             </Box>
             <Divider opacity={0.5} my="sm" />
             <Box>
               <Text ta="center" fw="bold">
                 Procenter
               </Text>
-              <Text ta="center">{displayABV(avgAbv)}</Text>
+              <Text ta="center">{displayABV(averageABV)}</Text>
             </Box>
           </Flex>
           <Flex justify="space-between" direction="column" h="100%">

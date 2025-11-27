@@ -80,17 +80,14 @@ export const SessionBeerStatus = {
   rated: "rated",
 } as const;
 
+type Rater = { userId: number; name: string | null; avgScore: number };
 export type SessionStats = {
-  avgAbv: number;
-  avgRating: number;
+  averageABV: number;
+  averageRating: number;
   styleStats: {
     uniqueCount: number;
     mostPopular: { style: string; count: number } | null;
   };
-  highestRater: {
-    userId: number;
-    avgScore: number;
-    name: string | null;
-  } | null;
-  lowestRater: { userId: number; name: string | null; avgScore: number } | null;
+  highestRaters: Rater[];
+  lowestRaters: Rater[];
 };
