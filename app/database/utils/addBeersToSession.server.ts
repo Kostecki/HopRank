@@ -12,6 +12,7 @@ type BeerInput = {
   untappdBeerId: number;
   name: string;
   breweryName: string;
+  abv: number;
   style: string;
   label: string;
 };
@@ -27,9 +28,9 @@ export const addBeersToSession = async (
 
   const sessionBeersToInsert = [];
   for (const beerData of beerInputs) {
-    const { untappdBeerId, name, breweryName, style, label } = beerData;
+    const { untappdBeerId, name, breweryName, abv, style, label } = beerData;
 
-    if (!untappdBeerId || !name || !breweryName || !style || !label) {
+    if (!untappdBeerId || !name || !breweryName || !abv || !style || !label) {
       continue;
     }
 
@@ -48,6 +49,7 @@ export const addBeersToSession = async (
           untappdBeerId,
           name,
           breweryName,
+          abv,
           style,
           label,
         })

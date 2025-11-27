@@ -32,8 +32,9 @@ export async function loader({ request }: Route.LoaderArgs) {
   const beers = jsonData.hits.map((beer) => ({
     untappdBeerId: beer.bid.toString(),
     name: beer.beer_name,
-    style: beer.type_name,
     breweryName: beer.brewery_name,
+    abv: beer.beer_abv,
+    style: beer.type_name,
     label: beer.beer_label,
   }));
 
