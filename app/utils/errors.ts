@@ -39,7 +39,7 @@ export function normalizeRouteError(
   let code: string | null = null;
   let devStack: string | undefined;
 
-  console.log(error);
+  console.error(error);
 
   if (isRouteErrorResponse(error)) {
     status = error.status;
