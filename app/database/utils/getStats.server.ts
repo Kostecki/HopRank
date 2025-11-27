@@ -1,18 +1,20 @@
 import { asc, desc, eq, sql } from "drizzle-orm";
+import { alias } from "drizzle-orm/sqlite-core";
+
+import type { SessionStats } from "~/types/session";
 
 import { db } from "../config.server";
-import { beers, ratings, sessionBeers } from "../schema.server";
+import { beers, ratings, sessionBeers, users } from "../schema.server";
 
-type SessionStats = {
-  avgAbv: number;
-  avgRating: number;
-  styleStats: {
-    uniqueCount: number;
-    mostPopular: { style: string; count: number } | null;
-  };
-  highestRater: { userId: number; avgScore: number } | null;
-  lowestRater: { userId: number; avgScore: number } | null;
-};
+// Highest Rater - Person with the highest average scores across all beers in the session
+// Lowest Rater - Person with the lowest average scores across all beers in the session
+// Average ABV - The average ABV of all beers in the session
+// Average Rating - The average rating given across all beers in the session
+// Most Popular Style - The beer style that appears most frequently in the session
+// Number of different styles - Count of unique beer styles in the session
+
+// TODO: handle empty session/no beers
+// TODO: Tie handling
 
 export async function getSessionStats(
   sessionId: number
@@ -125,6 +127,9 @@ export async function getSessionStats(
     .from(userRanks)
     .as("hi_lo_q");
 
+  const userHi = alias(users, "users_hi");
+  const userLo = alias(users, "users_lo");
+
   const [row] = await db
     .select({
       avgAbv: avgAbvQ.avgAbv,
@@ -135,15 +140,19 @@ export async function getSessionStats(
       mostPopularStyleCount: popularStyleQ.popularStyleCount,
       highestRaterId: hiLoQ.highestRaterId,
       highestRaterAvg: hiLoQ.highestRaterAvg,
+      highestRaterName: userHi.name,
       lowestRaterId: hiLoQ.lowestRaterId,
       lowestRaterAvg: hiLoQ.lowestRaterAvg,
+      lowestRaterName: userLo.name,
     })
     .from(avgRatingQ)
     .innerJoin(avgAbvQ, sql`1 = 1`)
     .innerJoin(uniqueBeerCountQ, sql`1 = 1`)
     .innerJoin(differentStylesQ, sql`1 = 1`)
     .leftJoin(popularStyleQ, sql`1 = 1`)
-    .leftJoin(hiLoQ, sql`1 = 1`);
+    .leftJoin(hiLoQ, sql`1 = 1`)
+    .leftJoin(userHi, eq(userHi.id, hiLoQ.highestRaterId))
+    .leftJoin(userLo, eq(userLo.id, hiLoQ.lowestRaterId));
 
   return {
     avgAbv: Number(row?.avgAbv ?? 0),
@@ -162,6 +171,7 @@ export async function getSessionStats(
       row?.highestRaterId != null
         ? {
             userId: Number(row.highestRaterId),
+            name: row.highestRaterName || null,
             avgScore: Number(row?.highestRaterAvg ?? 0),
           }
         : null,
@@ -169,6 +179,7 @@ export async function getSessionStats(
       row?.lowestRaterId != null
         ? {
             userId: Number(row.lowestRaterId),
+            name: row.lowestRaterName || null,
             avgScore: Number(row?.lowestRaterAvg ?? 0),
           }
         : null,
