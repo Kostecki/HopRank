@@ -1,4 +1,3 @@
-import { RingsProgress } from "@gfazioli/mantine-rings-progress";
 import {
   Box,
   Card,
@@ -14,6 +13,8 @@ import { IconCheck } from "@tabler/icons-react";
 import type { RatedBeers, SessionProgress } from "~/types/session";
 
 import { displayScore } from "~/utils/utils";
+
+import VoteProgress from "./VoteProgress";
 
 type InputProps = {
   session: SessionProgress;
@@ -66,46 +67,11 @@ export function BeerCard({ session, beer, rank }: InputProps) {
     }
   };
 
-  const RenderScore = () => {
-    return (
-      <Title size={30} fw={600} lineClamp={1} ta="center">
-        {displayScore(beer?.averageScore)}
-      </Title>
-    );
-  };
-
-  const RenderProgress = () => {
-    if (!session || !session.users.length) return null;
-
-    if (!session.currentBeer) return null;
-    const { currentVoteCount, totalPossibleVoteCount } = session.currentBeer;
-
-    const progress = (currentVoteCount / totalPossibleVoteCount) * 100;
-
-    return (
-      <RingsProgress
-        size={70}
-        h={70}
-        w={70}
-        animate
-        thickness={6}
-        roundCaps={false}
-        rings={[{ value: progress, color: "slateIndigo" }]}
-        animationDuration={500}
-        label={
-          <Text
-            size="xs"
-            ta="center"
-            fw="600"
-            style={{ pointerEvents: "none" }}
-            c="dimmed"
-          >
-            {`${currentVoteCount}/${totalPossibleVoteCount}`}
-          </Text>
-        }
-      />
-    );
-  };
+  const RenderScore = () => (
+    <Title size={30} fw={600} lineClamp={1} ta="center">
+      {displayScore(beer?.averageScore)}
+    </Title>
+  );
 
   return (
     <Card
@@ -143,7 +109,7 @@ export function BeerCard({ session, beer, rank }: InputProps) {
         </Grid.Col>
         <Grid.Col span={3}>
           <Flex justify="center">
-            {isRatedBeer ? <RenderScore /> : <RenderProgress />}
+            {isRatedBeer ? <RenderScore /> : <VoteProgress session={session} />}
           </Flex>
         </Grid.Col>
       </Grid>

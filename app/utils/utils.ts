@@ -78,6 +78,15 @@ export const displayScore = (
   });
 };
 
+export const displayABV = (
+  value: number | undefined,
+  minDigits = 2,
+  maxDigits = 2
+): string => {
+  const formatted = displayScore(value, minDigits, maxDigits);
+  return `${formatted}%`;
+};
+
 /**
  * Extracts and validates a numeric session ID from a string input.
  * Throws a 400 response if the input is missing or not a valid number.

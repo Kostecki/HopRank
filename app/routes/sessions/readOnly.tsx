@@ -7,7 +7,9 @@ import type { SocketEvent } from "~/types/websocket";
 import type { Route } from "./+types/readOnly";
 
 import MedalPodium from "~/components/MedalPodium";
+import SessionStatsCard from "~/components/SessionStatsCard";
 import { getSessionProgress } from "~/database/utils/getSessionProgress.server";
+import { getSessionStats } from "~/database/utils/getStats.server";
 import { useDebouncedSocketEvent } from "~/hooks/useDebouncedSocketEvent";
 import { groupRatedBeersByScore } from "~/utils/podium";
 import { createBeerLink } from "~/utils/untappd";
@@ -35,7 +37,12 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   }
 
   const sessionProgress: SessionProgress = sessionProgressResult;
-  return { sessionProgress };
+  const sessionStats = await getSessionStats(sessionId);
+
+  return {
+    sessionProgress,
+    sessionStats,
+  };
 }
 
 const viewBeerUntappd = (untappdBeerId: number) => {
@@ -44,7 +51,7 @@ const viewBeerUntappd = (untappdBeerId: number) => {
 };
 
 export default function SessionView() {
-  const { sessionProgress } = useLoaderData<typeof loader>();
+  const { sessionProgress, sessionStats } = useLoaderData<typeof loader>();
 
   const { revalidate } = useRevalidator();
 
@@ -96,6 +103,7 @@ export default function SessionView() {
             </Table.Td>
           )}
           <Table.Td ta="center">{beer.name}</Table.Td>
+          <Table.Td ta="center">{beer.style}</Table.Td>
           <Table.Td ta="center">{beer.breweryName}</Table.Td>
           <Table.Td ta="center">{addedByName}</Table.Td>
           <Table.Td ta="center">{displayScore(group.score)}</Table.Td>
@@ -105,6 +113,8 @@ export default function SessionView() {
   });
 
   const hasRatings = sessionProgress.ratedBeers.length > 0;
+  const showTablePlaceholder =
+    hasRatings && sessionProgress.ratedBeers.length < 4;
 
   return (
     <Box data-breakout m="md" p="md">
@@ -149,22 +159,37 @@ export default function SessionView() {
       )}
 
       {hasRatings && (
-        <Grid mt={50} justify="center" gutter="xl">
-          <Grid.Col span={10}>
-            <Table highlightOnHover>
-              <Table.Thead>
-                <Table.Tr>
-                  <Table.Th ta="center">#</Table.Th>
-                  <Table.Th ta="center">Øl</Table.Th>
-                  <Table.Th ta="center">Bryggeri</Table.Th>
-                  <Table.Th ta="center">Tilføjet af</Table.Th>
-                  <Table.Th ta="center">Score</Table.Th>
-                </Table.Tr>
-              </Table.Thead>
-              <Table.Tbody>{tableRows}</Table.Tbody>
-            </Table>
-          </Grid.Col>
-        </Grid>
+        <>
+          <SessionStatsCard mt={50} sessionStats={sessionStats} />
+
+          <Grid mt={50} justify="center" gutter="xl">
+            <Grid.Col span={12}>
+              <Table highlightOnHover={!showTablePlaceholder}>
+                <Table.Thead>
+                  <Table.Tr>
+                    <Table.Th ta="center">#</Table.Th>
+                    <Table.Th ta="center">Øl</Table.Th>
+                    <Table.Th ta="center">Stiltype</Table.Th>
+                    <Table.Th ta="center">Bryggeri</Table.Th>
+                    <Table.Th ta="center">Tilføjet af</Table.Th>
+                    <Table.Th ta="center">Score</Table.Th>
+                  </Table.Tr>
+                </Table.Thead>
+                <Table.Tbody>
+                  {showTablePlaceholder ? (
+                    <Table.Tr>
+                      <Table.Td colSpan={5} ta="center" c="gray.6">
+                        Her er endnu ingen øl at vise
+                      </Table.Td>
+                    </Table.Tr>
+                  ) : (
+                    tableRows
+                  )}
+                </Table.Tbody>
+              </Table>
+            </Grid.Col>
+          </Grid>
+        </>
       )}
     </Box>
   );

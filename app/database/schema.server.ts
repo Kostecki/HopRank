@@ -68,6 +68,7 @@ export const beers = sqliteTable("beers", {
   name: text("name").notNull(),
   breweryName: text("brewery_name").notNull(),
   style: text("style").notNull(),
+  abv: real("abv").notNull().default(0),
   label: text("label").notNull(),
   createdAt: text("created_at")
     .notNull()
@@ -77,27 +78,31 @@ export const beers = sqliteTable("beers", {
     .default(sql`CURRENT_TIMESTAMP`),
 });
 
-export const sessionBeers = sqliteTable("session_beers", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  sessionId: integer("session_id")
-    .notNull()
-    .references(() => sessions.id),
-  beerId: integer("beer_id")
-    .notNull()
-    .references(() => beers.id),
-  addedByUserId: integer("added_by_user_id")
-    .notNull()
-    .references(() => users.id),
-  order: integer("order"), // Not null?
-  status: text({
-    enum: Object.values(SessionBeerStatus) as [string, ...string[]],
-  })
-    .notNull()
-    .default(SessionBeerStatus.waiting),
-  createdAt: text("created_at")
-    .notNull()
-    .default(sql`CURRENT_TIMESTAMP`),
-});
+export const sessionBeers = sqliteTable(
+  "session_beers",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    sessionId: integer("session_id")
+      .notNull()
+      .references(() => sessions.id),
+    beerId: integer("beer_id")
+      .notNull()
+      .references(() => beers.id),
+    addedByUserId: integer("added_by_user_id")
+      .notNull()
+      .references(() => users.id),
+    order: integer("order"), // Not null?
+    status: text({
+      enum: Object.values(SessionBeerStatus) as [string, ...string[]],
+    })
+      .notNull()
+      .default(SessionBeerStatus.waiting),
+    createdAt: text("created_at")
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+  },
+  (table) => [unique("unique_session_beer").on(table.sessionId, table.beerId)]
+);
 
 export const criteria = sqliteTable("criteria", {
   id: integer("id").primaryKey({ autoIncrement: true }),

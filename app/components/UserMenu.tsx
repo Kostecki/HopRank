@@ -153,7 +153,7 @@ export function UserMenu({ user }: InputProps) {
               pt="sm"
               pb={6}
             >
-              {`Forbundne klienter (WS): ${clientsCount}`}
+              {`WebSocket-klienter: ${clientsCount}`}
             </Text>
 
             <Menu.Item component={Link} to={COMMIT_URL} target="_blank">
