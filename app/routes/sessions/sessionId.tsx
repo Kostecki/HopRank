@@ -1,4 +1,4 @@
-import { Accordion } from "@mantine/core";
+import { Accordion, Divider } from "@mantine/core";
 import { eq } from "drizzle-orm";
 import { useMemo } from "react";
 import { redirect, useLoaderData, useRevalidator } from "react-router";
@@ -146,34 +146,37 @@ export default function Session() {
           const { beerId } = beer;
 
           return (
-            <Accordion.Item
-              value={beerId.toString()}
-              m={0}
-              mb={index === 2 ? "30px" : "8px"}
-              key={beerId}
-            >
-              <Accordion.Control
-                style={{
-                  background: "none",
-                  border: "none",
-                  padding: 0,
-                  margin: 0,
-                  width: "100%",
-                  cursor: "pointer",
-                  userSelect: "none",
-                }}
+            <>
+              <Accordion.Item
+                value={beerId.toString()}
+                m={0}
+                mb={index === 2 ? "30px" : "8px"}
+                key={beerId}
               >
-                <BeerCard
-                  session={sessionProgress}
-                  beer={beer}
-                  rank={index + 1}
-                />
-              </Accordion.Control>
+                <Accordion.Control
+                  style={{
+                    background: "none",
+                    border: "none",
+                    padding: 0,
+                    margin: 0,
+                    width: "100%",
+                    cursor: "pointer",
+                    userSelect: "none",
+                  }}
+                >
+                  <BeerCard
+                    session={sessionProgress}
+                    beer={beer}
+                    rank={index + 1}
+                  />
+                </Accordion.Control>
 
-              <Accordion.Panel>
-                <BeerCardDetails beer={beer} />
-              </Accordion.Panel>
-            </Accordion.Item>
+                <Accordion.Panel>
+                  <BeerCardDetails beer={beer} />
+                </Accordion.Panel>
+              </Accordion.Item>
+              {index === 2 ? <Divider my="30px" /> : null}
+            </>
           );
         })}
       </Accordion>
