@@ -35,7 +35,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     breweryName: beer.brewery_name,
     abv: beer.beer_abv,
     style: beer.type_name,
-    label: beer.beer_label,
+    label: beer.beer_label_hd ?? beer.beer_label,
   }));
 
   return beers;
