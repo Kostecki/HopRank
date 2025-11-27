@@ -168,7 +168,10 @@ export default function NewVote({ user, session, criteria }: InputProps) {
           <>
             <Card shadow="xs" radius="md">
               <LoadingOverlay
-                visible={isSubmitting || voteFetcher.state !== "idle"}
+                visible={
+                  !userHasRated &&
+                  (isSubmitting || voteFetcher.state !== "idle")
+                }
                 zIndex={1000}
                 overlayProps={{ radius: "sm", blur: 2 }}
                 loaderProps={{ color: "slateIndigo" }}

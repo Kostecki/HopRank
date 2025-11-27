@@ -1,4 +1,4 @@
-import { Accordion, Divider } from "@mantine/core";
+import { Accordion, Box, Divider } from "@mantine/core";
 import { eq } from "drizzle-orm";
 import { useMemo } from "react";
 import { redirect, useLoaderData, useRevalidator } from "react-router";
@@ -146,12 +146,11 @@ export default function Session() {
           const { beerId } = beer;
 
           return (
-            <>
+            <Box key={beerId}>
               <Accordion.Item
                 value={beerId.toString()}
                 m={0}
                 mb={index === 2 ? "30px" : "8px"}
-                key={beerId}
               >
                 <Accordion.Control
                   style={{
@@ -175,8 +174,9 @@ export default function Session() {
                   <BeerCardDetails beer={beer} />
                 </Accordion.Panel>
               </Accordion.Item>
+
               {index === 2 ? <Divider my="30px" /> : null}
-            </>
+            </Box>
           );
         })}
       </Accordion>
