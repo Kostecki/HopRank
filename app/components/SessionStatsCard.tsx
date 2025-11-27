@@ -12,6 +12,8 @@ import type { SessionStats } from "~/types/session";
 
 import { displayABV, displayScore } from "~/utils/utils";
 
+import AnimatedValue from "./AnimatedValue";
+
 type InputProps = {
   sessionStats: SessionStats;
 } & BoxProps;
@@ -27,62 +29,86 @@ export default function SessionStatsCard({
     <Box {...props}>
       <Card shadow="xs" radius="md" mt="xl">
         <SimpleGrid cols={3}>
-          <Flex justify="space-between" direction="column" h="100%">
+          <Flex justify="space-around" direction="column" h="100%">
             <Box>
               <Text ta="center" fw="bold">
                 Topscorer
               </Text>
-              {highestRaters.map((rater) => (
-                <Text ta="center" key={rater.userId}>
-                  {rater.name} ({displayScore(rater.avgScore)})
-                </Text>
-              ))}
+              {highestRaters.map((rater) => {
+                const compositeKey = `${rater.userId}-${rater.avgScore}`;
+
+                return (
+                  <AnimatedValue
+                    key={compositeKey}
+                    value={compositeKey}
+                    ta="center"
+                  >
+                    {rater.name} ({displayScore(rater.avgScore)})
+                  </AnimatedValue>
+                );
+              })}
             </Box>
-            <Divider opacity={0.5} />
+            <Divider opacity={0.5} my="md" />
             <Box>
               <Text ta="center" fw="bold">
                 Bundscorer
               </Text>
-              {lowestRaters.map((rater) => (
-                <Text ta="center" key={rater.userId}>
-                  {lowestRaters[0]?.name} (
-                  {displayScore(lowestRaters[0]?.avgScore)})
-                </Text>
-              ))}
+              {lowestRaters.map((rater) => {
+                const compositeKey = `${rater.userId}-${rater.avgScore}`;
+
+                return (
+                  <AnimatedValue
+                    key={compositeKey}
+                    value={compositeKey}
+                    ta="center"
+                  >
+                    {rater.name} ({displayScore(rater.avgScore)})
+                  </AnimatedValue>
+                );
+              })}
             </Box>
           </Flex>
-          <Flex justify="space-between" direction="column" h="100%">
+          <Flex justify="space-around" direction="column" h="100%">
             <Box>
               <Text ta="center" fw="bold">
                 Gennemsnitsscore
               </Text>
-              <Text ta="center">{displayScore(averageRating)}</Text>
+              <AnimatedValue value={averageRating} ta="center">
+                {displayScore(averageRating)}
+              </AnimatedValue>
             </Box>
-            <Divider opacity={0.5} my="sm" />
+            <Divider opacity={0.5} my="md" />
             <Box>
               <Text ta="center" fw="bold">
                 Procenter
               </Text>
-              <Text ta="center">{displayABV(averageABV)}</Text>
+              <AnimatedValue value={averageABV} ta="center">
+                {displayABV(averageABV)}
+              </AnimatedValue>
             </Box>
           </Flex>
-          <Flex justify="space-between" direction="column" h="100%">
+          <Flex justify="space-around" direction="column" h="100%">
             <Box>
               <Text ta="center" fw="bold">
                 Antal Stiltyper
               </Text>
-              <Text ta="center">{styleStats.uniqueCount}</Text>
+              <AnimatedValue value={styleStats.uniqueCount} ta="center">
+                {styleStats.uniqueCount}
+              </AnimatedValue>
             </Box>
-            <Divider opacity={0.5} />
+            <Divider opacity={0.5} my="md" />
             <Box>
               <Text ta="center" fw="bold">
                 Mest Populære
               </Text>
-              <Text ta="center">
+              <AnimatedValue
+                value={styleStats.mostPopular?.style || "N/A"}
+                ta="center"
+              >
                 {styleStats.mostPopular
                   ? `${styleStats.mostPopular.style}`
                   : "N/A"}
-              </Text>
+              </AnimatedValue>
             </Box>
           </Flex>
         </SimpleGrid>
