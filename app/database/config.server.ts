@@ -1,5 +1,4 @@
 import fs from "node:fs";
-import path from "node:path";
 import Database from "better-sqlite3";
 import { drizzle } from "drizzle-orm/better-sqlite3";
 
@@ -22,14 +21,20 @@ import {
 } from "./schema.server";
 import seedDatabase from "./seed";
 
+const DATABASE_NAME = process.env.DATABASE_NAME || "data.db";
 const DATABASE_PATH = process.env.DATABASE_PATH;
 const MIGRATIONS_PATH = process.env.MIGRATIONS_PATH;
 invariant(DATABASE_PATH, "DATABASE_PATH must be set in .env");
 invariant(MIGRATIONS_PATH, "MIGRATIONS_PATH must be set in .env");
 
-fs.mkdirSync(path.dirname(DATABASE_PATH), { recursive: true });
+const fullDatabasePath = `${DATABASE_PATH}/${DATABASE_NAME}`;
 
-export const db = drizzle(new Database(DATABASE_PATH), {
+// Ensure the database directory exists
+if (!fs.existsSync(DATABASE_PATH)) {
+  fs.mkdirSync(DATABASE_PATH, { recursive: true });
+}
+
+export const db = drizzle(new Database(fullDatabasePath), {
   schema: {
     users,
     sessions,
