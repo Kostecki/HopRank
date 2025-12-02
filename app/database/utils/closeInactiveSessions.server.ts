@@ -7,12 +7,12 @@ import dayjs from "~/utils/dayjs";
 import { db } from "../config.server";
 import { sessionState, sessions, sessionUsers } from "../schema.server";
 
-const MAX_SESSION_AGE_HOURS = Number(process.env.MAX_SESSION_AGE_HOURS) || 12;
+const MAX_SESSION_AGE_HOURS = Number(process.env.MAX_SESSION_AGE_HOURS) || 24;
 const MAX_SESSION_IDLE_TIME_HOURS =
-  Number(process.env.MAX_SESSION_IDLE_TIME_HOURS) || 1;
+  Number(process.env.MAX_SESSION_IDLE_TIME_HOURS) || 6;
 
 /**
- * Closes sessions that are more than 12 hours old and have had no activity in the last hour.
+ * Closes sessions that are more than 24 hours old and have had no activity in the last 6 hours.
  */
 export const closeInactiveSessions = async () => {
   const sessionAgeCutoff = dayjs()
@@ -22,7 +22,7 @@ export const closeInactiveSessions = async () => {
     .subtract(MAX_SESSION_IDLE_TIME_HOURS, "hour")
     .toISOString();
 
-  // Get all active sessions older than 12 hours
+  // Get all active sessions older than 24 hours
   const oldActiveSessions = await db.query.sessions.findMany({
     where: lt(sessions.createdAt, sessionAgeCutoff),
     with: {
@@ -55,6 +55,8 @@ export const closeInactiveSessions = async () => {
     .where(inArray(sessionUsers.sessionId, staleSessions));
 
   console.log(
-    `[DB] Closed ${staleSessions.length} stale session${staleSessions.length !== 1 ? "s" : ""}.`
+    `[DB] Closed ${staleSessions.length} stale session${
+      staleSessions.length !== 1 ? "s" : ""
+    }.`
   );
 };

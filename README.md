@@ -101,7 +101,8 @@ Create a `.env` file with the required environment variables. Below is a consoli
 | `SMTP_USER` | SMTP auth username |
 | `SMTP_PASS` | SMTP auth password |
 | `TOTP_SECRET` | Base secret for generating TOTP (2FA) codes |
-| `MAX_SESSION_AGE_HOURS` | Auto-close sessions older than this (default 12) |
+| `MAX_SESSION_AGE_HOURS` | Auto-close sessions older than this (default: 24) |
+| `MAX_SESSION_IDLE_TIME_HOURS` | Timeout for "idle" session (default: 6) |
 | `VITE_UMAMI_SRC_URL` | Umami analytics script URL (production only) |
 | `VITE_UMAMI_WEBSITE_ID` | Umami website/site ID |
 | `VITE_LATEST_COMMIT_HASH` | Injected at build time for UI display of current commit |
