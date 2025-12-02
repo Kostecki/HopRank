@@ -21,11 +21,9 @@ import {
 } from "./schema.server";
 import seedDatabase from "./seed";
 
-const DATABASE_NAME = process.env.DATABASE_NAME || "data.db";
 const DATABASE_PATH = process.env.DATABASE_PATH;
-const MIGRATIONS_PATH = process.env.MIGRATIONS_PATH;
+const DATABASE_NAME = process.env.DATABASE_NAME || "data.db";
 invariant(DATABASE_PATH, "DATABASE_PATH must be set in .env");
-invariant(MIGRATIONS_PATH, "MIGRATIONS_PATH must be set in .env");
 
 const fullDatabasePath = `${DATABASE_PATH}/${DATABASE_NAME}`;
 

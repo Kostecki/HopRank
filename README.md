@@ -84,7 +84,7 @@ Create a `.env` file with the required environment variables. Below is a consoli
 | `SESSION_SECRET` | Secret for signing session cookies |
 | `UNTAPPD_CLIENT_ID` | Untappd OAuth client ID |
 | `UNTAPPD_CLIENT_SECRET` | Untappd OAuth client secret |
-| `DATABASE_NAME` | Name of the database file (default: data.db) |
+
 | `DATABASE_PATH` | Path to the SQLite database file (e.g. `./data/database.db`) |
 | `VITE_ALGOLIA_APP_ID` | Algolia application ID for beer search |
 | `VITE_ALGOLIA_API_K` | Algolia search-only API key |
@@ -94,7 +94,7 @@ Create a `.env` file with the required environment variables. Below is a consoli
 
 | Variable | Purpose |
 |----------|---------|
-| `MIGRATIONS_PATH` | Custom path to Drizzle migration folder (defaults to project path) |
+| `DATABASE_NAME` | Name of the database file (default: data.db) |
 | `SMTP_FROM` | From address for outbound emails |
 | `SMTP_HOST` | SMTP server host for email login links |
 | `SMTP_PORT` | SMTP server port |
