@@ -101,9 +101,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 	const UmamiScript = () => {
 		const isProd = import.meta.env.PROD;
-
-		console.log("UmamiScript", { SRC_URL, WEBSITE_ID, isProd });
-
 		if (!isProd || !SRC_URL || !WEBSITE_ID) return null;
 
 		return <script defer src={SRC_URL} data-website-id={WEBSITE_ID} />;
