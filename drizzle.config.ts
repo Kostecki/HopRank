@@ -17,7 +17,6 @@ console.log("Migrations Output Path:", outPath);
 console.log("Schema Path:", schemaPath);
 
 export default defineConfig({
-  out: outPath,
   schema: schemaPath,
   dialect: "sqlite",
   dbCredentials: {

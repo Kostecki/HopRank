@@ -1,1 +1,0 @@
-ALTER TABLE `beers` ADD `label_hd` text;

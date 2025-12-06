@@ -58,9 +58,8 @@ RUN mkdir -p /hop-rank/app/database
 COPY --from=prod-deps /hop-rank/node_modules ./node_modules
 COPY --from=build /hop-rank/build ./build
 COPY --from=build /hop-rank/public ./public
-COPY --from=build /hop-rank/app ./app
+COPY --from=build /hop-rank/drizzle ./drizzle
 COPY --from=build /hop-rank/drizzle.config.ts ./drizzle.config.ts
-
 COPY package.json pnpm-lock.yaml ./
 COPY start.sh ./
 RUN chmod +x start.sh
