@@ -32,6 +32,7 @@ export type RatedBeers = {
   breweryName: BaseBeer["breweryName"];
   style: BaseBeer["style"];
   label: BaseBeer["label"];
+  label_hd: BaseBeer["label_hd"];
   addedByUserId: number | null;
   order: number | null;
   averageScore: number;

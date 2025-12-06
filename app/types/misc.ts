@@ -4,4 +4,5 @@ export type BeerOption = {
   style: string;
   breweryName: string;
   label: string;
+  label_hd?: string;
 };

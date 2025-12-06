@@ -70,6 +70,7 @@ export const beers = sqliteTable("beers", {
   style: text("style").notNull(),
   abv: real("abv").notNull().default(0),
   label: text("label").notNull(),
+  label_hd: text("label_hd"),
   createdAt: text("created_at")
     .notNull()
     .default(sql`CURRENT_TIMESTAMP`),

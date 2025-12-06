@@ -29,14 +29,17 @@ export async function loader({ request }: Route.LoaderArgs) {
   }
 
   const jsonData = (await response.json()) as AlgoliaBeerResponse;
-  const beers = jsonData.hits.map((beer) => ({
-    untappdBeerId: beer.bid.toString(),
-    name: beer.beer_name,
-    breweryName: beer.brewery_name,
-    abv: beer.beer_abv,
-    style: beer.type_name,
-    label: beer.beer_label_hd ?? beer.beer_label,
-  }));
+  const beers = await Promise.all(
+    jsonData.hits.map(async (beer) => ({
+      untappdBeerId: beer.bid.toString(),
+      name: beer.beer_name,
+      breweryName: beer.brewery_name,
+      abv: beer.beer_abv,
+      style: beer.type_name,
+      label: beer.beer_label,
+      label_hd: beer.beer_label_hd,
+    }))
+  );
 
   return beers;
 }
