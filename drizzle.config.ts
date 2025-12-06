@@ -6,15 +6,11 @@ if (!DATABASE_PATH) {
   throw new Error("DATABASE_PATH must be set in environment variables");
 }
 
-const fullDatabasePath = `${DATABASE_PATH}/${DATABASE_NAME}`;
-
-console.log("OUT", `.${DATABASE_PATH}/migrations`);
-console.log("SCHEMA", `.${DATABASE_PATH}/schema.server.ts`);
-console.log("DB CREDENTIALS", fullDatabasePath);
+const fullDatabasePath = `./${DATABASE_PATH}/${DATABASE_NAME}`;
 
 export default defineConfig({
-  out: `${DATABASE_PATH}/migrations`,
-  schema: `${DATABASE_PATH}/schema.server.ts`,
+  out: `./${DATABASE_PATH}/migrations`,
+  schema: `./${DATABASE_PATH}/schema.server.ts`,
   dialect: "sqlite",
   dbCredentials: {
     url: fullDatabasePath,
