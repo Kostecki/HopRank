@@ -17,91 +17,91 @@ import { getSessionProgress } from "~/database/utils/getSessionProgress.server";
 import { extractSessionId } from "~/utils/utils";
 
 export async function loader({ params, request }: Route.LoaderArgs) {
-  let sessionId: number | undefined;
-  if (params.sessionId) {
-    sessionId = extractSessionId(params.sessionId);
-  }
+	let sessionId: number | undefined;
+	if (params.sessionId) {
+		sessionId = extractSessionId(params.sessionId);
+	}
 
-  const user = await userSessionGet(request);
+	const user = await userSessionGet(request);
 
-  let sessionProgress: SessionProgress | null = null;
-  let sessionBeersList: SelectSessionBeersWithBeer[] = [];
-  if (sessionId) {
-    const [sessionProgressResult, sessionBeersResult] = await Promise.all([
-      getSessionProgress({ request, sessionId }),
-      db
-        .select({
-          sessionBeer: sessionBeers,
-          beer: beers,
-        })
-        .from(sessionBeers)
-        .innerJoin(beers, eq(sessionBeers.beerId, beers.id))
-        .where(eq(sessionBeers.sessionId, sessionId)),
-    ]);
+	let sessionProgress: SessionProgress | null = null;
+	let sessionBeersList: SelectSessionBeersWithBeer[] = [];
+	if (sessionId) {
+		const [sessionProgressResult, sessionBeersResult] = await Promise.all([
+			getSessionProgress({ request, sessionId }),
+			db
+				.select({
+					sessionBeer: sessionBeers,
+					beer: beers,
+				})
+				.from(sessionBeers)
+				.innerJoin(beers, eq(sessionBeers.beerId, beers.id))
+				.where(eq(sessionBeers.sessionId, sessionId)),
+		]);
 
-    if (!("statusCode" in sessionProgressResult)) {
-      sessionProgress = sessionProgressResult;
-    }
+		if (!("statusCode" in sessionProgressResult)) {
+			sessionProgress = sessionProgressResult;
+		}
 
-    sessionBeersList = sessionBeersResult.map(({ sessionBeer, beer }) => ({
-      ...sessionBeer,
-      beer,
-    }));
-  }
+		sessionBeersList = sessionBeersResult.map(({ sessionBeer, beer }) => ({
+			...sessionBeer,
+			beer,
+		}));
+	}
 
-  return {
-    user,
-    sessionProgress,
-    sessionBeers: sessionBeersList,
-  };
+	return {
+		user,
+		sessionProgress,
+		sessionBeers: sessionBeersList,
+	};
 }
 
 export default function Layout() {
-  const { user, sessionProgress, sessionBeers } =
-    useLoaderData<typeof loader>();
+	const { user, sessionProgress, sessionBeers } =
+		useLoaderData<typeof loader>();
 
-  const [mobileOpened, { toggle: toggleMobile, close: closeMobile }] =
-    useDisclosure();
-  const [desktopOpened, { toggle: toggleDesktop, close: closeDesktop }] =
-    useDisclosure(false);
+	const [mobileOpened, { toggle: toggleMobile, close: closeMobile }] =
+		useDisclosure();
+	const [desktopOpened, { toggle: toggleDesktop, close: closeDesktop }] =
+		useDisclosure(false);
 
-  return (
-    <SocketProvider>
-      <AppShell
-        header={{ height: 60 }}
-        navbar={{
-          width: 300,
-          breakpoint: "sm",
-          collapsed: { mobile: !mobileOpened, desktop: !desktopOpened },
-        }}
-      >
-        <AppShell.Header>
-          <Header
-            user={user}
-            session={sessionProgress}
-            mobileOpened={mobileOpened}
-            desktopOpened={desktopOpened}
-            toggleMobile={toggleMobile}
-            toggleDesktop={toggleDesktop}
-          />
-        </AppShell.Header>
+	return (
+		<SocketProvider>
+			<AppShell
+				header={{ height: 60 }}
+				navbar={{
+					width: 300,
+					breakpoint: "sm",
+					collapsed: { mobile: !mobileOpened, desktop: !desktopOpened },
+				}}
+			>
+				<AppShell.Header>
+					<Header
+						user={user}
+						session={sessionProgress}
+						mobileOpened={mobileOpened}
+						desktopOpened={desktopOpened}
+						toggleMobile={toggleMobile}
+						toggleDesktop={toggleDesktop}
+					/>
+				</AppShell.Header>
 
-        <AppShell.Navbar p="md">
-          <Navbar
-            user={user}
-            sessionProgress={sessionProgress}
-            sessionBeers={sessionBeers}
-            closeMobile={closeMobile}
-            closeDesktop={closeDesktop}
-          />
-        </AppShell.Navbar>
+				<AppShell.Navbar p="md">
+					<Navbar
+						user={user}
+						sessionProgress={sessionProgress}
+						sessionBeers={sessionBeers}
+						closeMobile={closeMobile}
+						closeDesktop={closeDesktop}
+					/>
+				</AppShell.Navbar>
 
-        <AppShell.Main>
-          <Container strategy="grid" size="xs" p="md">
-            <Outlet />
-          </Container>
-        </AppShell.Main>
-      </AppShell>
-    </SocketProvider>
-  );
+				<AppShell.Main>
+					<Container strategy="grid" size="xs" p="md">
+						<Outlet />
+					</Container>
+				</AppShell.Main>
+			</AppShell>
+		</SocketProvider>
+	);
 }
