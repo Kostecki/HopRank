@@ -6,11 +6,18 @@ if (!DATABASE_PATH) {
   throw new Error("DATABASE_PATH must be set in environment variables");
 }
 
-const fullDatabasePath = `./${DATABASE_PATH}/${DATABASE_NAME}`;
+const fullDatabasePath = `${DATABASE_PATH}/${DATABASE_NAME}`;
+const outPath = `${DATABASE_PATH}/migrations`;
+const schemaPath = `${DATABASE_PATH}/schema.server.ts`;
+
+console.log("drizzle.config.ts");
+console.log("Database Path:", fullDatabasePath);
+console.log("Migrations Output Path:", outPath);
+console.log("Schema Path:", schemaPath);
 
 export default defineConfig({
-  out: `./${DATABASE_PATH}/migrations`,
-  schema: `./${DATABASE_PATH}/schema.server.ts`,
+  out: outPath,
+  schema: schemaPath,
   dialect: "sqlite",
   dbCredentials: {
     url: fullDatabasePath,
