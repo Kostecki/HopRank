@@ -8,13 +8,7 @@ if (!DATABASE_PATH) {
 }
 
 const fullDatabasePath = path.resolve(DATABASE_PATH, DATABASE_FILE_NAME);
-const outPath = path.resolve(DATABASE_PATH, "migrations");
 const schemaPath = path.resolve(DATABASE_PATH, "schema.server.ts");
-
-console.log("drizzle.config.ts");
-console.log("Database Path:", fullDatabasePath);
-console.log("Migrations Output Path:", outPath);
-console.log("Schema Path:", schemaPath);
 
 export default defineConfig({
   schema: schemaPath,

@@ -28,9 +28,6 @@ invariant(DATABASE_PATH, "DATABASE_PATH must be set in .env");
 
 const fullDatabasePath = path.resolve(DATABASE_PATH, DATABASE_FILE_NAME);
 
-console.log("config.server.ts");
-console.log("Database Path:", fullDatabasePath);
-
 // Ensure the database directory exists
 if (!fs.existsSync(DATABASE_PATH)) {
   fs.mkdirSync(DATABASE_PATH, { recursive: true });
