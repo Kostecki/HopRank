@@ -8,9 +8,13 @@ if (!DATABASE_PATH) {
 
 const fullDatabasePath = `${DATABASE_PATH}/${DATABASE_NAME}`;
 
+console.log("OUT", `.${DATABASE_PATH}/migrations`);
+console.log("SCHEMA", `.${DATABASE_PATH}/schema.server.ts`);
+console.log("DB CREDENTIALS", fullDatabasePath);
+
 export default defineConfig({
-  out: `.${DATABASE_PATH}/migrations`,
-  schema: `.${DATABASE_PATH}/schema.server.ts`,
+  out: `${DATABASE_PATH}/migrations`,
+  schema: `${DATABASE_PATH}/schema.server.ts`,
   dialect: "sqlite",
   dbCredentials: {
     url: fullDatabasePath,
