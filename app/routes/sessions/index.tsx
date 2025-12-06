@@ -8,7 +8,6 @@ import type { SocketEvent } from "~/types/websocket";
 import type { Route } from "./+types";
 
 import { userSessionGet } from "~/auth/users.server";
-import { ModalSetName } from "~/components/modals/ModalSetName";
 import NewSession from "~/components/NewSession";
 import SessionPinInput from "~/components/SessionPinInput";
 import { SessionTabs } from "~/components/SessionTabs";
@@ -81,12 +80,11 @@ export async function loader({ request }: Route.LoaderArgs) {
 	return {
 		criteria: allCriteria,
 		sessionSummaries,
-		user,
 	};
 }
 
 export default function Sessions() {
-	const { criteria, sessionSummaries, user } = useLoaderData<typeof loader>();
+	const { criteria, sessionSummaries } = useLoaderData<typeof loader>();
 	const { revalidate } = useRevalidator();
 
 	// Get active session IDs for the user to filter socket events
@@ -123,20 +121,16 @@ export default function Sessions() {
 	);
 
 	return (
-		<>
-			<Paper p="md" radius="md" withBorder>
-				<SessionPinInput mt="md" mb={50} />
+		<Paper p="md" radius="md" withBorder>
+			<SessionPinInput mt="md" mb={50} />
 
-				<SessionTabs
-					inProgressSessions={inProgressSessions}
-					finishedSessions={finishedSessions}
-					readOnly={false}
-				/>
+			<SessionTabs
+				inProgressSessions={inProgressSessions}
+				finishedSessions={finishedSessions}
+				readOnly={false}
+			/>
 
-				<NewSession criteria={criteria} />
-			</Paper>
-
-			<ModalSetName user={user} />
-		</>
+			<NewSession criteria={criteria} />
+		</Paper>
 	);
 }

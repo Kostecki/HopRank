@@ -8,6 +8,7 @@ import type { Route } from "../+types/root";
 
 import { userSessionGet } from "~/auth/users.server";
 import { Header } from "~/components/Header";
+import { ModalSetName } from "~/components/modals/ModalSetName";
 import Navbar from "~/components/Navbar";
 import { SocketProvider } from "~/context/SocketContext";
 import { db } from "~/database/config.server";
@@ -99,6 +100,8 @@ export default function Layout() {
 				<AppShell.Main>
 					<Container strategy="grid" size="xs" p="md">
 						<Outlet />
+
+						{(!user.untappd || !user.name) && <ModalSetName user={user} />}
 					</Container>
 				</AppShell.Main>
 			</AppShell>
