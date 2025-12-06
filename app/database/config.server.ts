@@ -23,10 +23,10 @@ import {
 import seedDatabase from "./seed";
 
 const DATABASE_PATH = process.env.DATABASE_PATH;
-const DATABASE_NAME = process.env.DATABASE_NAME || "data.db";
+const DATABASE_FILE_NAME = process.env.DATABASE_FILE_NAME || "data.db";
 invariant(DATABASE_PATH, "DATABASE_PATH must be set in .env");
 
-const fullDatabasePath = path.resolve(DATABASE_PATH, DATABASE_NAME);
+const fullDatabasePath = path.resolve(DATABASE_PATH, DATABASE_FILE_NAME);
 
 console.log("config.server.ts");
 console.log("Database Path:", fullDatabasePath);

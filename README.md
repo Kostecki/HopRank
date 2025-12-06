@@ -94,7 +94,7 @@ Create a `.env` file with the required environment variables. Below is a consoli
 
 | Variable | Purpose |
 |----------|---------|
-| `DATABASE_NAME` | Name of the database file (default: data.db) |
+| `DATABASE_FILE_NAME` | Name of the database file (default: data.db) |
 | `SMTP_FROM` | From address for outbound emails |
 | `SMTP_HOST` | SMTP server host for email login links |
 | `SMTP_PORT` | SMTP server port |
