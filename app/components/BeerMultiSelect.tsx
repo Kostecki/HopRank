@@ -159,6 +159,7 @@ export default function BeerMultiSelect({
                 }}
                 w="100%"
                 ref={inputRef}
+                data-autofocus
               />
             </Combobox.EventsTarget>
             {isLoading && (
