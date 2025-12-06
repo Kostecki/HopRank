@@ -1,5 +1,8 @@
 #!/bin/sh
 
+echo "Debug mode, sleeping..."
+sleep infinity
+
 # Exit on any error
 set -e
 
