@@ -5,7 +5,7 @@ WORKDIR /hop-rank
 
 # Install all (dev) deps
 FROM base AS deps
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY package.json pnpm-lock.yaml ./
 
 # Use a cache for the pnpm store to speed subsequent builds
 RUN --mount=type=cache,target=/root/.pnpm-store \
@@ -16,7 +16,7 @@ FROM deps AS build
 COPY app/ ./app
 COPY public/ ./public
 COPY vite.config.ts tsconfig.json drizzle.config.ts postcss.config.cjs react-router.config.ts theme.ts ./
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY package.json pnpm-lock.yaml ./
 
 # Build-time public env variables
 ARG VITE_WS_URL
