@@ -10,82 +10,82 @@ import { showDangerToast } from "~/utils/toasts";
 import BeerMultiSelect from "./BeerMultiSelect";
 
 type InputProps = {
-  sessionBeers: SelectBeers[];
-  onBeersUpdated?: () => void;
+	sessionBeers: SelectBeers[];
+	onBeersUpdated?: () => void;
 };
 
 export default function EmptySession({
-  sessionBeers,
-  onBeersUpdated,
+	sessionBeers,
+	onBeersUpdated,
 }: InputProps) {
-  const { sessionId } = useParams();
-  const [selectedBeers, setSelectedBeers] = useState<BeerOption[]>([]);
+	const { sessionId } = useParams();
+	const [selectedBeers, setSelectedBeers] = useState<BeerOption[]>([]);
 
-  const fetcher = useFetcher();
+	const fetcher = useFetcher();
 
-  const handleSubmit = () => {
-    if (!sessionId) {
-      return;
-    }
+	const handleSubmit = () => {
+		if (!sessionId) {
+			return;
+		}
 
-    const formData = new FormData();
-    formData.append("beers", JSON.stringify(selectedBeers));
+		const formData = new FormData();
+		formData.append("beers", JSON.stringify(selectedBeers));
 
-    fetcher.submit(formData, {
-      method: "POST",
-      action: `/api/sessions/${sessionId}/add`,
-    });
+		fetcher.submit(formData, {
+			method: "POST",
+			action: `/api/sessions/${sessionId}/add`,
+		});
 
-    setSelectedBeers([]);
-  };
+		setSelectedBeers([]);
+	};
 
-  const { data, state } = fetcher;
+	const { data, state } = fetcher;
 
-  useEffect(() => {
-    if (state !== "idle" || !data) {
-      return;
-    }
+	useEffect(() => {
+		if (state !== "idle" || !data) {
+			return;
+		}
 
-    const result = data as { success?: boolean; message?: string };
-    const fetcherWithReset = fetcher as typeof fetcher & {
-      reset?: () => void;
-    };
-    if (result.success) {
-      onBeersUpdated?.();
-      fetcherWithReset.reset?.();
-      return;
-    }
+		const result = data as { success?: boolean; message?: string };
+		const fetcherWithReset = fetcher as typeof fetcher & {
+			reset?: () => void;
+		};
+		if (result.success) {
+			onBeersUpdated?.();
+			fetcherWithReset.reset?.();
+			return;
+		}
 
-    if (result.message) {
-      showDangerToast(result.message);
-    }
-    fetcherWithReset.reset?.();
-  }, [state, data, fetcher, onBeersUpdated]);
+		if (result.message) {
+			showDangerToast(result.message);
+		}
+		fetcherWithReset.reset?.();
+	}, [state, data, fetcher, onBeersUpdated]);
 
-  return (
-    <Paper p="md" radius="md" withBorder mt={64}>
-      <Text fw="bold">Smagningen har ingen øl :(</Text>
-      <Text c="dimmed" size="sm" fs="italic">
-        Du kan tilføje øl ved at søge efter dem herunder
-      </Text>
+	return (
+		<Paper p="md" radius="md" withBorder mt={64}>
+			<Text fw="bold">Smagningen har ingen øl :(</Text>
+			<Text c="dimmed" size="sm" fs="italic">
+				Du kan tilføje øl ved at søge efter dem herunder
+			</Text>
 
-      <BeerMultiSelect
-        my="lg"
-        selectedBeers={selectedBeers}
-        setSelectedBeers={setSelectedBeers}
-        sessionBeers={sessionBeers}
-      />
+			<BeerMultiSelect
+				my="lg"
+				selectedBeers={selectedBeers}
+				setSelectedBeers={setSelectedBeers}
+				sessionBeers={sessionBeers}
+			/>
 
-      <Button
-        color="slateIndigo"
-        fullWidth
-        radius="md"
-        onClick={handleSubmit}
-        disabled={!selectedBeers.length}
-        loading={state === "submitting"}
-      >
-        Tilføj øl til smagningen
-      </Button>
-    </Paper>
-  );
+			<Button
+				color="slateIndigo"
+				fullWidth
+				radius="md"
+				onClick={handleSubmit}
+				disabled={!selectedBeers.length}
+				loading={state === "submitting"}
+			>
+				Tilføj øl til smagningen
+			</Button>
+		</Paper>
+	);
 }

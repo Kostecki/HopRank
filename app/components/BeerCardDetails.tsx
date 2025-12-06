@@ -1,12 +1,12 @@
 import {
-  Box,
-  Button,
-  Divider,
-  LoadingOverlay,
-  Paper,
-  SimpleGrid,
-  Stack,
-  Text,
+	Box,
+	Button,
+	Divider,
+	LoadingOverlay,
+	Paper,
+	SimpleGrid,
+	Stack,
+	Text,
 } from "@mantine/core";
 import { useEffect, useRef, useState } from "react";
 import { useFetcher } from "react-router";
@@ -18,114 +18,114 @@ import { createBeerLink } from "~/utils/untappd";
 import { displayScore, formatCount } from "~/utils/utils";
 
 type InputProps = {
-  beer: RatedBeers;
+	beer: RatedBeers;
 };
 
 export function BeerCardDetails({ beer }: InputProps) {
-  const { untappdBeerId, criteriaBreakdown } = beer;
+	const { untappdBeerId, criteriaBreakdown } = beer;
 
-  const [fetching, setFetching] = useState(true);
-  const [beerDetails, setBeerDetails] = useState<ScrapedBeer>();
+	const [fetching, setFetching] = useState(true);
+	const [beerDetails, setBeerDetails] = useState<ScrapedBeer>();
 
-  const beerFetcher = useFetcher();
-  const fetcherRef = useRef(beerFetcher);
+	const beerFetcher = useFetcher();
+	const fetcherRef = useRef(beerFetcher);
 
-  useEffect(() => {
-    if (!untappdBeerId) return;
+	useEffect(() => {
+		if (!untappdBeerId) return;
 
-    setFetching(true);
-    fetcherRef.current.load(`/api/untappd/beer/${untappdBeerId}`);
-  }, [untappdBeerId]);
+		setFetching(true);
+		fetcherRef.current.load(`/api/untappd/beer/${untappdBeerId}`);
+	}, [untappdBeerId]);
 
-  useEffect(() => {
-    if (beerFetcher.state !== "idle" || !beerFetcher.data) {
-      return;
-    }
+	useEffect(() => {
+		if (beerFetcher.state !== "idle" || !beerFetcher.data) {
+			return;
+		}
 
-    setTimeout(() => {
-      setBeerDetails(beerFetcher.data as ScrapedBeer);
-      setFetching(false);
-    }, 2000);
-  }, [beerFetcher.state, beerFetcher.data]);
+		setTimeout(() => {
+			setBeerDetails(beerFetcher.data as ScrapedBeer);
+			setFetching(false);
+		}, 2000);
+	}, [beerFetcher.state, beerFetcher.data]);
 
-  return (
-    <Paper withBorder radius="md" p="md" pt="lg" mt={-10}>
-      <Box px="sm" pos="relative">
-        <LoadingOverlay
-          visible={fetching}
-          zIndex={1000}
-          overlayProps={{ radius: "sm", blur: 2 }}
-          loaderProps={{ color: "slateIndigo" }}
-        />
-        <SimpleGrid cols={1}>
-          <Text c="dimmed" size="xs" fs="italic">
-            Smagning
-          </Text>
+	return (
+		<Paper withBorder radius="md" p="md" pt="lg" mt={-10}>
+			<Box px="sm" pos="relative">
+				<LoadingOverlay
+					visible={fetching}
+					zIndex={1000}
+					overlayProps={{ radius: "sm", blur: 2 }}
+					loaderProps={{ color: "slateIndigo" }}
+				/>
+				<SimpleGrid cols={1}>
+					<Text c="dimmed" size="xs" fs="italic">
+						Smagning
+					</Text>
 
-          <SimpleGrid cols={criteriaBreakdown.length}>
-            {criteriaBreakdown.map(({ name, averageScore: score }) => (
-              <Stack gap={0} align="center" key={name}>
-                <Text fw={400}>{name}</Text>
-                <Text fw="bold">{displayScore(score)}</Text>
-              </Stack>
-            ))}
-          </SimpleGrid>
-        </SimpleGrid>
+					<SimpleGrid cols={criteriaBreakdown.length}>
+						{criteriaBreakdown.map(({ name, averageScore: score }) => (
+							<Stack gap={0} align="center" key={name}>
+								<Text fw={400}>{name}</Text>
+								<Text fw="bold">{displayScore(score)}</Text>
+							</Stack>
+						))}
+					</SimpleGrid>
+				</SimpleGrid>
 
-        <Divider opacity={0.3} my="md" />
+				<Divider opacity={0.3} my="md" />
 
-        <SimpleGrid cols={1}>
-          <Text c="dimmed" size="xs" fs="italic">
-            Untappd
-          </Text>
+				<SimpleGrid cols={1}>
+					<Text c="dimmed" size="xs" fs="italic">
+						Untappd
+					</Text>
 
-          <SimpleGrid cols={3}>
-            <Box>
-              <Text ta="center" fw={400}>
-                Checkins
-              </Text>
-              <Text ta="center" fw="bold">
-                {formatCount(beerDetails?.checkins?.total)}
-              </Text>
-            </Box>
-            <Box>
-              <Text ta="center" fw={400}>
-                Unikke
-              </Text>
-              <Text ta="center" fw="bold">
-                {formatCount(beerDetails?.checkins?.unique)}
-              </Text>
-            </Box>
-            <Box>
-              <Text ta="center" fw={400}>
-                Rating
-              </Text>
-              <Text ta="center" fw="bold">
-                {beerDetails?.rating.value ? (
-                  <>
-                    {displayScore(beerDetails.rating.value)} (
-                    {formatCount(beerDetails.rating.count)})
-                  </>
-                ) : (
-                  "-"
-                )}
-              </Text>
-            </Box>
-          </SimpleGrid>
-        </SimpleGrid>
-      </Box>
+					<SimpleGrid cols={3}>
+						<Box>
+							<Text ta="center" fw={400}>
+								Checkins
+							</Text>
+							<Text ta="center" fw="bold">
+								{formatCount(beerDetails?.checkins?.total)}
+							</Text>
+						</Box>
+						<Box>
+							<Text ta="center" fw={400}>
+								Unikke
+							</Text>
+							<Text ta="center" fw="bold">
+								{formatCount(beerDetails?.checkins?.unique)}
+							</Text>
+						</Box>
+						<Box>
+							<Text ta="center" fw={400}>
+								Rating
+							</Text>
+							<Text ta="center" fw="bold">
+								{beerDetails?.rating.value ? (
+									<>
+										{displayScore(beerDetails.rating.value)} (
+										{formatCount(beerDetails.rating.count)})
+									</>
+								) : (
+									"-"
+								)}
+							</Text>
+						</Box>
+					</SimpleGrid>
+				</SimpleGrid>
+			</Box>
 
-      <Button
-        variant="light"
-        component="a"
-        href={createBeerLink(untappdBeerId)}
-        target="_blank"
-        color="untappd"
-        fullWidth
-        mt="xl"
-      >
-        Åben i Untappd
-      </Button>
-    </Paper>
-  );
+			<Button
+				variant="light"
+				component="a"
+				href={createBeerLink(untappdBeerId)}
+				target="_blank"
+				color="untappd"
+				fullWidth
+				mt="xl"
+			>
+				Åben i Untappd
+			</Button>
+		</Paper>
+	);
 }

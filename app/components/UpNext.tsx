@@ -9,36 +9,36 @@ import { BeerCard } from "./BeerCard";
 import NewVote from "./NewVote";
 
 type InputProps = {
-  user: SessionUser;
-  session: SessionProgress;
-  criteria: Criterion[];
+	user: SessionUser;
+	session: SessionProgress;
+	criteria: Criterion[];
 } & BoxProps;
 
 export default function UpNext({
-  user,
-  session,
-  criteria,
-  ...props
+	user,
+	session,
+	criteria,
+	...props
 }: InputProps) {
-  if (!session) {
-    return null;
-  }
+	if (!session) {
+		return null;
+	}
 
-  return (
-    <Box {...props}>
-      <Anchor
-        href={
-          session.currentBeer
-            ? createBeerLink(session.currentBeer.untappdBeerId)
-            : "#"
-        }
-        target="_blank"
-        underline="never"
-      >
-        <BeerCard session={session} />
-      </Anchor>
+	return (
+		<Box {...props}>
+			<Anchor
+				href={
+					session.currentBeer
+						? createBeerLink(session.currentBeer.untappdBeerId)
+						: "#"
+				}
+				target="_blank"
+				underline="never"
+			>
+				<BeerCard session={session} />
+			</Anchor>
 
-      <NewVote user={user} session={session} criteria={criteria} />
-    </Box>
-  );
+			<NewVote user={user} session={session} criteria={criteria} />
+		</Box>
+	);
 }

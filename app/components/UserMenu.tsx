@@ -9,167 +9,167 @@ import { useSocket } from "~/hooks/useSocket";
 import { createProfileLink } from "~/utils/untappd";
 
 type InputProps = {
-  user: SessionUser;
+	user: SessionUser;
 };
 
 type WSStatus = "undefined" | "connecting" | "connected" | "disconnected";
 
 const DB_URL = (() => {
-  if (typeof window === "undefined") return "#"; // SSR safeguard
-  const { protocol, hostname } = window.location;
+	if (typeof window === "undefined") return "#"; // SSR safeguard
+	const { protocol, hostname } = window.location;
 
-  if (hostname === "localhost") {
-    return "https://local.drizzle.studio";
-  }
+	if (hostname === "localhost") {
+		return "https://local.drizzle.studio";
+	}
 
-  // Add db sub-subdomain for Drizzle Studio
-  return `${protocol}//db.${hostname}`;
+	// Add db sub-subdomain for Drizzle Studio
+	return `${protocol}//db.${hostname}`;
 })();
 
 const getWSStatusColor = (status: WSStatus, avatar?: string) => {
-  const hasAvatar = Boolean(avatar);
+	const hasAvatar = Boolean(avatar);
 
-  switch (status) {
-    case "connected":
-      return `rgba(76, 175, 80, ${hasAvatar ? 1 : 0.5})`;
-    case "connecting":
-      return `rgba(255, 193, 7, ${hasAvatar ? 1 : 0.8})`;
-    case "disconnected":
-      return `rgba(244, 67, 54, ${hasAvatar ? 1 : 0.5})`;
-    default:
-      return `rgba(123, 123, 123, ${hasAvatar ? 1 : 0.5})`;
-  }
+	switch (status) {
+		case "connected":
+			return `rgba(76, 175, 80, ${hasAvatar ? 1 : 0.5})`;
+		case "connecting":
+			return `rgba(255, 193, 7, ${hasAvatar ? 1 : 0.8})`;
+		case "disconnected":
+			return `rgba(244, 67, 54, ${hasAvatar ? 1 : 0.5})`;
+		default:
+			return `rgba(123, 123, 123, ${hasAvatar ? 1 : 0.5})`;
+	}
 };
 
 export function UserMenu({ user }: InputProps) {
-  const { email, admin: isAdmin, untappd } = user;
+	const { email, admin: isAdmin, untappd } = user;
 
-  const firstLetter = email.slice(0, 1).toUpperCase();
+	const firstLetter = email.slice(0, 1).toUpperCase();
 
-  const [clientsCount, setClientsCount] = useState<number | null>(0);
-  const [WSStatus, setWSStatus] = useState<WSStatus>("undefined");
+	const [clientsCount, setClientsCount] = useState<number | null>(0);
+	const [WSStatus, setWSStatus] = useState<WSStatus>("undefined");
 
-  const socket = useSocket();
+	const socket = useSocket();
 
-  useEffect(() => {
-    if (!socket) return;
+	useEffect(() => {
+		if (!socket) return;
 
-    const handleConnect = () => setWSStatus("connected");
-    const handleDisconnect = () => setWSStatus("disconnected");
-    const handleConnectError = () => setWSStatus("disconnected");
-    const handleReconnectAttempt = () => setWSStatus("connecting");
+		const handleConnect = () => setWSStatus("connected");
+		const handleDisconnect = () => setWSStatus("disconnected");
+		const handleConnectError = () => setWSStatus("disconnected");
+		const handleReconnectAttempt = () => setWSStatus("connecting");
 
-    setWSStatus(socket.connected ? "connected" : "disconnected");
+		setWSStatus(socket.connected ? "connected" : "disconnected");
 
-    socket.on("connect", handleConnect);
-    socket.on("disconnect", handleDisconnect);
-    socket.on("connect_error", handleConnectError);
-    socket.on("reconnect_attempt", handleReconnectAttempt);
+		socket.on("connect", handleConnect);
+		socket.on("disconnect", handleDisconnect);
+		socket.on("connect_error", handleConnectError);
+		socket.on("reconnect_attempt", handleReconnectAttempt);
 
-    socket.on("clients-count", (count: number) => {
-      setClientsCount(count);
-    });
+		socket.on("clients-count", (count: number) => {
+			setClientsCount(count);
+		});
 
-    return () => {
-      socket.off("connect", handleConnect);
-      socket.off("disconnect", handleDisconnect);
-      socket.off("connect_error", handleConnectError);
-      socket.off("reconnect_attempt", handleReconnectAttempt);
-    };
-  }, [socket]);
+		return () => {
+			socket.off("connect", handleConnect);
+			socket.off("disconnect", handleDisconnect);
+			socket.off("connect_error", handleConnectError);
+			socket.off("reconnect_attempt", handleReconnectAttempt);
+		};
+	}, [socket]);
 
-  const LATEST_COMMIT_HASH = import.meta.env.VITE_LATEST_COMMIT_HASH;
-  const LATEST_COMMIT_MESSAGE = import.meta.env.VITE_LATEST_COMMIT_MESSAGE;
-  const COMMIT_URL = `https://github.com/Kostecki/HopRank/commit/${LATEST_COMMIT_HASH}`;
+	const LATEST_COMMIT_HASH = import.meta.env.VITE_LATEST_COMMIT_HASH;
+	const LATEST_COMMIT_MESSAGE = import.meta.env.VITE_LATEST_COMMIT_MESSAGE;
+	const COMMIT_URL = `https://github.com/Kostecki/HopRank/commit/${LATEST_COMMIT_HASH}`;
 
-  return (
-    <Menu shadow="md" width="auto" withArrow>
-      <Menu.Target>
-        <Avatar
-          src={untappd?.avatar}
-          name={untappd?.name ?? user.name ?? firstLetter}
-          radius="100%"
-          size="md"
-          style={{
-            cursor: "pointer",
-            transition: "box-shadow 0.2s ease-in-out",
-            boxShadow: `0 0 5px 1px ${getWSStatusColor(WSStatus, untappd?.avatar)}`,
-          }}
-        />
-      </Menu.Target>
+	return (
+		<Menu shadow="md" width="auto" withArrow>
+			<Menu.Target>
+				<Avatar
+					src={untappd?.avatar}
+					name={untappd?.name ?? user.name ?? firstLetter}
+					radius="100%"
+					size="md"
+					style={{
+						cursor: "pointer",
+						transition: "box-shadow 0.2s ease-in-out",
+						boxShadow: `0 0 5px 1px ${getWSStatusColor(WSStatus, untappd?.avatar)}`,
+					}}
+				/>
+			</Menu.Target>
 
-      <Menu.Dropdown>
-        <Menu.Label>
-          <Stack gap={0}>
-            <Text fw={500} size="sm" c="slateIndigo">
-              {untappd?.name ?? user.name ?? user.email}
-            </Text>
-            {(untappd?.name || user.name) && (
-              <Text c="dimmed" fw={500} size="xs" fs="italic">
-                {email}
-              </Text>
-            )}
-          </Stack>
-        </Menu.Label>
-        <Menu.Divider />
-        {untappd?.username && (
-          <Menu.Item
-            component={Link}
-            to={createProfileLink(untappd?.username)}
-            target="_blank"
-            leftSection={<IconBeer size={16} />}
-          >
-            Untappd-profil
-          </Menu.Item>
-        )}
-        {isAdmin && (
-          <Menu.Item
-            component="a"
-            href={DB_URL}
-            target="_blank"
-            leftSection={<IconDatabase size={16} />}
-          >
-            Drizzle Studio
-          </Menu.Item>
-        )}
-        <Menu.Divider />
-        <Menu.Item
-          component="a"
-          href="/auth/logout"
-          leftSection={<IconLogout size={16} />}
-        >
-          Log ud
-        </Menu.Item>
-        {isAdmin && (
-          <>
-            <MenuDivider />
+			<Menu.Dropdown>
+				<Menu.Label>
+					<Stack gap={0}>
+						<Text fw={500} size="sm" c="slateIndigo">
+							{untappd?.name ?? user.name ?? user.email}
+						</Text>
+						{(untappd?.name || user.name) && (
+							<Text c="dimmed" fw={500} size="xs" fs="italic">
+								{email}
+							</Text>
+						)}
+					</Stack>
+				</Menu.Label>
+				<Menu.Divider />
+				{untappd?.username && (
+					<Menu.Item
+						component={Link}
+						to={createProfileLink(untappd?.username)}
+						target="_blank"
+						leftSection={<IconBeer size={16} />}
+					>
+						Untappd-profil
+					</Menu.Item>
+				)}
+				{isAdmin && (
+					<Menu.Item
+						component="a"
+						href={DB_URL}
+						target="_blank"
+						leftSection={<IconDatabase size={16} />}
+					>
+						Drizzle Studio
+					</Menu.Item>
+				)}
+				<Menu.Divider />
+				<Menu.Item
+					component="a"
+					href="/auth/logout"
+					leftSection={<IconLogout size={16} />}
+				>
+					Log ud
+				</Menu.Item>
+				{isAdmin && (
+					<>
+						<MenuDivider />
 
-            <Text
-              size="xs"
-              c="dimmed"
-              fs="italic"
-              fw={300}
-              px="sm"
-              pt="sm"
-              pb={6}
-            >
-              {`WebSocket-klienter: ${clientsCount}`}
-            </Text>
+						<Text
+							size="xs"
+							c="dimmed"
+							fs="italic"
+							fw={300}
+							px="sm"
+							pt="sm"
+							pb={6}
+						>
+							{`WebSocket-klienter: ${clientsCount}`}
+						</Text>
 
-            <Menu.Item component={Link} to={COMMIT_URL} target="_blank">
-              <Tooltip
-                label={LATEST_COMMIT_MESSAGE}
-                withArrow
-                position="bottom"
-              >
-                <Text size="xs" c="dimmed" fs="italic" fw={300}>
-                  Seneste commit: {LATEST_COMMIT_HASH}
-                </Text>
-              </Tooltip>
-            </Menu.Item>
-          </>
-        )}
-      </Menu.Dropdown>
-    </Menu>
-  );
+						<Menu.Item component={Link} to={COMMIT_URL} target="_blank">
+							<Tooltip
+								label={LATEST_COMMIT_MESSAGE}
+								withArrow
+								position="bottom"
+							>
+								<Text size="xs" c="dimmed" fs="italic" fw={300}>
+									Seneste commit: {LATEST_COMMIT_HASH}
+								</Text>
+							</Tooltip>
+						</Menu.Item>
+					</>
+				)}
+			</Menu.Dropdown>
+		</Menu>
+	);
 }
