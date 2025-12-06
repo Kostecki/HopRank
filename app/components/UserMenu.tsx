@@ -123,16 +123,18 @@ export function UserMenu({ user }: InputProps) {
 					</Menu.Item>
 				)}
 				{isAdmin && (
-					<Menu.Item
-						component="a"
-						href={DB_URL}
-						target="_blank"
-						leftSection={<IconDatabase size={16} />}
-					>
-						Drizzle Studio
-					</Menu.Item>
+					<>
+						<Menu.Item
+							component="a"
+							href={DB_URL}
+							target="_blank"
+							leftSection={<IconDatabase size={16} />}
+						>
+							Drizzle Studio
+						</Menu.Item>
+						<Menu.Divider />
+					</>
 				)}
-				<Menu.Divider />
 				<Menu.Item
 					component="a"
 					href="/auth/logout"
