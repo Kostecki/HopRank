@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import path from "node:path";
 import Database from "better-sqlite3";
 import { drizzle } from "drizzle-orm/better-sqlite3";
 
@@ -25,7 +26,8 @@ const DATABASE_PATH = process.env.DATABASE_PATH;
 const DATABASE_NAME = process.env.DATABASE_NAME || "data.db";
 invariant(DATABASE_PATH, "DATABASE_PATH must be set in .env");
 
-const fullDatabasePath = `${DATABASE_PATH}/${DATABASE_NAME}`;
+const fullDatabasePath = path.resolve(DATABASE_PATH, DATABASE_NAME);
+
 console.log("config.server.ts");
 console.log("Database Path:", fullDatabasePath);
 
