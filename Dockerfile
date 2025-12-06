@@ -1,7 +1,7 @@
 # Base for dev/build
 FROM node:24-slim AS base
 RUN npm install -g pnpm
-WORKDIR /app
+WORKDIR /hop-rank
 
 # Install all (dev) deps
 FROM base AS deps
@@ -40,7 +40,6 @@ RUN pnpm run build
 
 # Prune dev deps to production-only
 FROM deps AS prod-deps
-# Prune uses the existing node_modules from deps
 RUN pnpm prune --prod
 
 # Final runtime image
@@ -49,22 +48,25 @@ RUN apt-get update \
   && apt-get install -y --no-install-recommends tzdata tini ca-certificates \
   && rm -rf /var/lib/apt/lists/*
 RUN npm install -g pnpm
-WORKDIR /app
 
-# Ensure the database folder exists
-RUN mkdir -p /app/app/database
+WORKDIR /hop-rank
+
+# Ensure database folder exists
+RUN mkdir -p /hop-rank/app/database
 
 # Copy runtime artifacts
-COPY --from=prod-deps /app/node_modules ./node_modules
-COPY --from=build /app/build ./build
-COPY --from=build /app/public ./public
-COPY --from=build /app/app/database/migrations ./app/app/database/migrations
-COPY --from=build /app/drizzle.config.ts ./drizzle.config.ts
+COPY --from=prod-deps /hop-rank/node_modules ./node_modules
+COPY --from=build /hop-rank/build ./build
+COPY --from=build /hop-rank/public ./public
+COPY --from=build /hop-rank/app/database/migrations ./app/database/migrations
+COPY --from=build /hop-rank/drizzle.config.ts ./drizzle.config.ts
 COPY package.json pnpm-lock.yaml ./
 COPY start.sh ./
 RUN chmod +x start.sh
 
 ENTRYPOINT ["/usr/bin/tini", "--"]
 ENV NODE_ENV=production
+
 EXPOSE 3000 4000
+
 CMD ["./start.sh"]
