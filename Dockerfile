@@ -15,6 +15,7 @@ RUN --mount=type=cache,target=/root/.pnpm-store \
 FROM deps AS build
 COPY app/ ./app
 COPY public/ ./public
+COPY drizzle/ ./drizzle
 COPY vite.config.ts tsconfig.json drizzle.config.ts postcss.config.cjs react-router.config.ts theme.ts ./
 COPY package.json pnpm-lock.yaml ./
 
