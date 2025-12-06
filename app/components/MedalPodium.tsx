@@ -20,7 +20,7 @@ export default function MedalPodium({ session }: inputProps) {
 	const { ratedBeers } = session;
 
 	// heights for podium positions in display order: 2nd, 1st, 3rd
-	const heights = [rem(265), rem(290), rem(265)];
+	const heights = [rem(285), rem(310), rem(285)];
 
 	const rankedGroups = groupRatedBeersByScore(ratedBeers);
 	const podiumSource = rankedGroups.slice(0, 3);
@@ -64,15 +64,15 @@ export default function MedalPodium({ session }: inputProps) {
 				<Image src={beer.label} alt={beer.name} fit="contain" maw={rem(100)} />
 			</Card>
 			<Box ta="center">
-				<Text size="sm" c="gray.7">
+				<Text size="lg" c="gray.7">
 					{beer.breweryName}
 				</Text>
 
-				<Text size="md" mt={3} fw={700} ta="center">
+				<Text size="xl" mt={3} fw={700} ta="center">
 					{beer.name}
 				</Text>
 
-				<Text size="md" fw={700} mt={5} c="dimmed" fs="italic" mb="lg">
+				<Text size="lg" fw={700} mt={5} c="dimmed" fs="italic" mb="lg">
 					{displayScore(beer.averageScore)}
 				</Text>
 			</Box>
@@ -113,7 +113,7 @@ export default function MedalPodium({ session }: inputProps) {
 				const height = heights[i] || rem(120);
 
 				return (
-					<Flex direction="column" align="center" key={place} w={230}>
+					<Flex direction="column" align="center" key={place} w={280}>
 						{group ? (
 							group.beers.length > 1 ? (
 								<Carousel

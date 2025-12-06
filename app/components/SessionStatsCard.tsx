@@ -31,8 +31,11 @@ export default function SessionStatsCard({
 				<SimpleGrid cols={3}>
 					<Flex justify="space-around" direction="column" h="100%">
 						<Box>
-							<Text ta="center" fw="bold">
+							<Text ta="center" fw="bold" size="xl">
 								Topscorer
+							</Text>
+							<Text ta="center" size="md" c="dimmed" fs="italic" mt={-7}>
+								Højeste gennemsnit
 							</Text>
 							{highestRaters.map((rater) => {
 								const compositeKey = `${rater.userId}-${rater.avgScore}`;
@@ -42,6 +45,7 @@ export default function SessionStatsCard({
 										key={compositeKey}
 										value={compositeKey}
 										ta="center"
+										size="xl"
 									>
 										{rater.name} ({displayScore(rater.avgScore)})
 									</AnimatedValue>
@@ -50,8 +54,11 @@ export default function SessionStatsCard({
 						</Box>
 						<Divider opacity={0.5} my="md" />
 						<Box>
-							<Text ta="center" fw="bold">
+							<Text ta="center" fw="bold" size="xl">
 								Bundscorer
+							</Text>
+							<Text ta="center" size="md" c="dimmed" fs="italic" mt={-7}>
+								Laveste gennemsnit
 							</Text>
 							{lowestRaters.map((rater) => {
 								const compositeKey = `${rater.userId}-${rater.avgScore}`;
@@ -61,6 +68,7 @@ export default function SessionStatsCard({
 										key={compositeKey}
 										value={compositeKey}
 										ta="center"
+										size="xl"
 									>
 										{rater.name} ({displayScore(rater.avgScore)})
 									</AnimatedValue>
@@ -70,40 +78,57 @@ export default function SessionStatsCard({
 					</Flex>
 					<Flex justify="space-around" direction="column" h="100%">
 						<Box>
-							<Text ta="center" fw="bold">
-								Gennemsnitsscore
+							<Text ta="center" fw="bold" size="xl">
+								Score
 							</Text>
-							<AnimatedValue value={averageRating} ta="center">
+							<Text ta="center" size="md" c="dimmed" fs="italic" mt={-7}>
+								Gennemsnit
+							</Text>
+							<AnimatedValue value={averageRating} ta="center" size="xl">
 								{displayScore(averageRating)}
 							</AnimatedValue>
 						</Box>
 						<Divider opacity={0.5} my="md" />
 						<Box>
-							<Text ta="center" fw="bold">
+							<Text ta="center" fw="bold" size="xl">
 								Procenter
 							</Text>
-							<AnimatedValue value={averageABV} ta="center">
+							<Text ta="center" size="md" c="dimmed" fs="italic" mt={-7}>
+								Gennemsnit
+							</Text>
+							<AnimatedValue value={averageABV} ta="center" size="xl">
 								{displayABV(averageABV)}
 							</AnimatedValue>
 						</Box>
 					</Flex>
 					<Flex justify="space-around" direction="column" h="100%">
 						<Box>
-							<Text ta="center" fw="bold">
-								Antal Stiltyper
+							<Text ta="center" fw="bold" size="xl">
+								Unikke Stiltyper
 							</Text>
-							<AnimatedValue value={styleStats.uniqueCount} ta="center">
+							<Text ta="center" size="md" c="dimmed" fs="italic" mt={-7}>
+								Total
+							</Text>
+							<AnimatedValue
+								value={styleStats.uniqueCount}
+								ta="center"
+								size="xl"
+							>
 								{styleStats.uniqueCount}
 							</AnimatedValue>
 						</Box>
 						<Divider opacity={0.5} my="md" />
 						<Box>
-							<Text ta="center" fw="bold">
+							<Text ta="center" fw="bold" size="xl">
 								Mest Populære
+							</Text>
+							<Text ta="center" size="md" c="dimmed" fs="italic" mt={-7}>
+								Stiltype
 							</Text>
 							<AnimatedValue
 								value={styleStats.mostPopular?.style || "N/A"}
 								ta="center"
+								size="xl"
 							>
 								{styleStats.mostPopular
 									? `${styleStats.mostPopular.style}`

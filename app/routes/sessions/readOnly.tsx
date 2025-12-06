@@ -117,7 +117,7 @@ export default function SessionView() {
 		hasRatings && sessionProgress.ratedBeers.length < 4;
 
 	return (
-		<Box data-breakout m="md" p="md">
+		<Box data-breakout mt="md">
 			<MedalPodium session={sessionProgress} />
 
 			{!hasRatings && (
@@ -160,7 +160,11 @@ export default function SessionView() {
 
 			{hasRatings && (
 				<>
-					<SessionStatsCard mt={50} sessionStats={sessionStats} />
+					<Grid justify="center">
+						<Grid.Col span={10}>
+							<SessionStatsCard mt={25} sessionStats={sessionStats} />
+						</Grid.Col>
+					</Grid>
 
 					<Grid mt={50} justify="center" gutter="xl">
 						<Grid.Col span={12}>

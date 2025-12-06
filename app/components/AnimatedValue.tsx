@@ -6,7 +6,11 @@ type InputProps = {
 	children: React.ReactNode;
 } & TextProps;
 
-export default function AnimatedValue({ value, children }: InputProps) {
+export default function AnimatedValue({
+	value,
+	children,
+	...TextProps
+}: InputProps) {
 	const speed = "animate__fast";
 	const animation = "animate__pulse";
 
@@ -16,7 +20,7 @@ export default function AnimatedValue({ value, children }: InputProps) {
 		<Text
 			key={key} // remount on change -> animation plays
 			className={`animate__animated ${animation} ${speed}`}
-			ta="center"
+			{...TextProps}
 		>
 			{children}
 		</Text>
