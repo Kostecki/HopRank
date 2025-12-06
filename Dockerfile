@@ -9,7 +9,7 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
 # Use a cache for the pnpm store to speed subsequent builds
 RUN --mount=type=cache,target=/root/.pnpm-store \
-    pnpm install --frozen-lockfile
+  pnpm install --frozen-lockfile
 
 # Build the app (frontend + backend) with env injection
 FROM deps AS build
@@ -29,12 +29,12 @@ ARG VITE_LATEST_COMMIT_MESSAGE
 
 # Export so Vite can read process.env.* during build
 ENV VITE_WS_URL=$VITE_WS_URL \
-    VITE_ALGOLIA_APP_ID=$VITE_ALGOLIA_APP_ID \
-    VITE_ALGOLIA_API_K=$VITE_ALGOLIA_API_K \
-    VITE_UMAMI_SRC_URL=$VITE_UMAMI_SRC_URL \
-    VITE_UMAMI_WEBSITE_ID=$VITE_UMAMI_WEBSITE_ID \
-    VITE_LATEST_COMMIT_HASH=$VITE_LATEST_COMMIT_HASH \
-    VITE_LATEST_COMMIT_MESSAGE=$VITE_LATEST_COMMIT_MESSAGE
+  VITE_ALGOLIA_APP_ID=$VITE_ALGOLIA_APP_ID \
+  VITE_ALGOLIA_API_K=$VITE_ALGOLIA_API_K \
+  VITE_UMAMI_SRC_URL=$VITE_UMAMI_SRC_URL \
+  VITE_UMAMI_WEBSITE_ID=$VITE_UMAMI_WEBSITE_ID \
+  VITE_LATEST_COMMIT_HASH=$VITE_LATEST_COMMIT_HASH \
+  VITE_LATEST_COMMIT_MESSAGE=$VITE_LATEST_COMMIT_MESSAGE
 
 RUN pnpm run build
 
@@ -52,13 +52,13 @@ RUN npm install -g pnpm
 WORKDIR /app
 
 # Ensure the database folder exists
-RUN mkdir -p /app/database
+RUN mkdir -p /app/app/database
 
 # Copy runtime artifacts
 COPY --from=prod-deps /app/node_modules ./node_modules
 COPY --from=build /app/build ./build
 COPY --from=build /app/public ./public
-COPY --from=build /app/app/database/migrations ./app/database/migrations
+COPY --from=build /app/app/database/migrations ./app/app/database/migrations
 COPY --from=build /app/drizzle.config.ts ./drizzle.config.ts
 COPY package.json pnpm-lock.yaml ./
 COPY start.sh ./
