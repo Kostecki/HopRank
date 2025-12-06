@@ -101,7 +101,9 @@ export default function Layout() {
 					<Container strategy="grid" size="xs" p="md">
 						<Outlet />
 
-						{(!user.untappd || !user.name) && <ModalSetName user={user} />}
+						{user && (!user?.untappd || !user?.name) && (
+							<ModalSetName user={user} />
+						)}
 					</Container>
 				</AppShell.Main>
 			</AppShell>

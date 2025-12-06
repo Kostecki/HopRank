@@ -23,7 +23,7 @@ export function ModalSetName({ user }: InputProps) {
 		if (!user?.untappd && (!user?.name || user.name.trim() === "")) {
 			setTimeout(() => open(), 100);
 		}
-	}, [user.name, user?.untappd, open]);
+	}, [user?.name, user?.untappd, open]);
 
 	useEffect(() => {
 		if (fetcher.state === "idle" && fetcher.data && !handled) {

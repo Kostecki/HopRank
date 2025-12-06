@@ -77,7 +77,7 @@ export default function Navbar({
 		closeMobile();
 		closeDesktop();
 
-		if (!sessionProgress || !inProgressSession) {
+		if (!user || !sessionProgress || !inProgressSession) {
 			navigate("/sessions");
 		} else {
 			const sessionId = sessionProgress.sessionId;
@@ -167,7 +167,7 @@ export default function Navbar({
 					</Text>
 				</Flex>
 
-				{user.untappdId && user.username && (
+				{user?.untappdId && user.username && (
 					<Tooltip label="Se Untappd-profil" position="bottom">
 						<ActionIcon
 							component={Link}
