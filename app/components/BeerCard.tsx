@@ -33,6 +33,8 @@ export function BeerCard({ session, beer, rank }: InputProps) {
 	const { beerId, label, name, breweryName, style } =
 		beer || session.currentBeer || {};
 
+	const isPodiumBeer = !!(rank && rank <= 3);
+
 	const getMedalColor = () => {
 		if (!rank || rank > 3) return null;
 
@@ -97,7 +99,7 @@ export function BeerCard({ session, beer, rank }: InputProps) {
 				<Grid.Col span={6}>
 					<Stack gap={0}>
 						<Text size="md" ta="center" fw="bold" lineClamp={1}>
-							{name}
+							{isPodiumBeer || rank == null ? name : `${rank} - ${name}`}
 						</Text>
 						<Text size="sm" ta="center" fs="italic" lineClamp={1}>
 							{breweryName}

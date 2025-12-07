@@ -175,7 +175,7 @@ export default function Session() {
 								</Accordion.Panel>
 							</Accordion.Item>
 
-							{index === 2 ? <Divider my="30px" /> : null}
+							{index === 2 ? <Divider my="30px" opacity={0.5} /> : null}
 						</Box>
 					);
 				})}
