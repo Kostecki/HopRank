@@ -1,4 +1,4 @@
-import { AppShell, Container } from "@mantine/core";
+import { AppShell, Container, Progress } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { eq } from "drizzle-orm";
 import { Outlet, useLoaderData } from "react-router";
@@ -54,11 +54,12 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 		user,
 		sessionProgress,
 		sessionBeers: sessionBeersList,
+		progressPercentage: sessionProgress?.progressPercentage ?? undefined,
 	};
 }
 
 export default function Layout() {
-	const { user, sessionProgress, sessionBeers } =
+	const { user, sessionProgress, sessionBeers, progressPercentage } =
 		useLoaderData<typeof loader>();
 
 	const [mobileOpened, { toggle: toggleMobile, close: closeMobile }] =
@@ -98,6 +99,16 @@ export default function Layout() {
 				</AppShell.Navbar>
 
 				<AppShell.Main>
+					{progressPercentage && (
+						<Progress
+							value={progressPercentage}
+							radius="xs"
+							size="xs"
+							color="slateIndigo"
+							transitionDuration={200}
+						/>
+					)}
+
 					<Container strategy="grid" size="xs" p="md">
 						<Outlet />
 

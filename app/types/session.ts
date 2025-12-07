@@ -56,11 +56,11 @@ export type SessionProgress = {
   createdBy: BaseSession["createdBy"];
   joinCode: BaseSession["joinCode"];
   beersTotalCount: number;
-  beersRatedCount: number;
   users: SessionProgressUser[];
   scoredCriteria: ScoredCriterion[];
   currentBeer: CurrentBeer | null;
   ratedBeers: RatedBeers[];
+  progressPercentage?: number;
 };
 
 // Raw criterion (no aggregated score) used in forms/UI; derive directly from table.

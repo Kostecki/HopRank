@@ -45,7 +45,7 @@ export function Header({
 		if (!session) return "-";
 
 		if (inProgressSession) {
-			return `${session.beersRatedCount} / ${session.beersTotalCount}`;
+			return `${session.ratedBeers.length} / ${session.beersTotalCount}`;
 		}
 
 		return session.beersTotalCount;

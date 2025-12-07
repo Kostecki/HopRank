@@ -314,7 +314,6 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     createdBy: session.createdBy,
     joinCode: session.joinCode,
     beersTotalCount: sessionBeerRowsWithBeer.length,
-    beersRatedCount: ratedBeers.length,
     users: allRelevantUsers,
     scoredCriteria,
     currentBeer: { ...currentBeerData, userHadBeer },
