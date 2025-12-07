@@ -182,19 +182,20 @@ pnpm lint       # Run Biome linter
 app/
 ├── auth/              # Authentication strategies and user management
 ├── components/        # React components
-│   ├── modals/       # Modal dialogs
-│   ├── auth/         # Authentication-related components
-│   └── ...           # Core app components
+│   ├── modals/        # Modal dialogs
+│   ├── auth/          # Authentication-related components
+│   └── ...            # Core app components
 ├── database/          # Database schema, config, and utilities
-│   ├── migrations/   # Database migration files
-│   └── utils/        # Database helper functions
+│   └── utils/         # Database helper functions
 ├── routes/            # React Router routes
-│   ├── api/          # API endpoints
-│   ├── auth/         # Authentication routes
-│   └── sessions/     # Session-related routes
+│   ├── api/           # API endpoints
+│   ├── auth/          # Authentication routes
+│   └── sessions/      # Session-related routes
 ├── types/             # TypeScript type definitions
 ├── utils/             # Utility functions
 └── hooks/             # Custom React hooks
+drizzle/              │# Database migration files
+public/                # Favicons, robots.txt, etc.
 ```
 
 ## Key Components
