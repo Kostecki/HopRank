@@ -36,11 +36,13 @@ const toSessionProgressUser = (user: SelectUsers): SessionProgressUser => ({
 });
 
 async function getCachedBeerInfo(beerId: number, accessToken: string) {
-  const cachedInfo = beerInfoCache.get(beerId);
-  if (cachedInfo) return cachedInfo;
-  const info = await getBeerInfo(beerId, accessToken);
-  beerInfoCache.set(beerId, info);
-  return info;
+  if (beerInfoCache.has(beerId)) {
+    return beerInfoCache.get(beerId);
+  }
+
+  const data = await getBeerInfo(beerId, accessToken);
+  beerInfoCache.set(beerId, data);
+  return data;
 }
 
 export async function getSessionProgress({
@@ -294,7 +296,13 @@ export async function getSessionProgress({
     userHadBeer = beerInfo?.stats?.user_count > 0;
   }
 
-  // (Removed inProgressSession; unified user collection used regardless of status)
+  const currentBeer = currentBeerData
+    ? { ...currentBeerData, userHadBeer }
+    : null;
+  const beersTotalCount = sessionBeerRowsWithBeer.length;
+
+  const progressPercentage =
+    beersTotalCount === 0 ? 0 : (ratedBeers.length / beersTotalCount) * 100;
 
   return {
     sessionId,
@@ -303,11 +311,11 @@ export async function getSessionProgress({
     createdAt: session.createdAt,
     createdBy: session.createdBy,
     joinCode: session.joinCode,
-    beersTotalCount: sessionBeerRowsWithBeer.length,
-    beersRatedCount: ratedBeers.length,
+    beersTotalCount,
     users: allRelevantUsers,
     scoredCriteria,
-    currentBeer: currentBeerData ? { ...currentBeerData, userHadBeer } : null,
+    currentBeer,
     ratedBeers,
+    progressPercentage,
   };
 }
