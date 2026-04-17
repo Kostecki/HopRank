@@ -22,7 +22,8 @@ const DB_URL = (() => {
 		return "https://local.drizzle.studio";
 	}
 
-	return `${protocol}//hr-db.${hostname}`;
+	const rootDomain = hostname.split(".").slice(-2).join(".");
+	return `${protocol}//hr-db.${rootDomain}`;
 })();
 
 const getWSStatusColor = (status: WSStatus, avatar?: string) => {
