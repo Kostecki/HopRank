@@ -22,8 +22,7 @@ const DB_URL = (() => {
 		return "https://local.drizzle.studio";
 	}
 
-	// Add db sub-subdomain for Drizzle Studio
-	return `${protocol}//db.${hostname}`;
+	return `${protocol}//hr-db.${hostname}`;
 })();
 
 const getWSStatusColor = (status: WSStatus, avatar?: string) => {
