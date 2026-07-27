@@ -6,6 +6,7 @@ import type { Route } from "./+types/leave";
 import { userSessionGet } from "~/auth/users.server";
 import { db } from "~/database/config.server";
 import { sessionUsers } from "~/database/schema.server";
+import { requireSessionParticipant } from "~/database/utils/assertSessionAccess.server";
 import { tryAdvanceSession } from "~/database/utils/tryAdvanceSession.server";
 import { extractSessionId } from "~/utils/utils";
 import { emitGlobalEvent, emitSessionEvent } from "~/utils/websocket.server";
@@ -17,6 +18,8 @@ export async function action({ request, params }: Route.ActionArgs) {
   if (!user) {
     return data({ message: "User not authenticated" }, { status: 401 });
   }
+
+  await requireSessionParticipant(sessionId, user.id);
 
   try {
     await db

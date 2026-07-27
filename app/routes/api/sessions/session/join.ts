@@ -6,6 +6,7 @@ import type { Route } from "./+types/join";
 import { userSessionGet } from "~/auth/users.server";
 import { db } from "~/database/config.server";
 import { sessions } from "~/database/schema.server";
+import { requireSessionRejoinEligible } from "~/database/utils/assertSessionAccess.server";
 import { joinSessionById } from "~/database/utils/joinSessionById.server";
 import { extractSessionId } from "~/utils/utils";
 import { emitGlobalEvent, emitSessionEvent } from "~/utils/websocket.server";
@@ -21,15 +22,18 @@ export async function action({ request, params }: Route.ActionArgs) {
     );
   }
 
+  const session = await db.query.sessions.findFirst({
+    where: eq(sessions.id, sessionId),
+  });
+  if (!session) {
+    return data({ message: "Session not found" }, { status: 404 });
+  }
+
+  // This route re-activates an existing (creator or prior-member)
+  // session_users row; first-time joins go through join-by-code only.
+  await requireSessionRejoinEligible(session, user.id, sessionId);
+
   try {
-    const session = await db.query.sessions.findFirst({
-      where: eq(sessions.id, sessionId),
-    });
-
-    if (!session) {
-      return data({ message: "Session not found" }, { status: 404 });
-    }
-
     await joinSessionById({ sessionId, userId: user.id });
 
     emitSessionEvent(sessionId, "session:users-changed");

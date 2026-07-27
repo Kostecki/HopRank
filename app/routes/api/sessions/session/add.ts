@@ -4,6 +4,7 @@ import type { Route } from "./+types/add";
 
 import { userSessionGet } from "~/auth/users.server";
 import { addBeersToSession } from "~/database/utils/addBeersToSession.server";
+import { requireSessionParticipant } from "~/database/utils/assertSessionAccess.server";
 import { extractSessionId } from "~/utils/utils";
 import { emitGlobalEvent, emitSessionEvent } from "~/utils/websocket.server";
 
@@ -14,6 +15,8 @@ export async function action({ request, params }: Route.ActionArgs) {
   if (!user) {
     return data({ message: "User not authenticated" }, { status: 401 });
   }
+
+  await requireSessionParticipant(sessionId, user.id);
 
   const form = await request.formData();
   const beersJson = form.get("beers");
