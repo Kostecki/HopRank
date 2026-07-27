@@ -166,7 +166,7 @@ export default function SessionView() {
 						</Grid.Col>
 					</Grid>
 
-					<Grid mt={50} justify="center" gutter="xl">
+					<Grid mt={50} justify="center" gap="xl">
 						<Grid.Col span={10}>
 							<Table highlightOnHover={!showTablePlaceholder}>
 								<Table.Thead>

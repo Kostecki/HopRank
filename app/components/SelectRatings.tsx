@@ -86,7 +86,7 @@ export default function SelectCriteria({
 							);
 						})}
 
-						<Collapse in={value === "custom"} transitionDuration={150}>
+						<Collapse expanded={value === "custom"} transitionDuration={150}>
 							<Chip key="custom" value="custom" size="xs" color="slateIndigo">
 								Manuel
 							</Chip>

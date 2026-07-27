@@ -15,11 +15,11 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@mantine/carousel": "^8.3.9",
-    "@mantine/core": "^8.3.9",
-    "@mantine/form": "^8.3.9",
-    "@mantine/hooks": "^8.3.9",
-    "@mantine/notifications": "^8.3.9",
+    "@mantine/carousel": "^9.5.0",
+    "@mantine/core": "^9.5.0",
+    "@mantine/form": "^9.5.0",
+    "@mantine/hooks": "^9.5.0",
+    "@mantine/notifications": "^9.5.0",
     "@mjackson/headers": "^0.11.1",
     "@react-router/node": "^7.14.2",
     "@react-router/serve": "^7.14.2",

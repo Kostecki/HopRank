@@ -49,7 +49,7 @@ export function UntappdCheckinSection({
 }: UntappdCheckinSectionProps) {
 	return (
 		<Box mb="lg">
-			<Grid align="center" gutter="xs">
+			<Grid align="center" gap="xs">
 				<Grid.Col span={10}>
 					<Stack gap="xs">
 						<Switch
@@ -73,10 +73,10 @@ export function UntappdCheckinSection({
 				</Grid.Col>
 			</Grid>
 
-			<Collapse in={isEnabled}>
+			<Collapse expanded={isEnabled}>
 				<Divider my="lg" opacity={0.5} />
 
-				<Grid align="flex-start" gutter="xs" my="lg">
+				<Grid align="flex-start" gap="xs" my="lg">
 					<Grid.Col
 						span={{ base: 12, sm: isMobile ? 5 : 12 }}
 						mb={{ base: "xs", sm: 0 }}

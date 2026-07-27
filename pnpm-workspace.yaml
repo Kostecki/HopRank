@@ -1,3 +1,10 @@
 allowBuilds:
   better-sqlite3: true
   esbuild: true
+minimumReleaseAgeExclude:
+  - '@mantine/carousel@9.5.0'
+  - '@mantine/core@9.5.0'
+  - '@mantine/form@9.5.0'
+  - '@mantine/hooks@9.5.0'
+  - '@mantine/notifications@9.5.0'
+  - '@mantine/store@9.5.0'
