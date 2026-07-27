@@ -1,7 +1,7 @@
 import { Avatar, Menu, MenuDivider, Stack, Text, Tooltip } from "@mantine/core";
 import { IconBeer, IconDatabase, IconLogout } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
-import { Link } from "react-router";
+import { Link, useFetcher } from "react-router";
 
 import type { SessionUser } from "~/types/user";
 
@@ -50,6 +50,7 @@ export function UserMenu({ user }: InputProps) {
 	const [WSStatus, setWSStatus] = useState<WSStatus>("undefined");
 
 	const socket = useSocket();
+	const logoutFetcher = useFetcher();
 
 	useEffect(() => {
 		if (!socket) return;
@@ -136,8 +137,10 @@ export function UserMenu({ user }: InputProps) {
 					</>
 				)}
 				<Menu.Item
-					component="a"
-					href="/auth/logout"
+					component="button"
+					onClick={() =>
+						logoutFetcher.submit(null, { method: "POST", action: "/auth/logout" })
+					}
 					leftSection={<IconLogout size={16} />}
 				>
 					Log ud

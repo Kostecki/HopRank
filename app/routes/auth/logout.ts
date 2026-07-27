@@ -4,7 +4,7 @@ import type { Route } from "./+types";
 
 import { destroySession, getSession } from "~/auth/session.server";
 
-export const loader = async ({ request }: Route.LoaderArgs) => {
+export const action = async ({ request }: Route.ActionArgs) => {
   const session = await getSession(request.headers.get("cookie"));
 
   return redirect("/auth/login", {
