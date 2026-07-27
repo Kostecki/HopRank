@@ -6,6 +6,8 @@ import type {
   UntappdStrategyVerifyParams,
 } from "~/types/untappd";
 
+import { commitOAuthStateSession, getOAuthStateSession } from "./oauth-state.server";
+
 const AUTH_ENDPOINT = "https://untappd.com/oauth/authenticate";
 const TOKEN_ENDPOINT = "https://untappd.com/oauth/authorize";
 const PROFILE_ENDPOINT = "https://api.untappd.com/v4/user/info?compact=true";
@@ -43,17 +45,34 @@ export class UntappdStrategy<User> extends OAuth2Strategy<User> {
     const code = url.searchParams.get("code");
 
     if (!code) {
+      const state = crypto.randomUUID();
+
+      const stateSession = await getOAuthStateSession();
+      stateSession.set("state", state);
+
       const authUrl = new URL(AUTH_ENDPOINT);
       authUrl.searchParams.set("client_id", this.clientID);
       authUrl.searchParams.set("response_type", "code");
       authUrl.searchParams.set("redirect_url", this.callbackURL);
+      authUrl.searchParams.set("state", state);
 
       throw new Response(null, {
         status: 302,
         headers: {
           Location: authUrl.toString(),
+          "Set-Cookie": await commitOAuthStateSession(stateSession),
         },
       });
+    }
+
+    const stateSession = await getOAuthStateSession(
+      request.headers.get("Cookie")
+    );
+    const expectedState = stateSession.get("state");
+    const actualState = url.searchParams.get("state");
+
+    if (!expectedState || actualState !== expectedState) {
+      throw new Error("untappd_oauth_state_mismatch");
     }
 
     const { accessToken, refreshToken, extraParams } =
