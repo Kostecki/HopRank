@@ -55,7 +55,12 @@ export default function SessionsTable({
 	};
 
 	const handleActiveSubmit = (sessionId: number) => {
-		fetcher.submit(new FormData(), {
+		const formData = new FormData();
+		// Not read server-side (sessionId comes from the URL param) -- only
+		// here so the loading check below has something to match against.
+		formData.append("sessionId", String(sessionId));
+
+		fetcher.submit(formData, {
 			method: "POST",
 			action: `/api/sessions/${sessionId}/join`,
 		});
