@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { isValidVoteScore, sliderConf } from "./utils";
+import { isSafeRedirect, isValidVoteScore, sliderConf } from "./utils";
 
 describe("isValidVoteScore", () => {
   const { stepSize, max } = sliderConf();
@@ -27,4 +27,25 @@ describe("isValidVoteScore", () => {
       expect(isValidVoteScore(score)).toBe(false);
     }
   );
+});
+
+describe("isSafeRedirect", () => {
+  it.each(["/sessions", "/sessions/123", "/"])(
+    "accepts a same-origin path %s",
+    (target) => {
+      expect(isSafeRedirect(target)).toBe(true);
+    }
+  );
+
+  it.each([
+    null,
+    undefined,
+    "",
+    "//evil.com",
+    "https://evil.com",
+    "evil.com",
+    "javascript:alert(1)",
+  ])("rejects unsafe target %s", (target) => {
+    expect(isSafeRedirect(target)).toBe(false);
+  });
 });

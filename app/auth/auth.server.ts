@@ -40,12 +40,7 @@ const commitSessionUser = async (request: Request, user: SessionUser) => {
   const redirectTo = session.get("redirectTo");
   if (isSafeRedirect(redirectTo)) {
     redirectTarget = redirectTo as string;
-
-    if (typeof session.unset === "function") {
-      session.unset("redirectTo");
-    } else {
-      session.set("redirectTo", undefined);
-    }
+    session.unset("redirectTo");
   }
 
   const sessionCookie = await commitSession(session);

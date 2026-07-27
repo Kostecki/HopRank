@@ -30,11 +30,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 			? (redirectToFromSession as string)
 			: "/";
 		if (isSafeRedirect(redirectToFromSession)) {
-			if (typeof session.unset === "function") {
-				session.unset("redirectTo");
-			} else {
-				session.set("redirectTo", undefined);
-			}
+			session.unset("redirectTo");
 		}
 
 		const cookie = await commitSession(session);
