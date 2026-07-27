@@ -139,7 +139,10 @@ export function UserMenu({ user }: InputProps) {
 				<Menu.Item
 					component="button"
 					onClick={() =>
-						logoutFetcher.submit(null, { method: "POST", action: "/auth/logout" })
+						logoutFetcher.submit(null, {
+							method: "POST",
+							action: "/auth/logout",
+						})
 					}
 					leftSection={<IconLogout size={16} />}
 				>

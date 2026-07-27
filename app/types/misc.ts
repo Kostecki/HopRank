@@ -1,8 +1,8 @@
 export type BeerOption = {
-  untappdBeerId: string;
-  name: string;
-  style: string;
-  breweryName: string;
-  label: string;
-  label_hd?: string;
+	untappdBeerId: string;
+	name: string;
+	style: string;
+	breweryName: string;
+	label: string;
+	label_hd?: string;
 };

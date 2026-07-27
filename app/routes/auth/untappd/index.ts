@@ -4,9 +4,9 @@ import { authenticator } from "~/auth/auth.server";
 import { getPageTitle } from "~/utils/utils";
 
 export const meta: MetaFunction = () => {
-  return [{ title: getPageTitle("Log ind med Untappd") }];
+	return [{ title: getPageTitle("Log ind med Untappd") }];
 };
 
 export const loader: LoaderFunction = ({ request }) => {
-  return authenticator.authenticate("Untappd", request);
+	return authenticator.authenticate("Untappd", request);
 };

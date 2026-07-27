@@ -1,7 +1,6 @@
-import type { SelectSessions } from "../schema.types";
-
 import { db } from "../config.server";
 import { sessionCriteria, sessionState, sessions } from "../schema.server";
+import type { SelectSessions } from "../schema.types";
 
 /**
  * Creates a session, its criteria links, and its initial session_state row
@@ -13,31 +12,31 @@ import { sessionCriteria, sessionState, sessions } from "../schema.server";
  * no state, which could never be voted on.
  */
 export function createSessionWithCriteria(input: {
-  name: string;
-  createdBy: number;
-  joinCode: string;
-  criterionIds: number[];
+	name: string;
+	createdBy: number;
+	joinCode: string;
+	criterionIds: number[];
 }): SelectSessions {
-  const { name, createdBy, joinCode, criterionIds } = input;
+	const { name, createdBy, joinCode, criterionIds } = input;
 
-  return db.transaction((tx) => {
-    const session = tx
-      .insert(sessions)
-      .values({ name, createdBy, joinCode })
-      .returning()
-      .get();
+	return db.transaction((tx) => {
+		const session = tx
+			.insert(sessions)
+			.values({ name, createdBy, joinCode })
+			.returning()
+			.get();
 
-    tx.insert(sessionCriteria)
-      .values(
-        criterionIds.map((criterionId) => ({
-          sessionId: session.id,
-          criterionId,
-        }))
-      )
-      .run();
+		tx.insert(sessionCriteria)
+			.values(
+				criterionIds.map((criterionId) => ({
+					sessionId: session.id,
+					criterionId,
+				})),
+			)
+			.run();
 
-    tx.insert(sessionState).values({ sessionId: session.id }).run();
+		tx.insert(sessionState).values({ sessionId: session.id }).run();
 
-    return session;
-  });
+		return session;
+	});
 }

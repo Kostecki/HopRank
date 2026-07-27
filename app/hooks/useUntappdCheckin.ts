@@ -12,179 +12,179 @@ import { useGeolocation } from "./useGeolocation";
 type UntappdFetcher = FetcherWithComponents<unknown>;
 
 type UseUntappdCheckinArgs = {
-  session: SessionProgress;
-  user: SessionUser;
-  untappdFetcher: UntappdFetcher;
+	session: SessionProgress;
+	user: SessionUser;
+	untappdFetcher: UntappdFetcher;
 };
 
 type UseUntappdCheckinReturn = {
-  isEnabled: boolean;
-  setIsEnabled: (value: boolean) => void;
-  includeScore: boolean;
-  setIncludeScore: (value: boolean) => void;
-  openInUntappd: boolean;
-  setOpenInUntappd: (value: boolean) => void;
-  selectedVenue: string;
-  setSelectedVenue: (value: string) => void;
-  comment: string;
-  setComment: (value: string) => void;
-  checkinId: number | null;
-  submitCheckin: (totalScore: number) => void;
-  openInApp: () => void;
-  location: { lat: number; lng: number };
-  isMobile: boolean;
+	isEnabled: boolean;
+	setIsEnabled: (value: boolean) => void;
+	includeScore: boolean;
+	setIncludeScore: (value: boolean) => void;
+	openInUntappd: boolean;
+	setOpenInUntappd: (value: boolean) => void;
+	selectedVenue: string;
+	setSelectedVenue: (value: string) => void;
+	comment: string;
+	setComment: (value: string) => void;
+	checkinId: number | null;
+	submitCheckin: (totalScore: number) => void;
+	openInApp: () => void;
+	location: { lat: number; lng: number };
+	isMobile: boolean;
 };
 
 export function useUntappdCheckin({
-  session,
-  user,
-  untappdFetcher,
+	session,
+	user,
+	untappdFetcher,
 }: UseUntappdCheckinArgs): UseUntappdCheckinReturn {
-  const [isEnabled, setIsEnabled] = useState(false);
-  const [includeScore, setIncludeScore] = useState(true);
-  const [openInUntappd, setOpenInUntappd] = useState(true);
-  const [selectedVenue, setSelectedVenue] = useState<string>("");
-  const [comment, setComment] = useState<string>("");
-  const [checkinId, setCheckinId] = useState<number | null>(null);
-  const [isMobile, setIsMobile] = useState(false);
+	const [isEnabled, setIsEnabled] = useState(false);
+	const [includeScore, setIncludeScore] = useState(true);
+	const [openInUntappd, setOpenInUntappd] = useState(true);
+	const [selectedVenue, setSelectedVenue] = useState<string>("");
+	const [comment, setComment] = useState<string>("");
+	const [checkinId, setCheckinId] = useState<number | null>(null);
+	const [isMobile, setIsMobile] = useState(false);
 
-  const { location, requestLocation } = useGeolocation();
-  const hasRequestedLocation = useRef(false);
+	const { location, requestLocation } = useGeolocation();
+	const hasRequestedLocation = useRef(false);
 
-  useEffect(() => {
-    setIsMobile(isMobileOrTablet());
-  }, []);
+	useEffect(() => {
+		setIsMobile(isMobileOrTablet());
+	}, []);
 
-  useEffect(() => {
-    if (isEnabled && !hasRequestedLocation.current) {
-      requestLocation();
-      hasRequestedLocation.current = true;
-      return;
-    }
+	useEffect(() => {
+		if (isEnabled && !hasRequestedLocation.current) {
+			requestLocation();
+			hasRequestedLocation.current = true;
+			return;
+		}
 
-    if (!isEnabled) {
-      hasRequestedLocation.current = false;
-    }
-  }, [isEnabled, requestLocation]);
+		if (!isEnabled) {
+			hasRequestedLocation.current = false;
+		}
+	}, [isEnabled, requestLocation]);
 
-  const openInApp = useCallback(() => {
-    if (!checkinId) return;
-    if (typeof window === "undefined") return;
+	const openInApp = useCallback(() => {
+		if (!checkinId) return;
+		if (typeof window === "undefined") return;
 
-    const checkinUrl = `untappd://checkin/${checkinId}`;
-    window.open(checkinUrl, "_self");
-  }, [checkinId]);
+		const checkinUrl = `untappd://checkin/${checkinId}`;
+		window.open(checkinUrl, "_self");
+	}, [checkinId]);
 
-  const submitCheckin = useCallback(
-    (totalScore: number) => {
-      const currentBeer = session.currentBeer;
-      if (!isEnabled || !user.untappd || !currentBeer) {
-        return;
-      }
+	const submitCheckin = useCallback(
+		(totalScore: number) => {
+			const currentBeer = session.currentBeer;
+			if (!isEnabled || !user.untappd || !currentBeer) {
+				return;
+			}
 
-      const geoLat = location.lat.toFixed(4);
-      const geoLng = location.lng.toFixed(4);
-      const gmtOffset = getGmtOffset().toString();
+			const geoLat = location.lat.toFixed(4);
+			const geoLng = location.lng.toFixed(4);
+			const gmtOffset = getGmtOffset().toString();
 
-      const formDataUntappd = new FormData();
-      formDataUntappd.append("bid", currentBeer.untappdBeerId.toString());
-      formDataUntappd.append("geolat", geoLat);
-      formDataUntappd.append("geolng", geoLng);
-      formDataUntappd.append("foursquare_id", selectedVenue);
-      formDataUntappd.append("shout", comment);
-      formDataUntappd.append("timezone", "Europe/Copenhagen");
-      formDataUntappd.append("gmt_offset", gmtOffset);
+			const formDataUntappd = new FormData();
+			formDataUntappd.append("bid", currentBeer.untappdBeerId.toString());
+			formDataUntappd.append("geolat", geoLat);
+			formDataUntappd.append("geolng", geoLng);
+			formDataUntappd.append("foursquare_id", selectedVenue);
+			formDataUntappd.append("shout", comment);
+			formDataUntappd.append("timezone", "Europe/Copenhagen");
+			formDataUntappd.append("gmt_offset", gmtOffset);
 
-      if (includeScore) {
-        formDataUntappd.append("rating", totalScore.toString());
-      }
+			if (includeScore) {
+				formDataUntappd.append("rating", totalScore.toString());
+			}
 
-      untappdFetcher.submit(formDataUntappd, {
-        method: "POST",
-        encType: "multipart/form-data",
-        action: "/api/untappd/check-in",
-      });
-    },
-    [
-      comment,
-      includeScore,
-      isEnabled,
-      location.lat,
-      location.lng,
-      selectedVenue,
-      session,
-      untappdFetcher,
-      user,
-    ]
-  );
+			untappdFetcher.submit(formDataUntappd, {
+				method: "POST",
+				encType: "multipart/form-data",
+				action: "/api/untappd/check-in",
+			});
+		},
+		[
+			comment,
+			includeScore,
+			isEnabled,
+			location.lat,
+			location.lng,
+			selectedVenue,
+			session,
+			untappdFetcher,
+			user,
+		],
+	);
 
-  useEffect(() => {
-    if (untappdFetcher.state !== "idle") return;
+	useEffect(() => {
+		if (untappdFetcher.state !== "idle") return;
 
-    const responseData = untappdFetcher.data as
-      | { success: true; data: { checkinId: number } }
-      | { message?: string }
-      | undefined;
+		const responseData = untappdFetcher.data as
+			| { success: true; data: { checkinId: number } }
+			| { message?: string }
+			| undefined;
 
-    if (!responseData) {
-      return;
-    }
+		if (!responseData) {
+			return;
+		}
 
-    const fetcherWithReset = untappdFetcher as UntappdFetcher & {
-      reset?: () => void;
-    };
+		const fetcherWithReset = untappdFetcher as UntappdFetcher & {
+			reset?: () => void;
+		};
 
-    if ("success" in responseData && responseData.success) {
-      setCheckinId(responseData.data.checkinId);
-      setIsEnabled(false);
-      setComment("");
+		if ("success" in responseData && responseData.success) {
+			setCheckinId(responseData.data.checkinId);
+			setIsEnabled(false);
+			setComment("");
 
-      fetcherWithReset.reset?.();
+			fetcherWithReset.reset?.();
 
-      if (openInUntappd) {
-        openInApp();
-      }
+			if (openInUntappd) {
+				openInApp();
+			}
 
-      return;
-    }
+			return;
+		}
 
-    const errorMessage =
-      "message" in responseData
-        ? (responseData.message ?? "Untappd check-in fejlede")
-        : "Untappd check-in fejlede";
-    showDangerToast(errorMessage);
-    fetcherWithReset.reset?.();
-  }, [untappdFetcher, openInUntappd, openInApp]);
+		const errorMessage =
+			"message" in responseData
+				? (responseData.message ?? "Untappd check-in fejlede")
+				: "Untappd check-in fejlede";
+		showDangerToast(errorMessage);
+		fetcherWithReset.reset?.();
+	}, [untappdFetcher, openInUntappd, openInApp]);
 
-  return useMemo(
-    () => ({
-      isEnabled,
-      setIsEnabled,
-      includeScore,
-      setIncludeScore,
-      openInUntappd,
-      setOpenInUntappd,
-      selectedVenue,
-      setSelectedVenue,
-      comment,
-      setComment,
-      checkinId,
-      submitCheckin,
-      openInApp,
-      location,
-      isMobile,
-    }),
-    [
-      comment,
-      includeScore,
-      isEnabled,
-      isMobile,
-      location,
-      openInApp,
-      openInUntappd,
-      selectedVenue,
-      checkinId,
-      submitCheckin,
-    ]
-  );
+	return useMemo(
+		() => ({
+			isEnabled,
+			setIsEnabled,
+			includeScore,
+			setIncludeScore,
+			openInUntappd,
+			setOpenInUntappd,
+			selectedVenue,
+			setSelectedVenue,
+			comment,
+			setComment,
+			checkinId,
+			submitCheckin,
+			openInApp,
+			location,
+			isMobile,
+		}),
+		[
+			comment,
+			includeScore,
+			isEnabled,
+			isMobile,
+			location,
+			openInApp,
+			openInUntappd,
+			selectedVenue,
+			checkinId,
+			submitCheckin,
+		],
+	);
 }

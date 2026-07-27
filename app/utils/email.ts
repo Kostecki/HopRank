@@ -10,10 +10,10 @@ import { invariant } from "./invariant";
  * @returns The compiled HTML string to be sent as an email.
  */
 export const getMagicLinkEmail = (code: string, magicLink: string) => {
-  const APP_URL = process.env.APP_URL;
-  invariant(APP_URL, "APP_URL is not defined");
+	const APP_URL = process.env.APP_URL;
+	invariant(APP_URL, "APP_URL is not defined");
 
-  const mjml = `<mjml>
+	const mjml = `<mjml>
   <mj-body width="400">
     <mj-section>
       <mj-column>
@@ -33,7 +33,7 @@ export const getMagicLinkEmail = (code: string, magicLink: string) => {
   </mj-body>
 </mjml>`;
 
-  const { html } = mjml2html(mjml);
+	const { html } = mjml2html(mjml);
 
-  return html;
+	return html;
 };

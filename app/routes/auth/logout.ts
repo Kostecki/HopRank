@@ -5,11 +5,11 @@ import type { Route } from "./+types";
 import { destroySession, getSession } from "~/auth/session.server";
 
 export const action = async ({ request }: Route.ActionArgs) => {
-  const session = await getSession(request.headers.get("cookie"));
+	const session = await getSession(request.headers.get("cookie"));
 
-  return redirect("/auth/login", {
-    headers: {
-      "Set-Cookie": await destroySession(session),
-    },
-  });
+	return redirect("/auth/login", {
+		headers: {
+			"Set-Cookie": await destroySession(session),
+		},
+	});
 };

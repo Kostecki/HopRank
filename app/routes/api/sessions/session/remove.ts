@@ -8,32 +8,32 @@ import { extractSessionId } from "~/utils/utils";
 import { emitGlobalEvent, emitSessionEvent } from "~/utils/websocket.server";
 
 export async function action({ request, params }: Route.ActionArgs) {
-  const sessionId = extractSessionId(params.sessionId);
-  const beerId = Number(params.beerId);
+	const sessionId = extractSessionId(params.sessionId);
+	const beerId = Number(params.beerId);
 
-  const user = await userSessionGet(request);
-  if (!user) {
-    return data({ message: "User not authenticated" }, { status: 401 });
-  }
+	const user = await userSessionGet(request);
+	if (!user) {
+		return data({ message: "User not authenticated" }, { status: 401 });
+	}
 
-  if (!sessionId || !beerId) {
-    return data({ message: "Invalid session or beer ID" }, { status: 400 });
-  }
+	if (!sessionId || !beerId) {
+		return data({ message: "Invalid session or beer ID" }, { status: 400 });
+	}
 
-  try {
-    await removeBeersFromSession(sessionId, [beerId], user.id);
+	try {
+		await removeBeersFromSession(sessionId, [beerId], user.id);
 
-    emitSessionEvent(sessionId, "session:beer-changed");
-    emitGlobalEvent("sessions:beer-changed", {
-      sessionId,
-    });
+		emitSessionEvent(sessionId, "session:beer-changed");
+		emitGlobalEvent("sessions:beer-changed", {
+			sessionId,
+		});
 
-    return data({ success: true });
-  } catch (error) {
-    console.error("Error removing beer:", error);
-    return data(
-      { message: "Error removing beer from session" },
-      { status: 500 }
-    );
-  }
+		return data({ success: true });
+	} catch (error) {
+		console.error("Error removing beer:", error);
+		return data(
+			{ message: "Error removing beer from session" },
+			{ status: 500 },
+		);
+	}
 }

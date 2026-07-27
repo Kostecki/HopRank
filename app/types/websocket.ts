@@ -1,15 +1,15 @@
 export type SocketEventMap = {
-  // Session-scoped events
-  "session:users-changed": undefined;
-  "session:beer-changed": undefined;
-  "session:vote": undefined;
-  "session:started": undefined;
+	// Session-scoped events
+	"session:users-changed": undefined;
+	"session:beer-changed": undefined;
+	"session:vote": undefined;
+	"session:started": undefined;
 
-  // Global events
-  "sessions:created": { sessionId: number };
-  "sessions:deleted": { sessionId: number };
-  "sessions:users-changed": { sessionId: number };
-  "sessions:beer-changed": { sessionId: number };
+	// Global events
+	"sessions:created": { sessionId: number };
+	"sessions:deleted": { sessionId: number };
+	"sessions:users-changed": { sessionId: number };
+	"sessions:beer-changed": { sessionId: number };
 };
 
 export type SocketEvent = keyof SocketEventMap;

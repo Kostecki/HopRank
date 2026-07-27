@@ -9,37 +9,37 @@ invariant(ALGOLIA_APP_ID, "VITE_ALGOLIA_APP_ID must be set in .env");
 invariant(ALGOLIA_API_K, "VITE_ALGOLIA_API_K must be set in .env");
 
 export async function loader({ request }: Route.LoaderArgs) {
-  const url = new URL(request.url);
-  const searchString = url.searchParams.get("q") || "";
+	const url = new URL(request.url);
+	const searchString = url.searchParams.get("q") || "";
 
-  if (!searchString) return [];
+	if (!searchString) return [];
 
-  const requestUrl = `https://${ALGOLIA_APP_ID}-dsn.algolia.net/1/indexes/beer/query?x-algolia-application-id=${ALGOLIA_APP_ID}&x-algolia-api-key=${ALGOLIA_API_K}`;
+	const requestUrl = `https://${ALGOLIA_APP_ID}-dsn.algolia.net/1/indexes/beer/query?x-algolia-application-id=${ALGOLIA_APP_ID}&x-algolia-api-key=${ALGOLIA_API_K}`;
 
-  const response = await fetch(requestUrl, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      params: `query=${searchString}`,
-    }),
-  });
+	const response = await fetch(requestUrl, {
+		method: "POST",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify({
+			params: `query=${searchString}`,
+		}),
+	});
 
-  if (!response.ok) {
-    throw new Error("Failed to fetch beers");
-  }
+	if (!response.ok) {
+		throw new Error("Failed to fetch beers");
+	}
 
-  const jsonData = (await response.json()) as AlgoliaBeerResponse;
-  const beers = await Promise.all(
-    jsonData.hits.map(async (beer) => ({
-      untappdBeerId: beer.bid.toString(),
-      name: beer.beer_name,
-      breweryName: beer.brewery_name,
-      abv: beer.beer_abv,
-      style: beer.type_name,
-      label: beer.beer_label,
-      label_hd: beer.beer_label_hd,
-    }))
-  );
+	const jsonData = (await response.json()) as AlgoliaBeerResponse;
+	const beers = await Promise.all(
+		jsonData.hits.map(async (beer) => ({
+			untappdBeerId: beer.bid.toString(),
+			name: beer.beer_name,
+			breweryName: beer.brewery_name,
+			abv: beer.beer_abv,
+			style: beer.type_name,
+			label: beer.beer_label,
+			label_hd: beer.beer_label_hd,
+		})),
+	);
 
-  return beers;
+	return beers;
 }

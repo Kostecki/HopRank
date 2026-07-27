@@ -12,62 +12,62 @@ export class SessionNotFoundError extends Error {}
 export class SessionStateNotFoundError extends Error {}
 
 export type JoinSessionResult = {
-  session: { id: number; name: string; status: string };
-  readOnly: boolean;
-  alreadyJoined: boolean;
+	session: { id: number; name: string; status: string };
+	readOnly: boolean;
+	alreadyJoined: boolean;
 };
 
 export async function joinSessionByCode({
-  joinCode,
-  userId,
+	joinCode,
+	userId,
 }: {
-  joinCode: string;
-  userId: number;
+	joinCode: string;
+	userId: number;
 }): Promise<JoinSessionResult> {
-  const code = joinCode.trim().toUpperCase();
+	const code = joinCode.trim().toUpperCase();
 
-  const session = await db.query.sessions.findFirst({
-    where: eq(sessions.joinCode, code),
-    with: {
-      state: true,
-    },
-  });
+	const session = await db.query.sessions.findFirst({
+		where: eq(sessions.joinCode, code),
+		with: {
+			state: true,
+		},
+	});
 
-  if (!session) {
-    throw new SessionNotFoundError(
-      "Session not found for the provided join code"
-    );
-  }
+	if (!session) {
+		throw new SessionNotFoundError(
+			"Session not found for the provided join code",
+		);
+	}
 
-  const state = session.state;
-  if (!state) {
-    throw new SessionStateNotFoundError(
-      `Status for session id "${session.id}" not found`
-    );
-  }
+	const state = session.state;
+	if (!state) {
+		throw new SessionStateNotFoundError(
+			`Status for session id "${session.id}" not found`,
+		);
+	}
 
-  const isFinished = state.status === SessionStatus.finished;
+	const isFinished = state.status === SessionStatus.finished;
 
-  const existing = await db.query.sessionUsers.findFirst({
-    where: and(
-      eq(sessionUsers.sessionId, session.id),
-      eq(sessionUsers.userId, userId),
-      eq(sessionUsers.active, true)
-    ),
-  });
+	const existing = await db.query.sessionUsers.findFirst({
+		where: and(
+			eq(sessionUsers.sessionId, session.id),
+			eq(sessionUsers.userId, userId),
+			eq(sessionUsers.active, true),
+		),
+	});
 
-  const alreadyJoined = !!existing;
+	const alreadyJoined = !!existing;
 
-  if (!alreadyJoined && !isFinished) {
-    await joinSessionById({ sessionId: session.id, userId });
+	if (!alreadyJoined && !isFinished) {
+		await joinSessionById({ sessionId: session.id, userId });
 
-    // Emit events only when a user newly joins and session isn't finished
-    emitSessionEvent(session.id, "session:users-changed");
-    emitGlobalEvent("sessions:users-changed", { sessionId: session.id });
-  }
-  return {
-    session: { id: session.id, name: session.name, status: state.status },
-    readOnly: isFinished,
-    alreadyJoined,
-  };
+		// Emit events only when a user newly joins and session isn't finished
+		emitSessionEvent(session.id, "session:users-changed");
+		emitGlobalEvent("sessions:users-changed", { sessionId: session.id });
+	}
+	return {
+		session: { id: session.id, name: session.name, status: state.status },
+		readOnly: isFinished,
+		alreadyJoined,
+	};
 }

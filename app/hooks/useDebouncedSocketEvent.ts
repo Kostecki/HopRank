@@ -7,74 +7,74 @@ import { onSessionEvent } from "~/utils/websocket";
 import { useSocket } from "./useSocket";
 
 export const useDebouncedSocketEvent = <K extends SocketEvent>(
-  event: K | K[],
-  handler: (payload: SocketEventMap[K]) => void,
-  sessionId?: number | string,
-  debounceMs = 100
+	event: K | K[],
+	handler: (payload: SocketEventMap[K]) => void,
+	sessionId?: number | string,
+	debounceMs = 100,
 ) => {
-  const socket = useSocket();
-  const handlerRef = useRef(handler);
-  const timers = useRef<Record<string, NodeJS.Timeout>>({});
+	const socket = useSocket();
+	const handlerRef = useRef(handler);
+	const timers = useRef<Record<string, NodeJS.Timeout>>({});
 
-  // Keep the latest handler in a ref to avoid re-subscribing
-  useEffect(() => {
-    handlerRef.current = handler;
-  }, [handler]);
+	// Keep the latest handler in a ref to avoid re-subscribing
+	useEffect(() => {
+		handlerRef.current = handler;
+	}, [handler]);
 
-  const debouncedHandler = useCallback(
-    (e: K, payload: SocketEventMap[K]) => {
-      if (timers.current[e]) clearTimeout(timers.current[e]);
-      timers.current[e] = setTimeout(() => {
-        handlerRef.current(payload);
-        delete timers.current[e];
-      }, debounceMs);
-    },
-    [debounceMs]
-  );
+	const debouncedHandler = useCallback(
+		(e: K, payload: SocketEventMap[K]) => {
+			if (timers.current[e]) clearTimeout(timers.current[e]);
+			timers.current[e] = setTimeout(() => {
+				handlerRef.current(payload);
+				delete timers.current[e];
+			}, debounceMs);
+		},
+		[debounceMs],
+	);
 
-  useEffect(() => {
-    const events = Array.isArray(event) ? event : [event];
-    const needsSession = events.some((e) => e.startsWith("session:"));
+	useEffect(() => {
+		const events = Array.isArray(event) ? event : [event];
+		const needsSession = events.some((e) => e.startsWith("session:"));
 
-    if (!socket || (needsSession && !sessionId)) return;
+		if (!socket || (needsSession && !sessionId)) return;
 
-    const joinSession = () => {
-      if (needsSession && sessionId) {
-        socket.emit("join-session", sessionId);
-      }
-    };
+		const joinSession = () => {
+			if (needsSession && sessionId) {
+				socket.emit("join-session", sessionId);
+			}
+		};
 
-    // Join immediately (covers the case where the socket is already
-    // connected) and rejoin on every future "connect" event. The server
-    // treats a reconnect as a brand-new connection with no rooms, so
-    // without this, live updates silently stop after e.g. a phone being
-    // backgrounded and later reconnecting, even though the socket itself
-    // shows as connected again.
-    joinSession();
-    socket.on("connect", joinSession);
+		// Join immediately (covers the case where the socket is already
+		// connected) and rejoin on every future "connect" event. The server
+		// treats a reconnect as a brand-new connection with no rooms, so
+		// without this, live updates silently stop after e.g. a phone being
+		// backgrounded and later reconnecting, even though the socket itself
+		// shows as connected again.
+		joinSession();
+		socket.on("connect", joinSession);
 
-    const cleanups = events.map((e) =>
-      onSessionEvent(socket, e, (payload) =>
-        debouncedHandler(e, payload as SocketEventMap[K])
-      )
-    );
+		const cleanups = events.map((e) =>
+			onSessionEvent(socket, e, (payload) =>
+				debouncedHandler(e, payload as SocketEventMap[K]),
+			),
+		);
 
-    return () => {
-      socket.off("connect", joinSession);
+		return () => {
+			socket.off("connect", joinSession);
 
-      // Remove listeners
-      for (const fn of cleanups) {
-        fn();
-      }
+			// Remove listeners
+			for (const fn of cleanups) {
+				fn();
+			}
 
-      // Leave session if needed
-      if (needsSession && sessionId) {
-        socket.emit("leave-session", sessionId);
-      }
+			// Leave session if needed
+			if (needsSession && sessionId) {
+				socket.emit("leave-session", sessionId);
+			}
 
-      // Clear any pending timers
-      Object.values(timers.current).forEach(clearTimeout);
-      timers.current = {};
-    };
-  }, [socket, event, sessionId, debouncedHandler]);
+			// Clear any pending timers
+			Object.values(timers.current).forEach(clearTimeout);
+			timers.current = {};
+		};
+	}, [socket, event, sessionId, debouncedHandler]);
 };

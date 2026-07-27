@@ -1,16 +1,16 @@
 import type { InferInsertModel, InferSelectModel } from "drizzle-orm";
 
 import type {
-  beers,
-  criteria,
-  pendingRedirects,
-  ratings,
-  sessionBeers,
-  sessionCriteria,
-  sessionState,
-  sessions,
-  sessionUsers,
-  users,
+	beers,
+	criteria,
+	pendingRedirects,
+	ratings,
+	sessionBeers,
+	sessionCriteria,
+	sessionState,
+	sessions,
+	sessionUsers,
+	users,
 } from "./schema.server";
 
 export type SelectUsers = InferSelectModel<typeof users>;
@@ -27,7 +27,7 @@ export type InsertBeers = InferInsertModel<typeof beers>;
 
 export type SelectSessionBeers = InferSelectModel<typeof sessionBeers>;
 export type SelectSessionBeersWithBeer = SelectSessionBeers & {
-  beer: SelectBeers;
+	beer: SelectBeers;
 };
 export type InsertSessionBeers = InferInsertModel<typeof sessionBeers>;
 

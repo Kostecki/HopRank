@@ -12,17 +12,17 @@ const SESSION_SECRET = process.env.SESSION_SECRET;
 invariant(SESSION_SECRET, "SESSION_SECRET must be set in .env");
 
 export const {
-  getSession: getOAuthStateSession,
-  commitSession: commitOAuthStateSession,
-  destroySession: destroyOAuthStateSession,
+	getSession: getOAuthStateSession,
+	commitSession: commitOAuthStateSession,
+	destroySession: destroyOAuthStateSession,
 } = createCookieSessionStorage({
-  cookie: {
-    name: "_oauth_state",
-    maxAge,
-    sameSite: "lax",
-    path: "/",
-    httpOnly: true,
-    secrets: [SESSION_SECRET],
-    secure: process.env.NODE_ENV === "production",
-  },
+	cookie: {
+		name: "_oauth_state",
+		maxAge,
+		sameSite: "lax",
+		path: "/",
+		httpOnly: true,
+		secrets: [SESSION_SECRET],
+		secure: process.env.NODE_ENV === "production",
+	},
 });

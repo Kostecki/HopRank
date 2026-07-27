@@ -12,30 +12,30 @@ import type { SliderConfig } from "~/types/rating";
  * - `marks`: An array of marks to display on the slider, each with a `value` key.
  */
 export const sliderConf = (): SliderConfig => {
-  const stepSize = 0.25;
-  const max = 5;
+	const stepSize = 0.25;
+	const max = 5;
 
-  // Valid values from stepSize to max
-  const stepsCount = Math.floor(max / stepSize);
-  const steps = Array.from(
-    { length: stepsCount },
-    (_, i) => (i + 1) * stepSize
-  );
+	// Valid values from stepSize to max
+	const stepsCount = Math.floor(max / stepSize);
+	const steps = Array.from(
+		{ length: stepsCount },
+		(_, i) => (i + 1) * stepSize,
+	);
 
-  // Choose middle value as closest to max / 2, while still a valid step
-  const half = max / 2;
-  const defaultValue = steps.reduce((closest, current) => {
-    const diff = Math.abs(current - half);
-    const closestDiff = Math.abs(closest - half);
+	// Choose middle value as closest to max / 2, while still a valid step
+	const half = max / 2;
+	const defaultValue = steps.reduce((closest, current) => {
+		const diff = Math.abs(current - half);
+		const closestDiff = Math.abs(closest - half);
 
-    if (diff < closestDiff) return current;
-    if (diff === closestDiff) return Math.max(current, closest);
-    return closest;
-  });
+		if (diff < closestDiff) return current;
+		if (diff === closestDiff) return Math.max(current, closest);
+		return closest;
+	});
 
-  const marks = steps.map((step) => ({ value: step }));
+	const marks = steps.map((step) => ({ value: step }));
 
-  return { stepSize, max, defaultValue, marks };
+	return { stepSize, max, defaultValue, marks };
 };
 
 /**
@@ -47,13 +47,13 @@ export const sliderConf = (): SliderConfig => {
  * @returns True if the score is a valid step value produced by `sliderConf()`.
  */
 export const isValidVoteScore = (score: unknown): score is number => {
-  if (typeof score !== "number" || !Number.isFinite(score)) return false;
+	if (typeof score !== "number" || !Number.isFinite(score)) return false;
 
-  const { stepSize, max } = sliderConf();
-  if (score < stepSize || score > max) return false;
+	const { stepSize, max } = sliderConf();
+	if (score < stepSize || score > max) return false;
 
-  const steps = score / stepSize;
-  return Math.abs(steps - Math.round(steps)) < 1e-6;
+	const steps = score / stepSize;
+	return Math.abs(steps - Math.round(steps)) < 1e-6;
 };
 
 /**
@@ -63,7 +63,7 @@ export const isValidVoteScore = (score: unknown): score is number => {
  * @returns The formatted full page title string.
  */
 export const getPageTitle = (pageTitle: string): string =>
-  `${pageTitle} - HopRank`;
+	`${pageTitle} - HopRank`;
 
 /**
  * A utility that returns a promise which resolves after a specified delay.
@@ -72,9 +72,9 @@ export const getPageTitle = (pageTitle: string): string =>
  * @returns A promise that resolves after the delay.
  */
 export const wait = (ms: number): Promise<void> => {
-  return new Promise((resolve) => {
-    setTimeout(resolve, ms);
-  });
+	return new Promise((resolve) => {
+		setTimeout(resolve, ms);
+	});
 };
 
 /**
@@ -85,24 +85,24 @@ export const wait = (ms: number): Promise<void> => {
  * @returns {string} The formatted score (e.g., "3,75") or "-" if undefined.
  */
 export const displayScore = (
-  score: number | undefined,
-  minDigits = 2,
-  maxDigits = 2
+	score: number | undefined,
+	minDigits = 2,
+	maxDigits = 2,
 ): string => {
-  if (score === undefined) return "-";
-  return score.toLocaleString("da-DK", {
-    minimumFractionDigits: minDigits,
-    maximumFractionDigits: maxDigits,
-  });
+	if (score === undefined) return "-";
+	return score.toLocaleString("da-DK", {
+		minimumFractionDigits: minDigits,
+		maximumFractionDigits: maxDigits,
+	});
 };
 
 export const displayABV = (
-  value: number | undefined,
-  minDigits = 2,
-  maxDigits = 2
+	value: number | undefined,
+	minDigits = 2,
+	maxDigits = 2,
 ): string => {
-  const formatted = displayScore(value, minDigits, maxDigits);
-  return `${formatted}%`;
+	const formatted = displayScore(value, minDigits, maxDigits);
+	return `${formatted}%`;
 };
 
 /**
@@ -114,13 +114,13 @@ export const displayABV = (
  * @throws A 400 Remix response if the input is invalid.
  */
 export const extractSessionId = (inputParam: string) => {
-  const sessionId = Number(inputParam);
+	const sessionId = Number(inputParam);
 
-  if (!inputParam || Number.isNaN(sessionId)) {
-    throw data({ message: "Invalid session ID" }, { status: 400 });
-  }
+	if (!inputParam || Number.isNaN(sessionId)) {
+		throw data({ message: "Invalid session ID" }, { status: 400 });
+	}
 
-  return sessionId;
+	return sessionId;
 };
 
 /**
@@ -130,15 +130,15 @@ export const extractSessionId = (inputParam: string) => {
  * @returns A randomly generated join code.
  */
 export const generateJoinCode = () => {
-  const characters = "ABCDEFGHJKLMNOPQRSTUVWXYZ0123456789";
-  const length = 5;
+	const characters = "ABCDEFGHJKLMNOPQRSTUVWXYZ0123456789";
+	const length = 5;
 
-  let result = "";
-  for (let i = 0; i < length; i++) {
-    result += characters.charAt(Math.floor(Math.random() * characters.length));
-  }
+	let result = "";
+	for (let i = 0; i < length; i++) {
+		result += characters.charAt(Math.floor(Math.random() * characters.length));
+	}
 
-  return result;
+	return result;
 };
 
 /**
@@ -147,10 +147,10 @@ export const generateJoinCode = () => {
  * @return {number} The GMT offset in hours (e.g., -5 for GMT-5).
  */
 export const getGmtOffset = () => {
-  const offsetInMinutes = new Date().getTimezoneOffset();
-  const offsetInHours = -offsetInMinutes / 60;
+	const offsetInMinutes = new Date().getTimezoneOffset();
+	const offsetInHours = -offsetInMinutes / 60;
 
-  return offsetInHours;
+	return offsetInHours;
 };
 
 /**
@@ -159,12 +159,12 @@ export const getGmtOffset = () => {
  * @return {boolean} True if the device is a mobile or tablet, false otherwise.
  */
 export const isMobileOrTablet = (): boolean => {
-  const ua = navigator.userAgent || (window as { opera?: string }).opera || "";
+	const ua = navigator.userAgent || (window as { opera?: string }).opera || "";
 
-  const isIOS = /iPad|iPhone|iPod/.test(ua) || navigator.maxTouchPoints > 1;
-  const isAndroid = /Android/.test(ua);
+	const isIOS = /iPad|iPhone|iPod/.test(ua) || navigator.maxTouchPoints > 1;
+	const isAndroid = /Android/.test(ua);
 
-  return isIOS || isAndroid;
+	return isIOS || isAndroid;
 };
 
 /**
@@ -175,7 +175,7 @@ export const isMobileOrTablet = (): boolean => {
  * @returns The appropriate form of the word based on the count.
  */
 export const pluralize = (count: number, word: string) => {
-  return count === 1 ? word : `${word}s`;
+	return count === 1 ? word : `${word}s`;
 };
 
 /**
@@ -186,14 +186,14 @@ export const pluralize = (count: number, word: string) => {
  * @returns The formatted count string (e.g., "1.234").
  */
 export const formatCount = (
-  value: string | number | undefined | null,
-  locale = "da-DK"
+	value: string | number | undefined | null,
+	locale = "da-DK",
 ) => {
-  if (!value) return "-";
-  if (typeof value === "string" && /[KM]/i.test(value)) {
-    return value;
-  }
-  return Number(value).toLocaleString(locale);
+	if (!value) return "-";
+	if (typeof value === "string" && /[KM]/i.test(value)) {
+		return value;
+	}
+	return Number(value).toLocaleString(locale);
 };
 
 /**
@@ -203,8 +203,8 @@ export const formatCount = (
  * @returns The string with the first letter capitalized.
  */
 export const capitalizeFirstLetter = (str: string): string => {
-  if (!str) return "";
-  return str.charAt(0).toUpperCase() + str.slice(1);
+	if (!str) return "";
+	return str.charAt(0).toUpperCase() + str.slice(1);
 };
 
 /**
@@ -219,9 +219,9 @@ export const capitalizeFirstLetter = (str: string): string => {
  * @returns True if the target is a safe redirect, false otherwise.
  */
 export const isSafeRedirect = (target: string | null | undefined) => {
-  if (!target) return false;
-  if (!target.startsWith("/")) return false;
-  if (target.startsWith("//")) return false;
+	if (!target) return false;
+	if (!target.startsWith("/")) return false;
+	if (target.startsWith("//")) return false;
 
-  return true;
+	return true;
 };

@@ -3,13 +3,13 @@ import type { Socket } from "socket.io-client";
 import type { SocketEvent } from "~/types/websocket";
 
 export const onSessionEvent = (
-  socket: Socket,
-  event: SocketEvent,
-  handler: (...args: unknown[]) => void
+	socket: Socket,
+	event: SocketEvent,
+	handler: (...args: unknown[]) => void,
 ) => {
-  socket.on(event, handler);
+	socket.on(event, handler);
 
-  return () => {
-    socket.off(event, handler);
-  };
+	return () => {
+		socket.off(event, handler);
+	};
 };

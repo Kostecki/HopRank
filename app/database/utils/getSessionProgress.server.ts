@@ -6,14 +6,14 @@ import { SessionBeerStatus } from "~/types/session";
 import { userSessionGet } from "~/auth/users.server";
 import { db } from "~/database/config.server";
 import {
-  beers,
-  ratings,
-  sessionBeers,
-  sessionCriteria,
-  sessionState,
-  sessions,
-  sessionUsers,
-  users,
+	beers,
+	ratings,
+	sessionBeers,
+	sessionCriteria,
+	sessionState,
+	sessions,
+	sessionUsers,
+	users,
 } from "~/database/schema.server";
 import type { SelectUsers } from "~/database/schema.types";
 import { getBeerInfo } from "~/utils/untappd";
@@ -21,304 +21,304 @@ import { getBeerInfo } from "~/utils/untappd";
 // Module-level, single-process cache: intentionally not shared across
 // instances if this app is ever scaled horizontally.
 const beerInfoCache = new Map<
-  number,
-  Awaited<ReturnType<typeof getBeerInfo>>
+	number,
+	Awaited<ReturnType<typeof getBeerInfo>>
 >();
 
 // Exported for tests: this is the boundary that must never leak email/admin
 // to SessionProgress.users, since that shape is returned to unauthenticated
 // viewers on the public read-only results route.
 export const toSessionProgressUser = (
-  user: SelectUsers
+	user: SelectUsers,
 ): SessionProgressUser => ({
-  id: user.id,
-  name: user.name,
-  untappdId: user.untappdId,
-  username: user.username,
-  avatarURL: user.avatarURL,
+	id: user.id,
+	name: user.name,
+	untappdId: user.untappdId,
+	username: user.username,
+	avatarURL: user.avatarURL,
 });
 
 async function getCachedBeerInfo(beerId: number, accessToken: string) {
-  if (beerInfoCache.has(beerId)) {
-    return beerInfoCache.get(beerId);
-  }
+	if (beerInfoCache.has(beerId)) {
+		return beerInfoCache.get(beerId);
+	}
 
-  const data = await getBeerInfo(beerId, accessToken);
-  beerInfoCache.set(beerId, data);
-  return data;
+	const data = await getBeerInfo(beerId, accessToken);
+	beerInfoCache.set(beerId, data);
+	return data;
 }
 
 export async function getSessionProgress({
-  request,
-  sessionId,
+	request,
+	sessionId,
 }: {
-  request: Request;
-  sessionId: number;
+	request: Request;
+	sessionId: number;
 }) {
-  const user = await userSessionGet(request);
+	const user = await userSessionGet(request);
 
-  const [
-    state,
-    activeSessionUsers,
-    sessionCriteriaRows,
-    sessionBeerRows,
-    allRatings,
-    session,
-  ] = await Promise.all([
-    db.query.sessionState.findFirst({
-      where: eq(sessionState.sessionId, sessionId),
-    }),
-    db.query.sessionUsers.findMany({
-      where: and(
-        eq(sessionUsers.sessionId, sessionId),
-        eq(sessionUsers.active, true)
-      ),
-    }),
-    db.query.sessionCriteria.findMany({
-      where: eq(sessionCriteria.sessionId, sessionId),
-      with: { criterion: true },
-    }),
-    db
-      .select({
-        sessionBeer: sessionBeers,
-        beer: beers,
-      })
-      .from(sessionBeers)
-      .innerJoin(beers, eq(sessionBeers.beerId, beers.id))
-      .where(eq(sessionBeers.sessionId, sessionId)),
-    db.query.ratings.findMany({ where: eq(ratings.sessionId, sessionId) }),
-    db.query.sessions.findFirst({ where: eq(sessions.id, sessionId) }),
-  ]);
+	const [
+		state,
+		activeSessionUsers,
+		sessionCriteriaRows,
+		sessionBeerRows,
+		allRatings,
+		session,
+	] = await Promise.all([
+		db.query.sessionState.findFirst({
+			where: eq(sessionState.sessionId, sessionId),
+		}),
+		db.query.sessionUsers.findMany({
+			where: and(
+				eq(sessionUsers.sessionId, sessionId),
+				eq(sessionUsers.active, true),
+			),
+		}),
+		db.query.sessionCriteria.findMany({
+			where: eq(sessionCriteria.sessionId, sessionId),
+			with: { criterion: true },
+		}),
+		db
+			.select({
+				sessionBeer: sessionBeers,
+				beer: beers,
+			})
+			.from(sessionBeers)
+			.innerJoin(beers, eq(sessionBeers.beerId, beers.id))
+			.where(eq(sessionBeers.sessionId, sessionId)),
+		db.query.ratings.findMany({ where: eq(ratings.sessionId, sessionId) }),
+		db.query.sessions.findFirst({ where: eq(sessions.id, sessionId) }),
+	]);
 
-  if (!session) {
-    return { statusCode: 404, error: "Session not found" } as const;
-  }
+	if (!session) {
+		return { statusCode: 404, error: "Session not found" } as const;
+	}
 
-  const userIds = activeSessionUsers
-    .map((su) => su.userId)
-    .filter((id): id is number => id !== null);
+	const userIds = activeSessionUsers
+		.map((su) => su.userId)
+		.filter((id): id is number => id !== null);
 
-  const ratingsForSession = await db.query.ratings.findMany({
-    where: eq(ratings.sessionId, sessionId),
-    columns: { userId: true },
-  });
-  const uniqueUserIds = Array.from(
-    new Set(
-      ratingsForSession
-        .map((r) => r.userId)
-        .filter((id): id is number => id != null)
-    )
-  );
+	const ratingsForSession = await db.query.ratings.findMany({
+		where: eq(ratings.sessionId, sessionId),
+		columns: { userId: true },
+	});
+	const uniqueUserIds = Array.from(
+		new Set(
+			ratingsForSession
+				.map((r) => r.userId)
+				.filter((id): id is number => id != null),
+		),
+	);
 
-  const sessionBeerRowsWithBeer = sessionBeerRows.map(
-    ({ sessionBeer, beer }) => ({
-      ...sessionBeer,
-      beer,
-    })
-  );
+	const sessionBeerRowsWithBeer = sessionBeerRows.map(
+		({ sessionBeer, beer }) => ({
+			...sessionBeer,
+			beer,
+		}),
+	);
 
-  const criteriaList = sessionCriteriaRows
-    .filter(
-      (
-        row
-      ): row is typeof row & { criterion: NonNullable<typeof row.criterion> } =>
-        row.criterion !== null
-    )
-    .map((row) => ({
-      id: row.criterion.id,
-      name: row.criterion.name,
-      weight: row.criterion.weight,
-      description: row.criterion.description,
-    }));
+	const criteriaList = sessionCriteriaRows
+		.filter(
+			(
+				row,
+			): row is typeof row & { criterion: NonNullable<typeof row.criterion> } =>
+				row.criterion !== null,
+		)
+		.map((row) => ({
+			id: row.criterion.id,
+			name: row.criterion.name,
+			weight: row.criterion.weight,
+			description: row.criterion.description,
+		}));
 
-  // Compute overall average score per criterion across all rated beers (excluding current beer in progress)
-  const ratedBeerIds = new Set(
-    sessionBeerRowsWithBeer
-      .filter((sb) => sb.status === SessionBeerStatus.rated)
-      .map((sb) => sb.beer.id)
-  );
-  const scoredCriteria = criteriaList.map((criterion) => {
-    const criterionRatings = allRatings.filter(
-      (r) => r.criterionId === criterion.id && ratedBeerIds.has(r.beerId ?? -1)
-    );
-    const avg =
-      criterionRatings.reduce((sum, r) => sum + r.score, 0) /
-      (criterionRatings.length || 1);
-    return {
-      criterionId: criterion.id,
-      name: criterion.name,
-      weight: criterion.weight,
-      averageScore: avg,
-    };
-  });
+	// Compute overall average score per criterion across all rated beers (excluding current beer in progress)
+	const ratedBeerIds = new Set(
+		sessionBeerRowsWithBeer
+			.filter((sb) => sb.status === SessionBeerStatus.rated)
+			.map((sb) => sb.beer.id),
+	);
+	const scoredCriteria = criteriaList.map((criterion) => {
+		const criterionRatings = allRatings.filter(
+			(r) => r.criterionId === criterion.id && ratedBeerIds.has(r.beerId ?? -1),
+		);
+		const avg =
+			criterionRatings.reduce((sum, r) => sum + r.score, 0) /
+			(criterionRatings.length || 1);
+		return {
+			criterionId: criterion.id,
+			name: criterion.name,
+			weight: criterion.weight,
+			averageScore: avg,
+		};
+	});
 
-  const currentBeerRow = sessionBeerRowsWithBeer.find(
-    (sb) =>
-      sb.beer.id === state?.currentBeerId &&
-      sb.status !== SessionBeerStatus.rated
-  );
+	const currentBeerRow = sessionBeerRowsWithBeer.find(
+		(sb) =>
+			sb.beer.id === state?.currentBeerId &&
+			sb.status !== SessionBeerStatus.rated,
+	);
 
-  const expectedVotes = activeSessionUsers.length;
-  const currentBeerVotes = allRatings.filter(
-    (r) => r.beerId === state?.currentBeerId
-  );
-  const uniqueUserVotes = new Set(currentBeerVotes.map((r) => r.userId)).size;
+	const expectedVotes = activeSessionUsers.length;
+	const currentBeerVotes = allRatings.filter(
+		(r) => r.beerId === state?.currentBeerId,
+	);
+	const uniqueUserVotes = new Set(currentBeerVotes.map((r) => r.userId)).size;
 
-  let userRatingsById: Record<number, number> = {};
-  if (user && state?.currentBeerId) {
-    const userRatings = allRatings.filter(
-      (r) => r.userId === user.id && r.beerId === state.currentBeerId
-    );
-    userRatingsById = Object.fromEntries(
-      userRatings.map((r) => [r.criterionId, r.score])
-    );
-  }
+	let userRatingsById: Record<number, number> = {};
+	if (user && state?.currentBeerId) {
+		const userRatings = allRatings.filter(
+			(r) => r.userId === user.id && r.beerId === state.currentBeerId,
+		);
+		userRatingsById = Object.fromEntries(
+			userRatings.map((r) => [r.criterionId, r.score]),
+		);
+	}
 
-  // Build a set of all userIds who added beers to include them in users list even if not active or voted.
-  const beerAdderIds = new Set<number>(
-    sessionBeerRowsWithBeer
-      .map((sb) => sb.addedByUserId)
-      .filter((id): id is number => typeof id === "number")
-  );
+	// Build a set of all userIds who added beers to include them in users list even if not active or voted.
+	const beerAdderIds = new Set<number>(
+		sessionBeerRowsWithBeer
+			.map((sb) => sb.addedByUserId)
+			.filter((id): id is number => typeof id === "number"),
+	);
 
-  // Merge active users, voting users, and beer adders to ensure avatar/name resolution
-  const unionUserIds = new Set<number>([
-    ...beerAdderIds,
-    ...userIds,
-    ...uniqueUserIds,
-  ]);
-  const allRelevantUsersRaw = await db.query.users.findMany({
-    where: inArray(users.id, [...unionUserIds]),
-  });
-  const allRelevantUsers = allRelevantUsersRaw.map(toSessionProgressUser);
+	// Merge active users, voting users, and beer adders to ensure avatar/name resolution
+	const unionUserIds = new Set<number>([
+		...beerAdderIds,
+		...userIds,
+		...uniqueUserIds,
+	]);
+	const allRelevantUsersRaw = await db.query.users.findMany({
+		where: inArray(users.id, [...unionUserIds]),
+	});
+	const allRelevantUsers = allRelevantUsersRaw.map(toSessionProgressUser);
 
-  const ratedBeers = sessionBeerRowsWithBeer
-    .filter(
-      (sb) =>
-        sb.status === SessionBeerStatus.rated &&
-        sb.beer.id !== state?.currentBeerId
-    )
-    .map(({ beer, order, addedByUserId }) => {
-      let totalWeighted = 0;
-      let totalWeight = 0;
+	const ratedBeers = sessionBeerRowsWithBeer
+		.filter(
+			(sb) =>
+				sb.status === SessionBeerStatus.rated &&
+				sb.beer.id !== state?.currentBeerId,
+		)
+		.map(({ beer, order, addedByUserId }) => {
+			let totalWeighted = 0;
+			let totalWeight = 0;
 
-      const criteriaBreakdown = criteriaList.map((criterion) => {
-        const scores = allRatings.filter(
-          (rating) =>
-            rating.beerId === beer.id && rating.criterionId === criterion.id
-        );
-        const avg =
-          scores.reduce((sum, rating) => sum + rating.score, 0) /
-          (scores.length || 1);
-        totalWeighted += avg * criterion.weight;
-        totalWeight += criterion.weight;
-        return {
-          criterionId: criterion.id,
-          name: criterion.name,
-          weight: criterion.weight,
-          averageScore: avg,
-        };
-      });
+			const criteriaBreakdown = criteriaList.map((criterion) => {
+				const scores = allRatings.filter(
+					(rating) =>
+						rating.beerId === beer.id && rating.criterionId === criterion.id,
+				);
+				const avg =
+					scores.reduce((sum, rating) => sum + rating.score, 0) /
+					(scores.length || 1);
+				totalWeighted += avg * criterion.weight;
+				totalWeight += criterion.weight;
+				return {
+					criterionId: criterion.id,
+					name: criterion.name,
+					weight: criterion.weight,
+					averageScore: avg,
+				};
+			});
 
-      const averageScore = totalWeight > 0 ? totalWeighted / totalWeight : 0;
-      const votesCount = new Set(
-        allRatings.filter((r) => r.beerId === beer.id).map((r) => r.userId)
-      ).size;
-      return {
-        beerId: beer.id,
-        untappdBeerId: beer.untappdBeerId,
-        name: beer.name,
-        breweryName: beer.breweryName,
-        style: beer.style,
-        label: beer.label,
-        label_hd: beer.label_hd,
-        order,
-        averageScore,
-        criteriaBreakdown,
-        addedByUserId,
-        votesCount,
-      };
-    })
-    .sort((a, b) => b.averageScore - a.averageScore);
+			const averageScore = totalWeight > 0 ? totalWeighted / totalWeight : 0;
+			const votesCount = new Set(
+				allRatings.filter((r) => r.beerId === beer.id).map((r) => r.userId),
+			).size;
+			return {
+				beerId: beer.id,
+				untappdBeerId: beer.untappdBeerId,
+				name: beer.name,
+				breweryName: beer.breweryName,
+				style: beer.style,
+				label: beer.label,
+				label_hd: beer.label_hd,
+				order,
+				averageScore,
+				criteriaBreakdown,
+				addedByUserId,
+				votesCount,
+			};
+		})
+		.sort((a, b) => b.averageScore - a.averageScore);
 
-  const currentBeerData = currentBeerRow?.beer
-    ? (() => {
-        const currentBeerRatings = allRatings.filter(
-          (r) => r.beerId === currentBeerRow.beer.id
-        );
+	const currentBeerData = currentBeerRow?.beer
+		? (() => {
+				const currentBeerRatings = allRatings.filter(
+					(r) => r.beerId === currentBeerRow.beer.id,
+				);
 
-        let totalWeightedCurrent = 0;
-        let totalWeightCurrent = 0;
-        const criteriaBreakdown = criteriaList.map((criterion) => {
-          const scores = currentBeerRatings.filter(
-            (rating) => rating.criterionId === criterion.id
-          );
-          const avg =
-            scores.reduce((sum, rating) => sum + rating.score, 0) /
-            (scores.length || 1);
-          totalWeightedCurrent += avg * criterion.weight;
-          totalWeightCurrent += criterion.weight;
-          return {
-            criterionId: criterion.id,
-            name: criterion.name,
-            weight: criterion.weight,
-            averageScore: avg,
-          };
-        });
-        const averageScore =
-          totalWeightCurrent > 0
-            ? totalWeightedCurrent / totalWeightCurrent
-            : 0;
-        return {
-          beerId: currentBeerRow.beer.id,
-          untappdBeerId: currentBeerRow.beer.untappdBeerId,
-          name: currentBeerRow.beer.name,
-          breweryName: currentBeerRow.beer.breweryName,
-          style: currentBeerRow.beer.style,
-          label: currentBeerRow.beer.label,
-          label_hd: currentBeerRow.beer.label_hd,
-          order: state?.currentBeerOrder ?? 0,
-          currentVoteCount: uniqueUserVotes,
-          totalPossibleVoteCount: expectedVotes,
-          userRatings: user ? userRatingsById : {},
-          userHadBeer: false,
-          addedByUserId: currentBeerRow.addedByUserId,
-          averageScore,
-          criteriaBreakdown,
-          votesCount: uniqueUserVotes,
-        };
-      })()
-    : null;
+				let totalWeightedCurrent = 0;
+				let totalWeightCurrent = 0;
+				const criteriaBreakdown = criteriaList.map((criterion) => {
+					const scores = currentBeerRatings.filter(
+						(rating) => rating.criterionId === criterion.id,
+					);
+					const avg =
+						scores.reduce((sum, rating) => sum + rating.score, 0) /
+						(scores.length || 1);
+					totalWeightedCurrent += avg * criterion.weight;
+					totalWeightCurrent += criterion.weight;
+					return {
+						criterionId: criterion.id,
+						name: criterion.name,
+						weight: criterion.weight,
+						averageScore: avg,
+					};
+				});
+				const averageScore =
+					totalWeightCurrent > 0
+						? totalWeightedCurrent / totalWeightCurrent
+						: 0;
+				return {
+					beerId: currentBeerRow.beer.id,
+					untappdBeerId: currentBeerRow.beer.untappdBeerId,
+					name: currentBeerRow.beer.name,
+					breweryName: currentBeerRow.beer.breweryName,
+					style: currentBeerRow.beer.style,
+					label: currentBeerRow.beer.label,
+					label_hd: currentBeerRow.beer.label_hd,
+					order: state?.currentBeerOrder ?? 0,
+					currentVoteCount: uniqueUserVotes,
+					totalPossibleVoteCount: expectedVotes,
+					userRatings: user ? userRatingsById : {},
+					userHadBeer: false,
+					addedByUserId: currentBeerRow.addedByUserId,
+					averageScore,
+					criteriaBreakdown,
+					votesCount: uniqueUserVotes,
+				};
+			})()
+		: null;
 
-  let userHadBeer = false;
-  if (currentBeerData && user?.untappd) {
-    const beerInfo = await getCachedBeerInfo(
-      currentBeerData.untappdBeerId,
-      user.untappd.accessToken
-    );
-    userHadBeer = beerInfo?.stats?.user_count > 0;
-  }
+	let userHadBeer = false;
+	if (currentBeerData && user?.untappd) {
+		const beerInfo = await getCachedBeerInfo(
+			currentBeerData.untappdBeerId,
+			user.untappd.accessToken,
+		);
+		userHadBeer = beerInfo?.stats?.user_count > 0;
+	}
 
-  const currentBeer = currentBeerData
-    ? { ...currentBeerData, userHadBeer }
-    : null;
-  const beersTotalCount = sessionBeerRowsWithBeer.length;
+	const currentBeer = currentBeerData
+		? { ...currentBeerData, userHadBeer }
+		: null;
+	const beersTotalCount = sessionBeerRowsWithBeer.length;
 
-  const progressPercentage =
-    beersTotalCount === 0 ? 0 : (ratedBeers.length / beersTotalCount) * 100;
+	const progressPercentage =
+		beersTotalCount === 0 ? 0 : (ratedBeers.length / beersTotalCount) * 100;
 
-  return {
-    sessionId,
-    sessionName: session.name,
-    status: state?.status,
-    createdAt: session.createdAt,
-    createdBy: session.createdBy,
-    joinCode: session.joinCode,
-    beersTotalCount,
-    users: allRelevantUsers,
-    scoredCriteria,
-    currentBeer,
-    ratedBeers,
-    progressPercentage,
-  };
+	return {
+		sessionId,
+		sessionName: session.name,
+		status: state?.status,
+		createdAt: session.createdAt,
+		createdBy: session.createdBy,
+		joinCode: session.joinCode,
+		beersTotalCount,
+		users: allRelevantUsers,
+		scoredCriteria,
+		currentBeer,
+		ratedBeers,
+		progressPercentage,
+	};
 }
