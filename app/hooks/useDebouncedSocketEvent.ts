@@ -38,9 +38,20 @@ export const useDebouncedSocketEvent = <K extends SocketEvent>(
 
     if (!socket || (needsSession && !sessionId)) return;
 
-    if (needsSession && sessionId) {
-      socket.emit("join-session", sessionId);
-    }
+    const joinSession = () => {
+      if (needsSession && sessionId) {
+        socket.emit("join-session", sessionId);
+      }
+    };
+
+    // Join immediately (covers the case where the socket is already
+    // connected) and rejoin on every future "connect" event. The server
+    // treats a reconnect as a brand-new connection with no rooms, so
+    // without this, live updates silently stop after e.g. a phone being
+    // backgrounded and later reconnecting, even though the socket itself
+    // shows as connected again.
+    joinSession();
+    socket.on("connect", joinSession);
 
     const cleanups = events.map((e) =>
       onSessionEvent(socket, e, (payload) =>
@@ -49,6 +60,8 @@ export const useDebouncedSocketEvent = <K extends SocketEvent>(
     );
 
     return () => {
+      socket.off("connect", joinSession);
+
       // Remove listeners
       for (const fn of cleanups) {
         fn();
