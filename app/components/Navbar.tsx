@@ -143,7 +143,9 @@ export default function Navbar({
 	}, [leaveFetcher.state, leaveFetcher.data, navigate]);
 
 	const UserListItem = ({ user }: { user: SessionProgressUser }) => {
-		const firstLetter = user.email.slice(0, 1).toUpperCase();
+		const firstLetter = (user.name ?? user.username ?? "?")
+			.slice(0, 1)
+			.toUpperCase();
 
 		return (
 			<Flex
@@ -163,7 +165,7 @@ export default function Navbar({
 					/>
 
 					<Text size="sm" fw="500" lineClamp={1}>
-						{user.name ?? user.email}
+						{user.name ?? user.username ?? "Deltager"}
 					</Text>
 				</Flex>
 

@@ -82,7 +82,9 @@ export function StartSession({ user, session }: InputProps) {
 				<Group justify="center" mt="lg">
 					<AnimatePresence>
 						{session.users.map((user) => {
-							const firstLetter = user.email.slice(0, 1).toUpperCase();
+							const firstLetter = (user.name ?? user.username ?? "?")
+								.slice(0, 1)
+								.toUpperCase();
 
 							return (
 								<motion.div

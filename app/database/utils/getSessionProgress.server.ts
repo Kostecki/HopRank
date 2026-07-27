@@ -25,16 +25,17 @@ const beerInfoCache = new Map<
   Awaited<ReturnType<typeof getBeerInfo>>
 >();
 
-const toSessionProgressUser = (user: SelectUsers): SessionProgressUser => ({
+// Exported for tests: this is the boundary that must never leak email/admin
+// to SessionProgress.users, since that shape is returned to unauthenticated
+// viewers on the public read-only results route.
+export const toSessionProgressUser = (
+  user: SelectUsers
+): SessionProgressUser => ({
   id: user.id,
-  email: user.email,
-  admin: user.admin,
   name: user.name,
   untappdId: user.untappdId,
   username: user.username,
   avatarURL: user.avatarURL,
-  createdAt: user.createdAt,
-  lastUpdatedAt: user.lastUpdatedAt,
 });
 
 async function getCachedBeerInfo(beerId: number, accessToken: string) {

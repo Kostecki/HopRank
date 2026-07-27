@@ -1,10 +1,9 @@
-import type { UserPublic } from "~/types/user";
-
 import type {
   SelectBeers,
   SelectCriteria,
   SelectSessionState,
   SelectSessions,
+  SelectUsers,
 } from "~/database/schema.types";
 
 // Base row type aliases (from Drizzle) for clarity.
@@ -14,7 +13,14 @@ type BaseSessionState = SelectSessionState;
 type BaseCriterion = SelectCriteria;
 
 // User shape used in session progress (renamed/filtered from raw user row).
-export type SessionProgressUser = UserPublic;
+// Deliberately excludes email/admin: this rides in SessionProgress.users,
+// which is returned to unauthenticated viewers on the public read-only
+// results route (and is not the same "public" shape as UserPublic, which
+// is only ever used for the logged-in user's own session data).
+export type SessionProgressUser = Pick<
+  SelectUsers,
+  "id" | "name" | "username" | "avatarURL" | "untappdId"
+>;
 
 // Aggregated criterion score used when showing overall scoring breakdowns.
 export type ScoredCriterion = {
