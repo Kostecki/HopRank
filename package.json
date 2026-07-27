@@ -10,7 +10,9 @@
     "generate": "drizzle-kit generate",
     "migrate": "drizzle-kit migrate",
     "studio": "drizzle-kit studio",
-    "lint": "biome lint ."
+    "lint": "biome lint .",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@mantine/carousel": "^8.3.9",
@@ -65,10 +67,12 @@
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "vite": "^7.2.6",
-    "vite-tsconfig-paths": "^5.1.4"
+    "vite-tsconfig-paths": "^5.1.4",
+    "vitest": "^4.1.10"
   },
   "volta": {
-    "node": "24.11.1"
+    "node": "24.11.1",
+    "pnpm": "11.17.0"
   },
   "pnpm": {
     "onlyBuiltDependencies": [

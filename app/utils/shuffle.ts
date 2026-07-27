@@ -21,7 +21,7 @@ type BeerRow = {
  * @param list - The list of beers to score.
  * @returns The calculated score as a number.
  */
-const scoreBeerOrder = (list: BeerRow[]) => {
+export const scoreBeerOrder = (list: BeerRow[]) => {
   let score = 0;
   for (let i = 1; i < list.length; i++) {
     const prev = list[i - 1];
@@ -40,7 +40,7 @@ const scoreBeerOrder = (list: BeerRow[]) => {
  * @param array - The array to shuffle.
  * @returns A new shuffled array.
  */
-const shuffle = <T>(array: T[]) => {
+export const shuffle = <T>(array: T[]) => {
   const arr = [...array];
   for (let i = arr.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
