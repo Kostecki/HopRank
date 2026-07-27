@@ -99,4 +99,31 @@ describe("addBeersToSession", () => {
     // shuffle involved at all. Assert it isn't stuck there.
     expect(newBeerIndex).not.toBe(3);
   });
+
+  it("still adds the other new beers in a batch when one of them is already in the session", async () => {
+    // Beer 1 is already in the session (e.g. added by someone else moments
+    // ago, racing a stale client-side "already in session" check).
+    await addBeersToSession(
+      sessionId,
+      [beerInput(1, "Brewery A", "IPA")],
+      userAId
+    );
+
+    // A later submission re-selects beer 1 alongside two genuinely new
+    // beers. Without onConflictDoNothing, this single multi-row insert
+    // would fail atomically and silently drop beers 2 and 3 too.
+    await addBeersToSession(
+      sessionId,
+      [
+        beerInput(1, "Brewery A", "IPA"),
+        beerInput(2, "Brewery B", "Stout"),
+        beerInput(3, "Brewery C", "Lager"),
+      ],
+      userBId
+    );
+
+    const rows = await waitingOrder();
+    const untappdIds = rows.map((r) => r.beer.untappdBeerId).sort();
+    expect(untappdIds).toEqual([1, 2, 3]);
+  });
 });

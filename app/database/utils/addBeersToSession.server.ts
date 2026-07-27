@@ -74,7 +74,18 @@ export const addBeersToSession = async (
   }
 
   if (sessionBeersToInsert.length > 0) {
-    await db.insert(sessionBeers).values(sessionBeersToInsert);
+    // onConflictDoNothing matters here: this is a single multi-row INSERT,
+    // and without it, one beer in the batch already being in the session
+    // (e.g. someone else added it moments ago, or a stale client-side
+    // "already in session" check) would fail the *entire* statement
+    // atomically, silently dropping every other, genuinely-new beer in
+    // the same submission too.
+    await db
+      .insert(sessionBeers)
+      .values(sessionBeersToInsert)
+      .onConflictDoNothing({
+        target: [sessionBeers.sessionId, sessionBeers.beerId],
+      });
 
     // Always shuffle, even for a single added beer: someone joining a
     // running session and adding one beer at a time should have it mixed
