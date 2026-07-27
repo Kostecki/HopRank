@@ -61,37 +61,25 @@ export const addBeersToSession = async (
       beerId = newBeer.id;
     }
 
-    const baseInsert = {
+    // No explicit order: shuffleBeersInSession below always assigns it,
+    // mixing every newly-added beer in among whatever is still waiting
+    // rather than appending it after the entire list (see below).
+    sessionBeersToInsert.push({
       sessionId,
       beerId,
       userId,
       addedByUserId: userId,
       status: SessionBeerStatus.waiting,
-    };
-
-    if (beerInputs.length === 1) {
-      const lastOrdered = await db.query.sessionBeers.findMany({
-        where: eq(sessionBeers.sessionId, sessionId),
-        orderBy: (sb, { desc }) => desc(sb.order),
-        limit: 1,
-      });
-      const currentMaxOrder = lastOrdered[0]?.order ?? -1;
-
-      sessionBeersToInsert.push({
-        ...baseInsert,
-        order: currentMaxOrder + 1,
-      });
-    } else {
-      sessionBeersToInsert.push(baseInsert);
-    }
+    });
   }
 
   if (sessionBeersToInsert.length > 0) {
     await db.insert(sessionBeers).values(sessionBeersToInsert);
 
-    if (sessionBeersToInsert.length > 1) {
-      await shuffleBeersInSession(sessionId);
-    }
+    // Always shuffle, even for a single added beer: someone joining a
+    // running session and adding one beer at a time should have it mixed
+    // into the remaining queue, not always appended at the very end.
+    await shuffleBeersInSession(sessionId);
 
     const state = await db.query.sessionState.findFirst({
       where: eq(sessionState.sessionId, sessionId),
