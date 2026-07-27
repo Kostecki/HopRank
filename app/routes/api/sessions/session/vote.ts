@@ -10,7 +10,7 @@ import { db } from "~/database/config.server";
 import { ratings, sessionState } from "~/database/schema.server";
 import { bumpLastUpdatedAt } from "~/database/utils/bumpLastUpdatedAt.server";
 import { tryAdvanceSession } from "~/database/utils/tryAdvanceSession.server";
-import { extractSessionId } from "~/utils/utils";
+import { extractSessionId, isValidVoteScore } from "~/utils/utils";
 import { emitSessionEvent } from "~/utils/websocket.server";
 
 export async function action({ request, params }: Route.ActionArgs) {
@@ -33,6 +33,10 @@ export async function action({ request, params }: Route.ActionArgs) {
     return data({ message: "Session ID does not match vote" }, { status: 400 });
   }
 
+  if (vote.userId !== user.id) {
+    return data({ message: "User ID does not match vote" }, { status: 400 });
+  }
+
   const state = await db.query.sessionState.findFirst({
     where: eq(sessionState.sessionId, sessionId),
   });
@@ -49,11 +53,15 @@ export async function action({ request, params }: Route.ActionArgs) {
   }
 
   for (const r of vote.ratings) {
-    const { sessionId, beerId, userId } = vote;
+    const { sessionId, beerId } = vote;
     const { criterionId, score } = r;
 
     if (typeof criterionId !== "number") {
       return data({ message: "Invalid criterion in vote" }, { status: 400 });
+    }
+
+    if (!isValidVoteScore(score)) {
+      return data({ message: "Invalid score in vote" }, { status: 400 });
     }
 
     try {
@@ -62,7 +70,7 @@ export async function action({ request, params }: Route.ActionArgs) {
         .values({
           sessionId,
           beerId,
-          userId,
+          userId: user.id,
           criterionId: criterionId,
           score: score,
         })

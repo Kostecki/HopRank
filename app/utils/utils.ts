@@ -39,6 +39,24 @@ export const sliderConf = (): SliderConfig => {
 };
 
 /**
+ * Validates that a vote score is a finite number within the slider's valid
+ * range and lands on one of its steps. Used to reject forged/out-of-range
+ * scores submitted directly to the vote API (bypassing the slider UI).
+ *
+ * @param score - The value to validate (untrusted, may be any client input).
+ * @returns True if the score is a valid step value produced by `sliderConf()`.
+ */
+export const isValidVoteScore = (score: unknown): score is number => {
+  if (typeof score !== "number" || !Number.isFinite(score)) return false;
+
+  const { stepSize, max } = sliderConf();
+  if (score < stepSize || score > max) return false;
+
+  const steps = score / stepSize;
+  return Math.abs(steps - Math.round(steps)) < 1e-6;
+};
+
+/**
  * Creates a consistent page title in the format "Page - HopRank".
  *
  * @param pageTitle - The specific page's title.
