@@ -18,6 +18,8 @@ import {
 import type { SelectUsers } from "~/database/schema.types";
 import { getBeerInfo } from "~/utils/untappd";
 
+// Module-level, single-process cache: intentionally not shared across
+// instances if this app is ever scaled horizontally.
 const beerInfoCache = new Map<
   number,
   Awaited<ReturnType<typeof getBeerInfo>>
