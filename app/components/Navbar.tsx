@@ -2,13 +2,13 @@ import {
 	ActionIcon,
 	Anchor,
 	Avatar,
-	Box,
 	Button,
 	CopyButton,
 	Divider,
 	Flex,
 	Group,
 	List,
+	ScrollArea,
 	Stack,
 	Text,
 	Tooltip,
@@ -230,7 +230,7 @@ export default function Navbar({
 			sessionBeers={sessionBeers}
 			onBeersUpdated={revalidate}
 		>
-			<Box>
+			<ScrollArea h="100%" type="auto">
 				<Stack gap="0">
 					<Text ta="center" fw={500} size="lg">
 						{sessionProgress.sessionName}
@@ -326,7 +326,7 @@ export default function Navbar({
 						</>
 					)}
 				</Stack>
-			</Box>
+			</ScrollArea>
 		</ModalAddBeers>
 	);
 }
