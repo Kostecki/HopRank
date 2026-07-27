@@ -34,32 +34,51 @@ export async function action({ request }: Route.ActionArgs) {
     );
   }
 
-  let joinCode = generateJoinCode();
-  let exists = true;
-  while (exists) {
-    const existingSession = await db
-      .select()
-      .from(sessions)
-      .where(eq(sessions.joinCode, joinCode))
-      .execute();
+  const generateUniqueJoinCode = async () => {
+    let joinCode = generateJoinCode();
+    let exists = true;
+    while (exists) {
+      const existingSession = await db
+        .select()
+        .from(sessions)
+        .where(eq(sessions.joinCode, joinCode))
+        .execute();
 
-    if (existingSession.length === 0) {
-      exists = false;
-    } else {
-      joinCode = generateJoinCode();
+      if (existingSession.length === 0) {
+        exists = false;
+      } else {
+        joinCode = generateJoinCode();
+      }
+    }
+    return joinCode;
+  };
+
+  const isJoinCodeConflict = (error: unknown) =>
+    error instanceof Error &&
+    (error as Error & { code?: string }).code === "SQLITE_CONSTRAINT_UNIQUE";
+
+  let session: SelectSessions | undefined;
+  let lastError: unknown;
+
+  // Retry once with a fresh join code: the uniqueness check above and the
+  // insert aren't atomic, so a concurrent request can win the race.
+  for (let attempt = 0; attempt < 2 && !session; attempt++) {
+    const joinCode = await generateUniqueJoinCode();
+    try {
+      session = createSessionWithCriteria({
+        name: String(sessionName),
+        createdBy: userId,
+        joinCode,
+        criterionIds: criteriaInput,
+      });
+    } catch (error) {
+      lastError = error;
+      if (!isJoinCodeConflict(error)) break;
     }
   }
 
-  let session: SelectSessions;
-  try {
-    session = createSessionWithCriteria({
-      name: String(sessionName),
-      createdBy: userId,
-      joinCode,
-      criterionIds: criteriaInput,
-    });
-  } catch (error) {
-    console.error("Unexpected DB error while creating session:", error);
+  if (!session) {
+    console.error("Unexpected DB error while creating session:", lastError);
     return data(
       { message: "Kunne ikke oprette smagningen. Prøv igen senere." },
       { status: 500 }

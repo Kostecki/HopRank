@@ -36,10 +36,14 @@ export const getSessionCounts = async (sessionId: number) => {
       error
     );
 
+    // Distinguishes a genuine DB failure from a session that legitimately
+    // has zero participants/beers (which returns this same zeroed shape
+    // via the try branch above, without this flag).
     return {
       state: null,
       participantCount: 0,
       beerCount: 0,
+      error: true as const,
     };
   }
 };

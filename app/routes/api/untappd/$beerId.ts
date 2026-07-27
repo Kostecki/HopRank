@@ -50,6 +50,8 @@ export async function loader({ params }: Route.LoaderArgs) {
 
     const iosUrl = $('meta[property="al:ios:url"]').attr("content");
     const idCheck = iosUrl?.replace("untappd://beer/", "");
+    // Fail loud on mismatch rather than silently returning wrong/stale data
+    // if Untappd's page structure or redirect behavior ever changes.
     if (idCheck !== beerId) {
       throw new Error(`Provided beer ID: ${beerId}, but found: ${idCheck}`);
     }
