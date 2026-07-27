@@ -1,4 +1,4 @@
-import { and, eq, inArray, ne } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 
 import { SessionBeerStatus } from "~/types/session";
 
@@ -16,12 +16,17 @@ export const removeBeersFromSession = async (
     return;
   }
 
+  // Only "waiting" beers are removable, matching the UI's own disabled-button
+  // rule (Navbar.tsx). The previous ne(status, rated) check also allowed
+  // deleting the current "rating" beer, which left sessionState.currentBeerId
+  // pointing at a now-nonexistent row -- current beer would show as null with
+  // no way to vote or recover, permanently stalling the session.
   const beersToDelete = await db.query.sessionBeers.findMany({
     where: and(
       eq(sessionBeers.sessionId, sessionId),
       inArray(sessionBeers.beerId, beerInputs),
       eq(sessionBeers.addedByUserId, userId),
-      ne(sessionBeers.status, SessionBeerStatus.rated)
+      eq(sessionBeers.status, SessionBeerStatus.waiting)
     ),
   });
 
