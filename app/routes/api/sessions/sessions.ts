@@ -5,13 +5,10 @@ import type { Route } from "./+types/sessions";
 
 import { userSessionGet } from "~/auth/users.server";
 import { db } from "~/database/config.server";
-import {
-  sessionCriteria,
-  sessionState,
-  sessions,
-} from "~/database/schema.server";
+import { sessions } from "~/database/schema.server";
 import type { SelectSessions } from "~/database/schema.types";
 import { addBeersToSession } from "~/database/utils/addBeersToSession.server";
+import { createSessionWithCriteria } from "~/database/utils/createSessionWithCriteria.server";
 import { joinSessionById } from "~/database/utils/joinSessionById.server";
 import { generateJoinCode } from "~/utils/utils";
 import { emitGlobalEvent } from "~/utils/websocket.server";
@@ -27,6 +24,14 @@ export async function action({ request }: Route.ActionArgs) {
 
   if (!userId) {
     return data({ message: "User not authenticated" }, { status: 401 });
+  }
+
+  const criteriaInput = JSON.parse(String(criteriaJson)) ?? [];
+  if (criteriaInput.length === 0) {
+    return data(
+      { message: "En smagning skal have mindst ét bedømmelseskriterie." },
+      { status: 400 }
+    );
   }
 
   let joinCode = generateJoinCode();
@@ -47,13 +52,12 @@ export async function action({ request }: Route.ActionArgs) {
 
   let session: SelectSessions;
   try {
-    const name = String(sessionName);
-    const [createdSession] = await db
-      .insert(sessions)
-      .values({ name, createdBy: userId, joinCode })
-      .returning();
-
-    session = createdSession;
+    session = createSessionWithCriteria({
+      name: String(sessionName),
+      createdBy: userId,
+      joinCode,
+      criterionIds: criteriaInput,
+    });
   } catch (error) {
     console.error("Unexpected DB error while creating session:", error);
     return data(
@@ -62,38 +66,10 @@ export async function action({ request }: Route.ActionArgs) {
     );
   }
 
-  const criteriaInput = JSON.parse(String(criteriaJson)) ?? [];
-  if (criteriaInput.length === 0) {
-    return data(
-      { message: "En smagning skal have mindst ét bedømmelseskriterie." },
-      { status: 400 }
-    );
-  }
-
-  try {
-    await db.insert(sessionCriteria).values(
-      criteriaInput.map((criterionId: number) => ({
-        sessionId: session.id,
-        criterionId,
-      }))
-    );
-  } catch (error) {
-    console.error("Error inserting session criteria:", error);
-
-    return data(
-      { message: "Der skete en fejl under oprettelsen af smagningen." },
-      { status: 500 }
-    );
-  }
-
   try {
     await joinSessionById({
       sessionId: session.id,
       userId,
-    });
-
-    await db.insert(sessionState).values({
-      sessionId: session.id,
     });
 
     const beersInput = JSON.parse(String(beersJson)) ?? [];
