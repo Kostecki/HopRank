@@ -1,12 +1,17 @@
 import { createServer } from "node:http";
 import { Server } from "socket.io";
 
+import { invariant } from "~/utils/invariant";
+
 const WS_URL = import.meta.env.VITE_WS_URL;
+
+const APP_URL = process.env.APP_URL;
+invariant(APP_URL, "APP_URL must be set in .env");
 
 const httpServer = createServer();
 export const io = new Server(httpServer, {
   path: "/ws",
-  cors: { origin: "*" },
+  cors: { origin: APP_URL },
   transports: ["websocket"],
 });
 
