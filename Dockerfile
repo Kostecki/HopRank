@@ -1,5 +1,6 @@
 # Base for dev/build
-FROM node:24-slim AS base
+FROM node:26-alpine AS base
+RUN apk add --no-cache python3 make g++
 RUN npm install -g pnpm
 WORKDIR /hop-rank
 
@@ -44,10 +45,8 @@ FROM deps AS prod-deps
 RUN pnpm prune --prod
 
 # Final runtime image
-FROM node:24-slim AS runner
-RUN apt-get update \
-  && apt-get install -y --no-install-recommends tzdata tini ca-certificates \
-  && rm -rf /var/lib/apt/lists/*
+FROM node:26-alpine AS runner
+RUN apk add --no-cache tzdata tini ca-certificates
 RUN npm install -g pnpm
 
 WORKDIR /hop-rank
@@ -61,11 +60,11 @@ COPY --from=build /hop-rank/build ./build
 COPY --from=build /hop-rank/public ./public
 COPY --from=build /hop-rank/drizzle ./drizzle
 COPY --from=build /hop-rank/drizzle.config.ts ./drizzle.config.ts
-COPY package.json pnpm-lock.yaml ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY start.sh ./
 RUN chmod +x start.sh
 
-ENTRYPOINT ["/usr/bin/tini", "--"]
+ENTRYPOINT ["/sbin/tini", "--"]
 ENV NODE_ENV=production
 
 EXPOSE 3000 4000
