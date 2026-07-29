@@ -99,7 +99,7 @@ export default function Layout() {
 				</AppShell.Navbar>
 
 				<AppShell.Main>
-					{progressPercentage && (
+					{progressPercentage !== undefined && (
 						<Progress
 							value={progressPercentage}
 							radius="xs"
