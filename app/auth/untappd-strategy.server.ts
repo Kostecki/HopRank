@@ -15,12 +15,25 @@ const AUTH_ENDPOINT = "https://untappd.com/oauth/authenticate";
 const TOKEN_ENDPOINT = "https://untappd.com/oauth/authorize";
 const PROFILE_ENDPOINT = "https://api.untappd.com/v4/user/info?compact=true";
 
+// Untappd only supports a single registered redirect_url, so local dev can't
+// register its own. Instead dev always sends users through the registered
+// (production) callback, tagging the OAuth `state` with a "dev:" prefix. If
+// that registered origin receives a "dev:" state back, it isn't the intended
+// recipient — it just relays code+state on to the dev server, which then
+// completes the exchange itself (still quoting the registered callback URL,
+// since that's what Untappd will validate against).
+const DEV_RELAY_STATE_PREFIX = "dev:";
+const DEV_CALLBACK_URL =
+	process.env.UNTAPPD_DEV_CALLBACK_URL ??
+	"http://localhost:5173/auth/untappd/callback";
+
 export class UntappdStrategy<User> extends OAuth2Strategy<User> {
 	name = "untappd";
 
 	private clientID: string;
 	private clientSecret: string;
 	private callbackURL: string;
+	private isRegisteredOrigin: boolean;
 
 	constructor(
 		options: UntappdStrategyOptions,
@@ -41,6 +54,8 @@ export class UntappdStrategy<User> extends OAuth2Strategy<User> {
 		this.clientID = options.clientID;
 		this.clientSecret = options.clientSecret;
 		this.callbackURL = options.callbackURL;
+		this.isRegisteredOrigin =
+			new URL(options.appURL).origin === new URL(options.callbackURL).origin;
 	}
 
 	async authenticate(request: Request): Promise<User> {
@@ -48,7 +63,9 @@ export class UntappdStrategy<User> extends OAuth2Strategy<User> {
 		const code = url.searchParams.get("code");
 
 		if (!code) {
-			const state = crypto.randomUUID();
+			const state = this.isRegisteredOrigin
+				? crypto.randomUUID()
+				: `${DEV_RELAY_STATE_PREFIX}${crypto.randomUUID()}`;
 
 			const stateSession = await getOAuthStateSession();
 			stateSession.set("state", state);
@@ -68,11 +85,26 @@ export class UntappdStrategy<User> extends OAuth2Strategy<User> {
 			});
 		}
 
+		const actualState = url.searchParams.get("state");
+
+		if (
+			this.isRegisteredOrigin &&
+			actualState?.startsWith(DEV_RELAY_STATE_PREFIX)
+		) {
+			const relayUrl = new URL(DEV_CALLBACK_URL);
+			relayUrl.searchParams.set("code", code);
+			relayUrl.searchParams.set("state", actualState);
+
+			throw new Response(null, {
+				status: 302,
+				headers: { Location: relayUrl.toString() },
+			});
+		}
+
 		const stateSession = await getOAuthStateSession(
 			request.headers.get("Cookie"),
 		);
 		const expectedState = stateSession.get("state");
-		const actualState = url.searchParams.get("state");
 
 		if (!expectedState || actualState !== expectedState) {
 			throw new Error("untappd_oauth_state_mismatch");

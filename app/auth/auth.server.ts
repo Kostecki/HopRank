@@ -99,12 +99,19 @@ const UNTAPPD_CLIENT_SECRET = process.env.UNTAPPD_CLIENT_SECRET;
 invariant(UNTAPPD_CLIENT_ID, "UNTAPPD_CLIENT_ID must be set in .env");
 invariant(UNTAPPD_CLIENT_SECRET, "UNTAPPD_CLIENT_SECRET must be set in .env");
 
+// The single redirect_url registered in Untappd's app settings — always the
+// production callback, in every environment. See untappd-strategy.server.ts
+// for how dev gets relayed through it.
+const UNTAPPD_REDIRECT_URL = process.env.UNTAPPD_REDIRECT_URL;
+invariant(UNTAPPD_REDIRECT_URL, "UNTAPPD_REDIRECT_URL must be set in .env");
+
 authenticator.use(
 	new UntappdStrategy<SessionUser>(
 		{
 			clientID: UNTAPPD_CLIENT_ID,
 			clientSecret: UNTAPPD_CLIENT_SECRET,
-			callbackURL: `${APP_URL}/auth/untappd/callback`,
+			callbackURL: UNTAPPD_REDIRECT_URL,
+			appURL: APP_URL,
 		},
 		async ({ profile, accessToken, request }) => {
 			const { untappdId, email, firstName, lastName, userName, avatar } =

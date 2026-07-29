@@ -21,6 +21,7 @@ services:
       SMTP_FROM: ${SMTP_FROM}
       UNTAPPD_CLIENT_ID: ${UNTAPPD_CLIENT_ID}
       UNTAPPD_CLIENT_SECRET: ${UNTAPPD_CLIENT_SECRET}
+      UNTAPPD_REDIRECT_URL: ${UNTAPPD_REDIRECT_URL}
     volumes:
       - hoprank_data:/app/database
       - /etc/localtime:/etc/localtime:ro

@@ -6,6 +6,7 @@ export interface UntappdStrategyOptions {
 	clientID: string;
 	clientSecret: string;
 	callbackURL: string;
+	appURL: string;
 }
 
 export interface UntappdStrategyProfile {
