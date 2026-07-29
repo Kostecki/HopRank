@@ -23,7 +23,7 @@ services:
       UNTAPPD_CLIENT_SECRET: ${UNTAPPD_CLIENT_SECRET}
       UNTAPPD_REDIRECT_URL: ${UNTAPPD_REDIRECT_URL}
     volumes:
-      - hoprank_data:/app/database
+      - hoprank_data:/hop-rank/app/database
       - /etc/localtime:/etc/localtime:ro
 
   drizzle-gateway:

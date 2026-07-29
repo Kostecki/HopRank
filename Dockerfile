@@ -1,7 +1,7 @@
 # Base for dev/build
 FROM node:26-alpine AS base
 RUN apk add --no-cache python3 make g++
-RUN npm install -g pnpm
+RUN npm install -g pnpm@11.17.0
 WORKDIR /hop-rank
 
 # Install all (dev) deps
@@ -18,7 +18,6 @@ COPY app/ ./app
 COPY public/ ./public
 COPY drizzle/ ./drizzle
 COPY vite.config.ts tsconfig.json drizzle.config.ts postcss.config.cjs react-router.config.ts theme.ts ./
-COPY package.json pnpm-lock.yaml ./
 
 # Build-time public env variables
 ARG VITE_WS_URL
@@ -47,7 +46,7 @@ RUN pnpm prune --prod
 # Final runtime image
 FROM node:26-alpine AS runner
 RUN apk add --no-cache tzdata tini ca-certificates
-RUN npm install -g pnpm
+RUN npm install -g pnpm@11.17.0
 
 WORKDIR /hop-rank
 
