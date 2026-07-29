@@ -7,7 +7,7 @@ echo "Starting HopRank application..."
 
 # Run database migrations
 echo "Running database migrations..."
-pnpm migrate
+pnpm db:migrate
 
 # Start the application
 printf "\n\n"
