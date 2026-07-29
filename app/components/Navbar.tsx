@@ -102,9 +102,13 @@ export default function Navbar({
 		});
 	};
 
+	// Sorted by the stable session_beers id (insertion order), not the
+	// tasting-queue `order` field — that field gets reshuffled whenever any
+	// waiting beer is added or removed (to keep queue variety), which would
+	// otherwise make a user's own unrelated beers visibly reorder in this list.
 	const usersBeers = localSessionBeers
 		.filter((beer) => beer.addedByUserId === user?.id)
-		.sort((a, b) => (b.order ?? 0) - (a.order ?? 0));
+		.sort((a, b) => b.id - a.id);
 
 	useEffect(() => {
 		setLocalSessionBeers(sessionBeers);

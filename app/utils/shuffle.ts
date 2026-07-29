@@ -86,8 +86,13 @@ export const shuffleBeersInSession = async (sessionId: number) => {
 		order: sessionBeer.order,
 	}));
 
-	let best: BeerRow[] = complete;
-	let bestScore = scoreBeerOrder(complete);
+	// Seed from an already-shuffled arrangement, not the raw query order: rows
+	// come back with no `ORDER BY` (effectively DB-insertion order), so if no
+	// shuffle ever strictly beats the starting score (e.g. exactly 2 waiting
+	// beers, where any order scores identically), a newly-added beer would
+	// otherwise always settle back into that natural, append-like order.
+	let best: BeerRow[] = shuffle(complete);
+	let bestScore = scoreBeerOrder(best);
 
 	for (let i = 0; i < 200; i++) {
 		const shuffled = shuffle(complete);
