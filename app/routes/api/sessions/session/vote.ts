@@ -8,6 +8,7 @@ import type { Route } from "./+types/vote";
 import { userSessionGet } from "~/auth/users.server";
 import { db } from "~/database/config.server";
 import { ratings, sessionState } from "~/database/schema.server";
+import { requireSessionParticipant } from "~/database/utils/assertSessionAccess.server";
 import { bumpLastUpdatedAt } from "~/database/utils/bumpLastUpdatedAt.server";
 import { tryAdvanceSession } from "~/database/utils/tryAdvanceSession.server";
 import { extractSessionId, isValidVoteScore } from "~/utils/utils";
@@ -20,6 +21,8 @@ export async function action({ request, params }: Route.ActionArgs) {
 	if (!user) {
 		return data({ message: "User not authenticated" }, { status: 401 });
 	}
+
+	await requireSessionParticipant(sessionId, user.id);
 
 	const formData = await request.formData();
 	const voteJson = formData.get("vote");

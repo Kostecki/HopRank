@@ -4,7 +4,6 @@ import { useMemo } from "react";
 import { redirect, useLoaderData, useRevalidator } from "react-router";
 
 import { SessionStatus } from "~/types/session";
-import type { SocketEvent } from "~/types/websocket";
 import type { Route } from "./+types";
 
 import { userSessionGet } from "~/auth/users.server";
@@ -95,7 +94,14 @@ export default function Sessions() {
 		)
 		.map((s) => s.id);
 
-	const socketEvents = useMemo<SocketEvent[]>(
+	const socketEvents = useMemo<
+		(
+			| "sessions:created"
+			| "sessions:deleted"
+			| "sessions:users-changed"
+			| "sessions:beer-changed"
+		)[]
+	>(
 		() => [
 			"sessions:created",
 			"sessions:deleted",

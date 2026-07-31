@@ -18,6 +18,7 @@ import {
 	IconExternalLink,
 	IconPlus,
 	IconTrash,
+	IconUserX,
 } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import {
@@ -37,6 +38,7 @@ import {
 import type { SessionUser } from "~/types/user";
 
 import type { SelectSessionBeersWithBeer } from "~/database/schema.types";
+import { showDangerToast } from "~/utils/toasts";
 import { createBeerLink, createProfileLink } from "~/utils/untappd";
 
 import ModalAddBeers, { ModalAddBeersTrigger } from "./modals/ModalAddBeers";
@@ -60,6 +62,7 @@ export default function Navbar({
 	const location = useLocation();
 	const leaveFetcher = useFetcher();
 	const removeFetcher = useFetcher();
+	const kickFetcher = useFetcher();
 	const { revalidate } = useRevalidator();
 
 	const [localSessionBeers, setLocalSessionBeers] = useState(sessionBeers);
@@ -86,6 +89,16 @@ export default function Navbar({
 				action: `/api/sessions/${sessionId}/leave`,
 			});
 		}
+	};
+
+	const handleKick = (targetUserId: number) => {
+		const sessionId = sessionProgress?.sessionId;
+		if (!sessionId) return;
+
+		kickFetcher.submit(
+			{ targetUserId: String(targetUserId) },
+			{ method: "POST", action: `/api/sessions/${sessionId}/kick` },
+		);
 	};
 
 	const handleRemoveBeer = async (beerId: number) => {
@@ -146,10 +159,53 @@ export default function Navbar({
 		}
 	}, [leaveFetcher.state, leaveFetcher.data, navigate]);
 
-	const UserListItem = ({ user }: { user: SessionProgressUser }) => {
-		const firstLetter = (user.name ?? user.username ?? "?")
+	useEffect(() => {
+		if (kickFetcher.state !== "idle" || !kickFetcher.data) return;
+
+		const result = kickFetcher.data as { success: true } | { message?: string };
+
+		if (!("success" in result)) {
+			showDangerToast(result.message ?? "Kunne ikke starte afstemning");
+		}
+	}, [kickFetcher.state, kickFetcher.data]);
+
+	const viewerIsActive =
+		sessionProgress?.users.find((u) => u.id === user?.id)?.status === "active";
+
+	const UserListItem = ({ user: rowUser }: { user: SessionProgressUser }) => {
+		const firstLetter = (rowUser.name ?? rowUser.username ?? "?")
 			.slice(0, 1)
 			.toUpperCase();
+
+		const isGone = rowUser.status !== "active";
+		const goneLabel =
+			rowUser.status === "kicked"
+				? "Stemt ud af smagningen"
+				: "Forlod smagningen";
+
+		const canKick =
+			!readOnly && !isGone && viewerIsActive && rowUser.id !== user.id;
+
+		const nameAndAvatar = (
+			<Flex align="center">
+				<Avatar
+					src={rowUser?.avatarURL}
+					name={rowUser.username ?? rowUser.name ?? firstLetter}
+					color="initials"
+					size="sm"
+					mr="xs"
+				/>
+
+				<Text
+					size="sm"
+					fw="500"
+					lineClamp={1}
+					td={isGone ? "line-through" : undefined}
+				>
+					{rowUser.name ?? rowUser.username ?? "Deltager"}
+				</Text>
+			</Flex>
+		);
 
 		return (
 			<Flex
@@ -158,34 +214,43 @@ export default function Navbar({
 				align="center"
 				h={25}
 				mb="xs"
+				opacity={isGone ? 0.5 : 1}
 			>
-				<Flex align="center">
-					<Avatar
-						src={user?.avatarURL}
-						name={user.username ?? user.name ?? firstLetter}
-						color="initials"
-						size="sm"
-						mr="xs"
-					/>
-
-					<Text size="sm" fw="500" lineClamp={1}>
-						{user.name ?? user.username ?? "Deltager"}
-					</Text>
-				</Flex>
-
-				{user?.untappdId && user.username && (
-					<Tooltip label="Se Untappd-profil" position="bottom">
-						<ActionIcon
-							component={Link}
-							variant="subtle"
-							color="slateIndigo"
-							to={createProfileLink(user.username)}
-							target="_blank"
-						>
-							<IconExternalLink size={16} stroke={1.5} />
-						</ActionIcon>
+				{isGone ? (
+					<Tooltip label={goneLabel} position="bottom">
+						{nameAndAvatar}
 					</Tooltip>
+				) : (
+					nameAndAvatar
 				)}
+
+				<Flex align="center" gap={4}>
+					{rowUser?.untappdId && rowUser.username && (
+						<Tooltip label="Se Untappd-profil" position="bottom">
+							<ActionIcon
+								component={Link}
+								variant="subtle"
+								color="slateIndigo"
+								to={createProfileLink(rowUser.username)}
+								target="_blank"
+							>
+								<IconExternalLink size={16} stroke={1.5} />
+							</ActionIcon>
+						</Tooltip>
+					)}
+
+					{canKick && (
+						<Tooltip label="Start afstemning om at kicke" position="bottom">
+							<ActionIcon
+								variant="subtle"
+								color="red"
+								onClick={() => handleKick(rowUser.id)}
+							>
+								<IconUserX size={16} stroke={1.5} />
+							</ActionIcon>
+						</Tooltip>
+					)}
+				</Flex>
 			</Flex>
 		);
 	};

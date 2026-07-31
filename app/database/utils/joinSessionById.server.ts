@@ -1,5 +1,7 @@
 import { eq } from "drizzle-orm";
 
+import { SessionUserExitReason } from "~/types/session";
+
 import { db } from "../config.server";
 import { sessionUsers } from "../schema.server";
 
@@ -14,7 +16,7 @@ export async function joinSessionById({
 	// This ensures the user is only active in one session at a time
 	await db
 		.update(sessionUsers)
-		.set({ active: false })
+		.set({ active: false, exitReason: SessionUserExitReason.left })
 		.where(eq(sessionUsers.userId, userId));
 
 	// Insert or update the session user to be active in the specified session
@@ -23,6 +25,6 @@ export async function joinSessionById({
 		.values({ sessionId, userId, active: true })
 		.onConflictDoUpdate({
 			target: [sessionUsers.sessionId, sessionUsers.userId],
-			set: { active: true },
+			set: { active: true, exitReason: null },
 		});
 }

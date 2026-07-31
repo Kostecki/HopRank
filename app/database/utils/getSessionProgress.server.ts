@@ -1,7 +1,7 @@
 import { and, eq, inArray } from "drizzle-orm";
 
 import type { SessionProgressUser } from "~/types/session";
-import { SessionBeerStatus } from "~/types/session";
+import { SessionBeerStatus, SessionUserExitReason } from "~/types/session";
 
 import { userSessionGet } from "~/auth/users.server";
 import { db } from "~/database/config.server";
@@ -15,7 +15,7 @@ import {
 	sessionUsers,
 	users,
 } from "~/database/schema.server";
-import type { SelectUsers } from "~/database/schema.types";
+import type { SelectSessionUsers, SelectUsers } from "~/database/schema.types";
 import { getBeerInfo } from "~/utils/untappd";
 
 // Module-level, single-process cache: intentionally not shared across
@@ -30,12 +30,20 @@ const beerInfoCache = new Map<
 // viewers on the public read-only results route.
 export const toSessionProgressUser = (
 	user: SelectUsers,
+	sessionUser: Pick<SelectSessionUsers, "active" | "exitReason"> | undefined,
 ): SessionProgressUser => ({
 	id: user.id,
 	name: user.name,
 	untappdId: user.untappdId,
 	username: user.username,
 	avatarURL: user.avatarURL,
+	status: !sessionUser
+		? "active"
+		: sessionUser.active
+			? "active"
+			: sessionUser.exitReason === SessionUserExitReason.kicked
+				? "kicked"
+				: "left",
 });
 
 async function getCachedBeerInfo(beerId: number, accessToken: string) {
@@ -60,6 +68,7 @@ export async function getSessionProgress({
 	const [
 		state,
 		activeSessionUsers,
+		allSessionUsers,
 		sessionCriteriaRows,
 		sessionBeerRows,
 		allRatings,
@@ -73,6 +82,12 @@ export async function getSessionProgress({
 				eq(sessionUsers.sessionId, sessionId),
 				eq(sessionUsers.active, true),
 			),
+		}),
+		// Unfiltered (active or not) so kicked/left participants can still be
+		// resolved to a status below -- must NOT replace activeSessionUsers,
+		// which stays the source of truth for expectedVotes/tryAdvanceSession.
+		db.query.sessionUsers.findMany({
+			where: eq(sessionUsers.sessionId, sessionId),
 		}),
 		db.query.sessionCriteria.findMany({
 			where: eq(sessionCriteria.sessionId, sessionId),
@@ -181,16 +196,25 @@ export async function getSessionProgress({
 			.filter((id): id is number => typeof id === "number"),
 	);
 
-	// Merge active users, voting users, and beer adders to ensure avatar/name resolution
+	// Merge active users, voting users, beer adders, and every user who's ever
+	// had a session_users row (active or not) -- the last of these ensures a
+	// kicked/left participant stays visible even if they never added a beer
+	// or voted before leaving/being kicked.
 	const unionUserIds = new Set<number>([
 		...beerAdderIds,
 		...userIds,
 		...uniqueUserIds,
+		...allSessionUsers.map((su) => su.userId),
 	]);
+	const sessionUsersByUserId = new Map(
+		allSessionUsers.map((su) => [su.userId, su]),
+	);
 	const allRelevantUsersRaw = await db.query.users.findMany({
 		where: inArray(users.id, [...unionUserIds]),
 	});
-	const allRelevantUsers = allRelevantUsersRaw.map(toSessionProgressUser);
+	const allRelevantUsers = allRelevantUsersRaw.map((u) =>
+		toSessionProgressUser(u, sessionUsersByUserId.get(u.id)),
+	);
 
 	const ratedBeers = sessionBeerRowsWithBeer
 		.filter(

@@ -20,7 +20,9 @@ type BaseCriterion = SelectCriteria;
 export type SessionProgressUser = Pick<
 	SelectUsers,
 	"id" | "name" | "username" | "avatarURL" | "untappdId"
->;
+> & {
+	status: "active" | "left" | "kicked";
+};
 
 // Aggregated criterion score used when showing overall scoring breakdowns.
 export type ScoredCriterion = {
@@ -85,6 +87,11 @@ export const SessionBeerStatus = {
 	waiting: "waiting",
 	rating: "rating",
 	rated: "rated",
+} as const;
+
+export const SessionUserExitReason = {
+	left: "left",
+	kicked: "kicked",
 } as const;
 
 type Rater = { userId: number; name: string | null; avgScore: number };

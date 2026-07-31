@@ -1,0 +1,1 @@
+ALTER TABLE `session_users` ADD `exit_reason` text;

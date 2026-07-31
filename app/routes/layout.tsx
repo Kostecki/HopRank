@@ -8,6 +8,7 @@ import type { Route } from "../+types/root";
 
 import { userSessionGet } from "~/auth/users.server";
 import { Header } from "~/components/Header";
+import { ModalKickVote } from "~/components/modals/ModalKickVote";
 import { ModalSetName } from "~/components/modals/ModalSetName";
 import Navbar from "~/components/Navbar";
 import { SocketProvider } from "~/context/SocketContext";
@@ -114,6 +115,10 @@ export default function Layout() {
 
 						{user && (!user?.untappd || !user?.name) && (
 							<ModalSetName user={user} />
+						)}
+
+						{user && sessionProgress && (
+							<ModalKickVote user={user} sessionProgress={sessionProgress} />
 						)}
 					</Container>
 				</AppShell.Main>

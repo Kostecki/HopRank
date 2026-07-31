@@ -9,7 +9,11 @@ import {
 	uniqueIndex,
 } from "drizzle-orm/sqlite-core";
 
-import { SessionBeerStatus, SessionStatus } from "~/types/session";
+import {
+	SessionBeerStatus,
+	SessionStatus,
+	SessionUserExitReason,
+} from "~/types/session";
 
 export function lower(email: AnySQLiteColumn): SQL {
 	return sql`lower(${email})`;
@@ -54,6 +58,10 @@ export const sessionUsers = sqliteTable(
 		userId: integer("user_id")
 			.notNull()
 			.references(() => users.id),
+		// Null while active, or if this user has never left/been kicked.
+		exitReason: text("exit_reason", {
+			enum: Object.values(SessionUserExitReason) as [string, ...string[]],
+		}),
 	},
 	(table) => [unique("custom_name").on(table.sessionId, table.userId)],
 );

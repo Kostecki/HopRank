@@ -36,6 +36,8 @@ export default [
 			...prefix(":sessionId", [
 				route("add", "routes/api/sessions/session/add.ts"),
 				route("join", "routes/api/sessions/session/join.ts"),
+				route("kick", "routes/api/sessions/session/kick.ts"),
+				route("kick-vote", "routes/api/sessions/session/kickVote.ts"),
 				route("leave", "routes/api/sessions/session/leave.ts"),
 				route("list-beers", "routes/api/sessions/session/listBeers.ts"),
 				route("progress", "routes/api/sessions/session/progress.ts"),
