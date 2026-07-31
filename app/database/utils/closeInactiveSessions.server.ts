@@ -12,7 +12,8 @@ const MAX_SESSION_IDLE_TIME_HOURS =
 	Number(process.env.MAX_SESSION_IDLE_TIME_HOURS) || 6;
 
 /**
- * Closes sessions that are more than 24 hours old and have had no activity in the last 6 hours.
+ * Closes sessions that are more than 24 hours old and have had no activity in the last 6 hours,
+ * regardless of whether a beer is still being rated.
  */
 export const closeInactiveSessions = async () => {
 	const sessionAgeCutoff = dayjs()
@@ -35,8 +36,7 @@ export const closeInactiveSessions = async () => {
 			(s) =>
 				s.state?.status === SessionStatus.active &&
 				s.state.lastUpdatedAt &&
-				s.state.lastUpdatedAt < recentActivityCutoff &&
-				s.state.currentBeerId === null,
+				s.state.lastUpdatedAt < recentActivityCutoff,
 		)
 		.map((s) => s.id);
 
