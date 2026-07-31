@@ -56,7 +56,7 @@ export const sendMagicLinkEmail = async ({
 			to: email,
 			subject: "🍻 Din HopRank login-kode 🍻",
 			text: `Din login-kode er: ${code}\nMagic Link: ${magicLink}`,
-			html: getMagicLinkEmail(code, magicLink),
+			html: await getMagicLinkEmail(code, magicLink),
 		});
 
 		if (process.env.NODE_ENV !== "production") {
