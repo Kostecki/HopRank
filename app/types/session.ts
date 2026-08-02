@@ -55,6 +55,21 @@ export type CurrentBeer = RatedBeers & {
 	userHadBeer?: boolean;
 };
 
+// Beer added to the session that was never rated (e.g. never got its turn
+// before the session ended). Shown at the bottom of the final results table.
+export type UnratedBeer = Pick<
+	RatedBeers,
+	| "beerId"
+	| "untappdBeerId"
+	| "name"
+	| "breweryName"
+	| "style"
+	| "label"
+	| "label_hd"
+	| "addedByUserId"
+	| "order"
+>;
+
 // Aggregated session state view-model combining session + state + computed counts.
 export type SessionProgress = {
 	sessionId: BaseSession["id"];
@@ -68,6 +83,7 @@ export type SessionProgress = {
 	scoredCriteria: ScoredCriterion[];
 	currentBeer: CurrentBeer | null;
 	ratedBeers: RatedBeers[];
+	unratedBeers: UnratedBeer[];
 	progressPercentage?: number;
 };
 

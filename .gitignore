@@ -217,6 +217,6 @@ sketch
 /build/
 
 # SQLite
-*.db
+*.db*
 
 public/.well-known/appspecific/com.chrome.devtools.json

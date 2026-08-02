@@ -1,7 +1,11 @@
 import { and, eq, inArray } from "drizzle-orm";
 
 import type { SessionProgressUser } from "~/types/session";
-import { SessionBeerStatus, SessionUserExitReason } from "~/types/session";
+import {
+	SessionBeerStatus,
+	SessionStatus,
+	SessionUserExitReason,
+} from "~/types/session";
 
 import { userSessionGet } from "~/auth/users.server";
 import { db } from "~/database/config.server";
@@ -265,6 +269,30 @@ export async function getSessionProgress({
 		})
 		.sort((a, b) => b.averageScore - a.averageScore);
 
+	// Beers added to the session that never reached "rated" status (e.g. the
+	// session ended before their turn)
+	const unratedBeers =
+		state?.status === SessionStatus.finished
+			? sessionBeerRowsWithBeer
+					.filter(
+						(sb) =>
+							sb.status !== SessionBeerStatus.rated &&
+							sb.beer.id !== state?.currentBeerId,
+					)
+					.map(({ beer, order, addedByUserId }) => ({
+						beerId: beer.id,
+						untappdBeerId: beer.untappdBeerId,
+						name: beer.name,
+						breweryName: beer.breweryName,
+						style: beer.style,
+						label: beer.label,
+						label_hd: beer.label_hd,
+						order,
+						addedByUserId,
+					}))
+					.sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+			: [];
+
 	const currentBeerData = currentBeerRow?.beer
 		? (() => {
 				const currentBeerRatings = allRatings.filter(
@@ -343,6 +371,7 @@ export async function getSessionProgress({
 		scoredCriteria,
 		currentBeer,
 		ratedBeers,
+		unratedBeers,
 		progressPercentage,
 	};
 }

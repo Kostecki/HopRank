@@ -1,3 +1,4 @@
+import { eq } from "drizzle-orm";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
@@ -12,9 +13,9 @@ vi.mock("~/database/config.server", () => ({ db: testDb }));
 const { getSessionProgress, toSessionProgressUser } = await import(
 	"./getSessionProgress.server"
 );
-const { users, sessions, sessionState, sessionUsers } = await import(
-	"../schema.server"
-);
+const { users, sessions, sessionState, sessionUsers, beers, sessionBeers } =
+	await import("../schema.server");
+const { SessionBeerStatus, SessionStatus } = await import("~/types/session");
 
 describe("toSessionProgressUser", () => {
 	it("never includes email or admin", () => {
@@ -153,6 +154,62 @@ describe("getSessionProgress", () => {
 		const bobEntry = result.users.find((u) => u.id === bob.id);
 		expect(bobEntry).toBeDefined();
 		expect(bobEntry?.status).toBe("kicked");
+	});
+
+	it("only surfaces unrated beers once the session has finished, to avoid spoiling upcoming beers", async () => {
+		const [alice] = await db
+			.insert(users)
+			.values({ email: "alice@example.com", name: "Alice" })
+			.returning();
+
+		const [session] = await db
+			.insert(sessions)
+			.values({ name: "Test Session", joinCode: "ABC14", createdBy: alice.id })
+			.returning();
+		await db.insert(sessionState).values({ sessionId: session.id });
+
+		const [neverRatedBeer] = await db
+			.insert(beers)
+			.values({
+				untappdBeerId: 1,
+				name: "Never Rated IPA",
+				breweryName: "Some Brewery",
+				style: "IPA",
+				label: "label.png",
+			})
+			.returning();
+		await db.insert(sessionBeers).values({
+			sessionId: session.id,
+			beerId: neverRatedBeer.id,
+			addedByUserId: alice.id,
+			order: 1,
+			status: SessionBeerStatus.waiting,
+		});
+
+		const midSessionResult = await getSessionProgress({
+			request: new Request("http://localhost/test"),
+			sessionId: session.id,
+		});
+		expect("statusCode" in midSessionResult).toBe(false);
+		if ("statusCode" in midSessionResult) return;
+		expect(midSessionResult.unratedBeers).toEqual([]);
+
+		await db
+			.update(sessionState)
+			.set({ status: SessionStatus.finished })
+			.where(eq(sessionState.sessionId, session.id));
+
+		const finishedResult = await getSessionProgress({
+			request: new Request("http://localhost/test"),
+			sessionId: session.id,
+		});
+		expect("statusCode" in finishedResult).toBe(false);
+		if ("statusCode" in finishedResult) return;
+		expect(finishedResult.unratedBeers).toHaveLength(1);
+		expect(finishedResult.unratedBeers[0]).toMatchObject({
+			beerId: neverRatedBeer.id,
+			name: "Never Rated IPA",
+		});
 	});
 
 	it("returns a 404 shape for an unknown session", async () => {

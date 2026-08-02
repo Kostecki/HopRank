@@ -112,6 +112,29 @@ export default function SessionView() {
 		});
 	});
 
+	const unratedRows = sessionProgress.unratedBeers.map((beer) => {
+		const user = sessionProgress.users.find(
+			(sessionUser) => sessionUser.id === beer.addedByUserId,
+		);
+		const addedByName = user?.name || "";
+
+		return (
+			<Table.Tr
+				key={`unrated-${beer.untappdBeerId}`}
+				onClick={() => viewBeerUntappd(beer.untappdBeerId)}
+			>
+				<Table.Td ta="center">-</Table.Td>
+				<Table.Td ta="center">{beer.name}</Table.Td>
+				<Table.Td ta="center">{beer.style}</Table.Td>
+				<Table.Td ta="center">{beer.breweryName}</Table.Td>
+				<Table.Td ta="center">{addedByName}</Table.Td>
+				<Table.Td ta="center" c="dimmed">
+					-
+				</Table.Td>
+			</Table.Tr>
+		);
+	});
+
 	const hasRatings = sessionProgress.ratedBeers.length > 0;
 	const showTablePlaceholder =
 		hasRatings && sessionProgress.ratedBeers.length < 4;
@@ -189,6 +212,7 @@ export default function SessionView() {
 									) : (
 										tableRows
 									)}
+									{unratedRows}
 								</Table.Tbody>
 							</Table>
 						</Grid.Col>
