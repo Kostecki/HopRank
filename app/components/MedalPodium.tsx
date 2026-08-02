@@ -1,5 +1,14 @@
 import { Carousel } from "@mantine/carousel";
-import { Box, Card, Flex, Image, rem, Text, ThemeIcon } from "@mantine/core";
+import {
+	Avatar,
+	Box,
+	Card,
+	Flex,
+	Image,
+	rem,
+	Text,
+	ThemeIcon,
+} from "@mantine/core";
 import AutoPlay from "embla-carousel-autoplay";
 
 import type { RatedBeers, SessionProgress } from "~/types/session";
@@ -17,7 +26,7 @@ type inputProps = {
 const placementColors = ["#BFC9D6", "#E9C46A", "#C0893A"];
 
 export default function MedalPodium({ session }: inputProps) {
-	const { ratedBeers } = session;
+	const { ratedBeers, users } = session;
 
 	// heights for podium positions in display order: 2nd, 1st, 3rd
 	const heights = [rem(285), rem(310), rem(285)];
@@ -41,43 +50,64 @@ export default function MedalPodium({ session }: inputProps) {
 		place: number,
 		bg: string,
 		height: string,
-	) => (
-		<Flex
-			direction="column"
-			align="center"
-			justify={place === 1 ? "space-between" : "flex-end"}
-			pos="relative"
-			h={height}
-			w="100%"
-			bdrs="md"
-			pt="lg"
-			pb="sm"
-			bg={`linear-gradient(180deg, ${bg} 0%, rgba(0,0,0,0.08) 100%)`}
-			style={{
-				boxShadow: "0 2px 6px rgba(0, 0, 0, 0.08)",
-				overflow: "hidden",
-				cursor: "pointer",
-			}}
-			onClick={() => viewBeerUntappd(beer.untappdBeerId)}
-		>
-			<Card withBorder shadow="sm" p="xs" radius="md" mb="sm" bg="white">
-				<Image src={beer.label} alt={beer.name} fit="contain" maw={rem(100)} />
-			</Card>
-			<Box ta="center">
-				<Text size="lg" c="gray.7">
-					{beer.breweryName}
-				</Text>
+	) => {
+		const addedByUser = users.find((u) => u.id === beer.addedByUserId);
 
-				<Text size="xl" mt={3} fw={700} ta="center">
-					{beer.name}
-				</Text>
+		return (
+			<Flex
+				direction="column"
+				align="center"
+				justify={place === 1 ? "space-between" : "flex-end"}
+				pos="relative"
+				h={height}
+				w="100%"
+				bdrs="md"
+				pt="lg"
+				pb="sm"
+				bg={`linear-gradient(180deg, ${bg} 0%, rgba(0,0,0,0.08) 100%)`}
+				style={{
+					boxShadow: "0 2px 6px rgba(0, 0, 0, 0.08)",
+					overflow: "hidden",
+					cursor: "pointer",
+				}}
+				onClick={() => viewBeerUntappd(beer.untappdBeerId)}
+			>
+				{addedByUser && (
+					<Avatar
+						src={addedByUser.avatarURL}
+						name={addedByUser.name ?? addedByUser.username ?? undefined}
+						color="initials"
+						size={32}
+						pos="absolute"
+						top={8}
+						right={8}
+						style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.35)" }}
+					/>
+				)}
+				<Card withBorder shadow="sm" p="xs" radius="md" mb="sm" bg="white">
+					<Image
+						src={beer.label}
+						alt={beer.name}
+						fit="contain"
+						maw={rem(100)}
+					/>
+				</Card>
+				<Box ta="center">
+					<Text size="lg" c="gray.7">
+						{beer.breweryName}
+					</Text>
 
-				<Text size="lg" fw={700} mt={5} c="dimmed" fs="italic" mb="lg">
-					{displayScore(beer.averageScore)}
-				</Text>
-			</Box>
-		</Flex>
-	);
+					<Text size="xl" mt={3} fw={700} ta="center">
+						{beer.name}
+					</Text>
+
+					<Text size="lg" fw={700} mt={5} c="dimmed" fs="italic" mb="lg">
+						{displayScore(beer.averageScore)}
+					</Text>
+				</Box>
+			</Flex>
+		);
+	};
 
 	const renderEmptyPedestal = (place: number, bg: string, height: string) => (
 		<Flex
