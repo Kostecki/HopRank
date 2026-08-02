@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import { Outlet, useLoaderData } from "react-router";
 
 import type { SessionProgress } from "~/types/session";
+import { SessionStatus } from "~/types/session";
 import type { Route } from "../+types/root";
 
 import { userSessionGet } from "~/auth/users.server";
@@ -55,7 +56,10 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 		user,
 		sessionProgress,
 		sessionBeers: sessionBeersList,
-		progressPercentage: sessionProgress?.progressPercentage ?? undefined,
+		progressPercentage:
+			sessionProgress?.status === SessionStatus.finished
+				? undefined
+				: (sessionProgress?.progressPercentage ?? undefined),
 	};
 }
 
