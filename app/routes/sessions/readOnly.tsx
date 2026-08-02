@@ -96,6 +96,7 @@ export default function SessionView() {
 				<Table.Tr
 					key={`${rank}-${beer.untappdBeerId}`}
 					onClick={() => viewBeerUntappd(beer.untappdBeerId)}
+					style={{ cursor: "pointer" }}
 				>
 					{beerIndex === 0 && (
 						<Table.Td ta="center" rowSpan={group.beers.length} fw={600}>
@@ -122,6 +123,7 @@ export default function SessionView() {
 			<Table.Tr
 				key={`unrated-${beer.untappdBeerId}`}
 				onClick={() => viewBeerUntappd(beer.untappdBeerId)}
+				style={{ cursor: "pointer" }}
 			>
 				<Table.Td ta="center">-</Table.Td>
 				<Table.Td ta="center">{beer.name}</Table.Td>
@@ -191,7 +193,7 @@ export default function SessionView() {
 
 					<Grid mt={50} justify="center" gap="xl">
 						<Grid.Col span={10}>
-							<Table highlightOnHover={!showTablePlaceholder}>
+							<Table highlightOnHover={!showTablePlaceholder} striped>
 								<Table.Thead>
 									<Table.Tr>
 										<Table.Th ta="center">#</Table.Th>
