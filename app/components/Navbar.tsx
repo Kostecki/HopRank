@@ -344,7 +344,7 @@ export default function Navbar({
 						onClick={handleLeaveSession}
 						loading={leaveFetcher.state === "submitting"}
 					>
-						Forlad smagning
+						{inProgressSession ? "Forlad smagning" : "Til smagninger"}
 					</Button>
 
 					{sessionProgress.users.length > 0 && (
