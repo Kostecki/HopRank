@@ -41,13 +41,16 @@ export const toSessionProgressUser = (
 	untappdId: user.untappdId,
 	username: user.username,
 	avatarURL: user.avatarURL,
-	status: !sessionUser
-		? "active"
-		: sessionUser.active
-			? "active"
-			: sessionUser.exitReason === SessionUserExitReason.kicked
-				? "kicked"
-				: "left",
+	// Derived from exitReason alone (not the `active` flag): when a session
+	// finishes, closeInactiveSessions marks every participant inactive without
+	// setting exitReason, so relying on `active` here would make everyone who
+	// simply stayed until the end look like they'd left/been kicked.
+	status:
+		sessionUser?.exitReason === SessionUserExitReason.kicked
+			? "kicked"
+			: sessionUser?.exitReason === SessionUserExitReason.left
+				? "left"
+				: "active",
 });
 
 async function getCachedBeerInfo(beerId: number, accessToken: string) {
