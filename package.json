@@ -34,11 +34,11 @@
     "embla-carousel-autoplay": "8.6.0",
     "embla-carousel-react": "8.6.0",
     "isbot": "5.2.2",
-    "mjml": "5.4.0",
+    "mjml": "5.4.1",
     "mnemonic-id": "4.1.0",
     "motion": "13.2.0",
     "node-cron": "4.6.0",
-    "nodemailer": "10.0.2",
+    "nodemailer": "10.0.3",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "react-router": "8.3.1",
@@ -50,7 +50,7 @@
     "socket.io-client": "4.8.3"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.5.12",
+    "@biomejs/biome": "2.5.13",
     "@react-router/dev": "8.3.1",
     "@types/better-sqlite3": "9.6.0",
     "@types/mjml": "5.0.0",
@@ -65,7 +65,7 @@
     "react-router-devtools": "6.2.3",
     "tsx": "4.23.13",
     "typescript": "7.0.2",
-    "vite": "8.2.2",
+    "vite": "8.3.0",
     "vitest": "5.0.0"
   },
   "volta": {
