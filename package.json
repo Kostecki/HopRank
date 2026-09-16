@@ -38,7 +38,7 @@
     "mnemonic-id": "4.1.0",
     "motion": "13.2.0",
     "node-cron": "4.6.0",
-    "nodemailer": "10.0.8",
+    "nodemailer": "10.0.9",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "react-router": "8.3.1",
@@ -70,6 +70,6 @@
   },
   "volta": {
     "node": "24.21.0",
-    "pnpm": "11.26.0"
+    "pnpm": "11.27.0"
   }
 }
