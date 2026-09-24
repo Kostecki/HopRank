@@ -63,13 +63,13 @@
     "postcss-preset-mantine": "1.18.0",
     "postcss-simple-vars": "7.0.1",
     "react-router-devtools": "6.2.3",
-    "tsx": "4.23.13",
+    "tsx": "4.23.15",
     "typescript": "7.0.2",
     "vite": "8.3.0",
     "vitest": "5.0.1"
   },
   "volta": {
     "node": "24.21.0",
-    "pnpm": "11.27.0"
+    "pnpm": "11.27.1"
   }
 }
