@@ -36,7 +36,7 @@
     "isbot": "5.2.2",
     "mjml": "5.4.1",
     "mnemonic-id": "4.1.0",
-    "motion": "13.4.6",
+    "motion": "13.5.0",
     "node-cron": "4.6.0",
     "nodemailer": "10.0.13",
     "react": "19.3.0",
@@ -54,7 +54,7 @@
     "@react-router/dev": "8.4.0",
     "@types/better-sqlite3": "9.6.0",
     "@types/mjml": "5.0.0",
-    "@types/node": "26.6.3",
+    "@types/node": "26.6.4",
     "@types/node-cron": "3.0.11",
     "@types/nodemailer": "8.0.2",
     "@types/react": "19.3.0",
@@ -65,7 +65,7 @@
     "react-router-devtools": "6.2.3",
     "tsx": "4.23.15",
     "typescript": "7.0.2",
-    "vite": "8.3.1",
+    "vite": "8.3.2",
     "vitest": "5.0.3"
   },
   "volta": {
