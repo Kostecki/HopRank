@@ -1,7 +1,8 @@
 services:
-  hop-rank:
-    image: kostecki/hop-rank:latest
+  app:
+    image: ghcr.io/kostecki/hop-rank:latest
     restart: unless-stopped
+    container_name: hop-rank
     hostname: hop-rank-docker-tower
     ports:
       - "3002:3000"
@@ -14,6 +15,8 @@ services:
       TOTP_SECRET: ${TOTP_SECRET}
       DATABASE_PATH: ${DATABASE_PATH}
       DATABASE_FILE_NAME: ${DATABASE_FILE_NAME}
+      DRIZZLE_GATEWAY_MASTERPASS: ${DRIZZLE_GATEWAY_MASTERPASS}
+      ADMIN_USER_EMAIL: ${ADMIN_USER_EMAIL}
       SMTP_HOST: ${SMTP_HOST}
       SMTP_PORT: ${SMTP_PORT}
       SMTP_USER: ${SMTP_USER}
@@ -23,12 +26,15 @@ services:
       UNTAPPD_CLIENT_SECRET: ${UNTAPPD_CLIENT_SECRET}
       UNTAPPD_REDIRECT_URL: ${UNTAPPD_REDIRECT_URL}
     volumes:
-      - hoprank_data:/hop-rank/app/database
+      - ${DATA_DIR:-.}/app/data/database:/hop-rank/app/database
       - /etc/localtime:/etc/localtime:ro
+    labels:
+      - "nautical-backup.group=hop-rank"
 
   drizzle-gateway:
     image: ghcr.io/drizzle-team/gateway:latest
-    container_name: drizzle-gateway
+    container_name: hop-rank-drizzle-gateway
+    hostname: hop-rank-drizzle-gateway-docker-tower
     restart: unless-stopped
     ports:
       - "4983:4983"
@@ -36,9 +42,7 @@ services:
       PORT: 4983
       MASTERPASS: ${DRIZZLE_GATEWAY_MASTERPASS}
     volumes:
-      - drizzle_gateway_data:/app
-      - hoprank_data:/app/database
-
-volumes:
-  hoprank_data:
-  drizzle_gateway_data:
+      - ${DATA_DIR:-.}/drizzle-gateway:/app
+      - ${DATA_DIR:-.}/app/data/database:/hop-rank/app/database
+    labels:
+      - "nautical-backup.group=hop-rank"

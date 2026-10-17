@@ -220,3 +220,7 @@ sketch
 *.db*
 
 public/.well-known/appspecific/com.chrome.devtools.json
+
+# Docker Compose: env file and local data folders
+/app/data/
+/drizzle-gateway/
