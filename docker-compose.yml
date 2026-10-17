@@ -3,10 +3,10 @@ services:
     image: ghcr.io/kostecki/hop-rank:latest
     restart: unless-stopped
     container_name: hop-rank
-    hostname: hop-rank-docker-tower
+    hostname: ${APP_HOSTNAME:-hop-rank}
     ports:
-      - "3002:3000"
-      - "4000:4000"
+      - "${APP_PORT:-3000}:3000"
+      - "${WS_PORT:-4000}:4000"
     environment:
       APP_URL: ${APP_URL}
       MAX_SESSION_AGE_HOURS: ${MAX_SESSION_AGE_HOURS}
@@ -34,10 +34,10 @@ services:
   drizzle-gateway:
     image: ghcr.io/drizzle-team/gateway:latest
     container_name: hop-rank-drizzle-gateway
-    hostname: hop-rank-drizzle-gateway-docker-tower
+    hostname: ${DRIZZLE_HOSTNAME:-drizzle-gateway}
     restart: unless-stopped
     ports:
-      - "4983:4983"
+      - "${DRIZZLE_PORT:-4983}:4983"
     environment:
       PORT: 4983
       MASTERPASS: ${DRIZZLE_GATEWAY_MASTERPASS}
