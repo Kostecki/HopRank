@@ -15,11 +15,11 @@
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
-    "@mantine/carousel": "9.7.1",
-    "@mantine/core": "9.7.1",
-    "@mantine/form": "9.7.1",
-    "@mantine/hooks": "9.7.1",
-    "@mantine/notifications": "9.7.1",
+    "@mantine/carousel": "9.7.2",
+    "@mantine/core": "9.7.2",
+    "@mantine/form": "9.7.2",
+    "@mantine/hooks": "9.7.2",
+    "@mantine/notifications": "9.7.2",
     "@mjackson/headers": "0.11.1",
     "@react-router/node": "8.4.0",
     "@react-router/serve": "8.4.0",
@@ -36,9 +36,9 @@
     "isbot": "5.2.2",
     "mjml": "5.4.1",
     "mnemonic-id": "4.1.0",
-    "motion": "14.0.0",
+    "motion": "14.2.0",
     "node-cron": "4.6.0",
-    "nodemailer": "10.0.16",
+    "nodemailer": "10.1.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "react-router": "8.4.0",
@@ -54,22 +54,22 @@
     "@react-router/dev": "8.4.0",
     "@types/better-sqlite3": "9.6.0",
     "@types/mjml": "5.0.0",
-    "@types/node": "26.6.4",
+    "@types/node": "26.6.5",
     "@types/node-cron": "3.0.11",
     "@types/nodemailer": "8.0.2",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
-    "postcss": "8.5.29",
+    "postcss": "8.5.30",
     "postcss-preset-mantine": "1.18.0",
     "postcss-simple-vars": "7.0.1",
     "react-router-devtools": "6.2.3",
     "tsx": "4.23.15",
     "typescript": "7.0.2",
     "vite": "8.3.4",
-    "vitest": "5.0.3"
+    "vitest": "5.0.4"
   },
   "volta": {
-    "node": "24.21.0",
-    "pnpm": "12.10.1"
+    "node": "24.22.0",
+    "pnpm": "12.13.0"
   }
 }
