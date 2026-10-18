@@ -46,3 +46,4 @@ services:
       - ${DATA_DIR:-.}/app/data/database:/hop-rank/app/database
     labels:
       - "nautical-backup.group=hop-rank"
+      - "nautical-backup.override-source-dir=hop-rank"
