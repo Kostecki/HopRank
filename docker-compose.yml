@@ -3,7 +3,7 @@ services:
     image: ghcr.io/kostecki/hop-rank:latest
     restart: unless-stopped
     container_name: hop-rank
-    hostname: ${APP_HOSTNAME:-hop-rank}
+    hostname: hop-rank
     ports:
       - "${APP_PORT:-3000}:3000"
       - "${WS_PORT:-4000}:4000"
@@ -34,7 +34,7 @@ services:
   drizzle-gateway:
     image: ghcr.io/drizzle-team/gateway:latest
     container_name: hop-rank-drizzle-gateway
-    hostname: ${DRIZZLE_HOSTNAME:-drizzle-gateway}
+    hostname: hop-rank-drizzle-gateway
     restart: unless-stopped
     ports:
       - "${DRIZZLE_PORT:-4983}:4983"
