@@ -21,9 +21,9 @@
     "@mantine/hooks": "9.7.4",
     "@mantine/notifications": "9.7.4",
     "@mjackson/headers": "0.11.1",
-    "@react-router/node": "8.5.0",
-    "@react-router/serve": "8.5.0",
-    "@tabler/icons-react": "3.49.0",
+    "@react-router/node": "8.5.1",
+    "@react-router/serve": "8.5.1",
+    "@tabler/icons-react": "3.50.0",
     "animate.css": "4.1.1",
     "better-sqlite3": "13.0.3",
     "cheerio": "1.2.0",
@@ -36,12 +36,12 @@
     "isbot": "5.2.2",
     "mjml": "5.4.1",
     "mnemonic-id": "4.1.0",
-    "motion": "14.6.0",
+    "motion": "14.7.1",
     "node-cron": "4.6.0",
     "nodemailer": "10.2.1",
     "react": "19.3.1",
     "react-dom": "19.3.1",
-    "react-router": "8.5.0",
+    "react-router": "8.5.1",
     "remix-auth": "4.2.0",
     "remix-auth-oauth2": "3.4.1",
     "remix-auth-totp": "4.0.0",
@@ -51,9 +51,9 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.6.3",
-    "@react-router/dev": "8.5.0",
+    "@react-router/dev": "8.5.1",
     "@types/better-sqlite3": "9.6.0",
-    "@types/mjml": "5.4.1",
+    "@types/mjml": "5.4.2",
     "@types/node": "26.6.5",
     "@types/node-cron": "3.0.11",
     "@types/nodemailer": "8.0.2",
@@ -70,6 +70,6 @@
   },
   "volta": {
     "node": "24.22.2",
-    "pnpm": "12.16.0"
+    "pnpm": "12.16.1"
   }
 }
