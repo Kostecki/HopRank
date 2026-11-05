@@ -11,17 +11,25 @@ const MAX_SESSION_AGE_HOURS = Number(process.env.MAX_SESSION_AGE_HOURS) || 24;
 const MAX_SESSION_IDLE_TIME_HOURS =
 	Number(process.env.MAX_SESSION_IDLE_TIME_HOURS) || 6;
 
+// Same format as SQLite's CURRENT_TIMESTAMP (UTC), because the timestamps are
+// compared as strings. With an ISO cutoff, a value on the cutoff's date always
+// sorts as older, since the space in "YYYY-MM-DD HH:MM:SS" sorts before "T".
+const hoursAgoAsSqliteTimestamp = (hours: number) =>
+	dayjs()
+		.subtract(hours, "hour")
+		.toISOString()
+		.slice(0, 19)
+		.replace("T", " ");
+
 /**
  * Closes sessions that are more than 24 hours old and have had no activity in the last 6 hours,
  * regardless of whether a beer is still being rated.
  */
 export const closeInactiveSessions = async () => {
-	const sessionAgeCutoff = dayjs()
-		.subtract(MAX_SESSION_AGE_HOURS, "hour")
-		.toISOString();
-	const recentActivityCutoff = dayjs()
-		.subtract(MAX_SESSION_IDLE_TIME_HOURS, "hour")
-		.toISOString();
+	const sessionAgeCutoff = hoursAgoAsSqliteTimestamp(MAX_SESSION_AGE_HOURS);
+	const recentActivityCutoff = hoursAgoAsSqliteTimestamp(
+		MAX_SESSION_IDLE_TIME_HOURS,
+	);
 
 	// Get all active sessions older than 24 hours
 	const oldActiveSessions = await db.query.sessions.findMany({
