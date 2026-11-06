@@ -29,12 +29,19 @@ HopRank allows groups of people to create structured beer tasting sessions where
 - Session progress tracking
 - Live voting status for all participants
 
+🍻 **One Beer Mode**
+- The same beer at different bars, for a pub crawl
+- Everyone ranks the bars on their own list instead of giving scores
+- The group result is based on the average position
+
 📱 **Mobile-First Design**
 - Responsive design built with Mantine UI
 - Touch-friendly rating sliders
 - Mobile app integration (Untappd deep links)
 
 ## How It Works
+
+A session runs in one of two modes, chosen when it's created. The mode can't be changed afterwards. The steps below describe normal mode; [One Beer mode](#one-beer-mode) has its own section.
 
 ### 1. Session Creation
 - Create a new tasting session with a unique join code
@@ -59,8 +66,19 @@ HopRank allows groups of people to create structured beer tasting sessions where
 
 ### 5. Session States
 - **Created**: Session setup, adding beers
-- **Active**: Currently rating beers
-- **Finished**: All beers rated, final results available
+- **Active**: Started by the owner. Rating beers, and stays active after the last beer is rated
+- **Finished**: Ended by the owner or an admin with "Afslut smagning" (also before it has started), or by a cleanup job once the session is both old and idle (see `MAX_SESSION_AGE_HOURS` and `MAX_SESSION_IDLE_TIME_HOURS`). This can't be undone
+
+### One Beer Mode
+
+The same beer, ranked at different bars. There are no scores or criteria.
+
+- **Setup**: Pick the one beer when creating the session. The first bar can be added before the owner starts it
+- **Adding bars**: Search for a venue, or type a name if it isn't found or you aren't logged in with Untappd. A typed bar can later be linked to a venue. Each bar can only be on the list once
+- **The shared list**: Everyone in the session can add bars, remove upcoming ones and reorder them. Bars open in that order, not shuffled
+- **Ranking**: Each person drags the open bar into their own ranking and saves. The next bar opens once all active participants have ranked the current one
+- **Results**: The group ranking is based on each bar's average position. Positions are relative to the length of each person's list, so late joiners count fairly. When everyone ranked every bar, it's the plain average
+- **Venue details**: A bar's address and category come from Untappd, and are refreshed from search results while the session is unfinished
 
 ## Getting Started
 
@@ -84,23 +102,25 @@ Create a `.env` file with the required environment variables. Below is a consoli
 | `SESSION_SECRET` | Secret for signing session cookies |
 | `UNTAPPD_CLIENT_ID` | Untappd OAuth client ID |
 | `UNTAPPD_CLIENT_SECRET` | Untappd OAuth client secret |
-
-| `DATABASE_PATH` | Path to the SQLite database file (e.g. `./data/database.db`) |
+| `UNTAPPD_REDIRECT_URL` | The redirect URL registered with Untappd |
+| `TOTP_SECRET` | Base secret for generating login codes |
+| `SMTP_FROM` | From address for outbound emails |
+| `SMTP_HOST` | SMTP server host for email login links |
+| `SMTP_PORT` | SMTP server port |
+| `SMTP_USER` | SMTP auth username |
+| `SMTP_PASS` | SMTP auth password |
+| `DATABASE_PATH` | Directory with the SQLite database and the Drizzle schema (`./app/database`) |
 | `VITE_ALGOLIA_APP_ID` | Algolia application ID for beer search |
 | `VITE_ALGOLIA_API_K` | Algolia search-only API key |
-| `VITE_WS_URL` | WebSocket endpoint used by the client (e.g. `ws://localhost:5173`) |
+| `VITE_WS_URL` | WebSocket endpoint used by the client (e.g. `http://localhost:4000`). Set at build time |
 
 #### Optional / Feature-Specific
 
 | Variable | Purpose |
 |----------|---------|
 | `DATABASE_FILE_NAME` | Name of the database file (default: data.db) |
-| `SMTP_FROM` | From address for outbound emails |
-| `SMTP_HOST` | SMTP server host for email login links |
-| `SMTP_PORT` | SMTP server port |
-| `SMTP_USER` | SMTP auth username |
-| `SMTP_PASS` | SMTP auth password |
-| `TOTP_SECRET` | Base secret for generating TOTP (2FA) codes |
+| `ADMIN_USER_EMAILS` | Email addresses of admin users |
+| `DRIZZLE_GATEWAY_MASTERPASS` | Master password for Drizzle Gateway |
 | `MAX_SESSION_AGE_HOURS` | Auto-close sessions older than this (default: 24) |
 | `MAX_SESSION_IDLE_TIME_HOURS` | Timeout for "idle" session (default: 6) |
 | `VITE_UMAMI_SRC_URL` | Umami analytics script URL (production only) |
@@ -108,45 +128,12 @@ Create a `.env` file with the required environment variables. Below is a consoli
 | `VITE_LATEST_COMMIT_HASH` | Injected at build time for UI display of current commit |
 | `VITE_LATEST_COMMIT_MESSAGE` | Injected commit message for display |
 
-#### Example `.env` (local development)
+#### Local development
 
-```env
-# Base App
-APP_URL=http://localhost:5173
-SESSION_SECRET=dev_super_secret
+Start from the example file, which has every variable with comments:
 
-# Database
-DATABASE_PATH=./data/database.db
-
-# Untappd OAuth
-UNTAPPD_CLIENT_ID=your_untappd_client_id
-UNTAPPD_CLIENT_SECRET=your_untappd_client_secret
-
-# Algolia (Beer Search)
-VITE_ALGOLIA_APP_ID=your_algolia_app_id
-VITE_ALGOLIA_API_K=your_algolia_api_key
-
-# WebSockets
-VITE_WS_URL=ws://localhost:5173
-
-# Optional Email (disable if not set)
-SMTP_FROM=HopRank <no-reply@localhost>
-SMTP_HOST=localhost
-SMTP_PORT=1025
-SMTP_USER=
-SMTP_PASS=
-
-# Optional 2FA
-TOTP_SECRET=replace_me_for_prod
-
-# Optional Analytics / Build Metadata
-VITE_UMAMI_SRC_URL=
-VITE_UMAMI_WEBSITE_ID=
-VITE_LATEST_COMMIT_HASH=
-VITE_LATEST_COMMIT_MESSAGE=
-
-# Housekeeping
-MAX_SESSION_AGE_HOURS=12
+```bash
+cp .env.example .env
 ```
 
 ### Database Setup
@@ -154,8 +141,8 @@ MAX_SESSION_AGE_HOURS=12
 Generate and run database migrations:
 
 ```bash
-pnpm generate  # Generate migration files
-pnpm migrate   # Apply migrations
+pnpm db:generate  # Generate migration files
+pnpm db:migrate   # Apply migrations
 ```
 
 ### Development
@@ -168,12 +155,15 @@ pnpm dev
 
 Your application will be available at `http://localhost:5173`.
 
+To test on a phone, run `pnpm dev --host` and open your computer's IP address on port 5173. With a `localhost` `VITE_WS_URL`, the socket connects to whichever host the page was opened on.
+
 ### Additional Scripts
 
 ```bash
-pnpm studio     # Open Drizzle Studio for database management
+pnpm db:studio  # Open Drizzle Studio for database management
 pnpm typecheck  # Run TypeScript type checking
 pnpm lint       # Run Biome linter
+pnpm test       # Run the tests
 ```
 
 ## Project Structure
@@ -194,7 +184,7 @@ app/
 ├── types/             # TypeScript type definitions
 ├── utils/             # Utility functions
 └── hooks/             # Custom React hooks
-drizzle/              │# Database migration files
+drizzle/               # Database migration files
 public/                # Favicons, robots.txt, etc.
 ```
 
@@ -205,6 +195,8 @@ public/                # Favicons, robots.txt, etc.
 - **SessionUsers**: Participants in each session
 - **SessionBeers**: Beers added to sessions with ordering
 - **SessionState**: Current state and progress tracking
+- **SessionBars**: Bars in a One Beer session, with their order and venue details
+- **BarPlacements**: Each person's position for each bar in a One Beer session
 
 ### Rating System
 - **Criteria**: Configurable rating categories
@@ -225,7 +217,7 @@ Build and run with Docker:
 
 ```bash
 docker build -t hoprank .
-docker run -p 3000:3000 hoprank
+docker run -p 3000:3000 -p 4000:4000 hoprank
 ```
 
 ### Environment Variables for Production

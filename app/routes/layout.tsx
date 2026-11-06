@@ -3,8 +3,9 @@ import { useDisclosure } from "@mantine/hooks";
 import { eq } from "drizzle-orm";
 import { Outlet, useLoaderData } from "react-router";
 
+import type { SessionBar } from "~/types/oneBeer";
 import type { SessionProgress } from "~/types/session";
-import { SessionStatus } from "~/types/session";
+import { SessionMode, SessionStatus } from "~/types/session";
 import type { Route } from "../+types/root";
 
 import { userSessionGet } from "~/auth/users.server";
@@ -17,6 +18,7 @@ import { db } from "~/database/config.server";
 import { beers, sessionBeers } from "~/database/schema.server";
 import type { SelectSessionBeersWithBeer } from "~/database/schema.types";
 import { getSessionProgress } from "~/database/utils/getSessionProgress.server";
+import { getSessionBars } from "~/database/utils/oneBeer.server";
 import { extractSessionId } from "~/utils/utils";
 
 export async function loader({ params, request }: Route.LoaderArgs) {
@@ -29,6 +31,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 
 	let sessionProgress: SessionProgress | null = null;
 	let sessionBeersList: SelectSessionBeersWithBeer[] = [];
+	let sessionBars: SessionBar[] = [];
 	if (sessionId) {
 		const [sessionProgressResult, sessionBeersResult] = await Promise.all([
 			getSessionProgress({ request, sessionId }),
@@ -46,6 +49,10 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 			sessionProgress = sessionProgressResult;
 		}
 
+		if (sessionProgress?.mode === SessionMode.oneBeer) {
+			sessionBars = await getSessionBars(sessionId);
+		}
+
 		sessionBeersList = sessionBeersResult.map(({ sessionBeer, beer }) => ({
 			...sessionBeer,
 			beer,
@@ -56,6 +63,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 		user,
 		sessionProgress,
 		sessionBeers: sessionBeersList,
+		sessionBars,
 		progressPercentage:
 			sessionProgress?.status === SessionStatus.finished
 				? undefined
@@ -64,8 +72,13 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 }
 
 export default function Layout() {
-	const { user, sessionProgress, sessionBeers, progressPercentage } =
-		useLoaderData<typeof loader>();
+	const {
+		user,
+		sessionProgress,
+		sessionBeers,
+		sessionBars,
+		progressPercentage,
+	} = useLoaderData<typeof loader>();
 
 	const [mobileOpened, { toggle: toggleMobile, close: closeMobile }] =
 		useDisclosure();
@@ -98,6 +111,7 @@ export default function Layout() {
 						user={user}
 						sessionProgress={sessionProgress}
 						sessionBeers={sessionBeers}
+						sessionBars={sessionBars}
 						closeMobile={closeMobile}
 						closeDesktop={closeDesktop}
 					/>

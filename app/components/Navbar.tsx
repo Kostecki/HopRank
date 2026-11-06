@@ -16,6 +16,7 @@ import {
 import {
 	IconDoorExit,
 	IconExternalLink,
+	IconFlag,
 	IconPlus,
 	IconTrash,
 	IconUserX,
@@ -29,8 +30,10 @@ import {
 	useRevalidator,
 } from "react-router";
 
+import type { SessionBar } from "~/types/oneBeer";
 import {
 	SessionBeerStatus,
+	SessionMode,
 	type SessionProgress,
 	type SessionProgressUser,
 	SessionStatus,
@@ -40,21 +43,161 @@ import type { SessionUser } from "~/types/user";
 import type { SelectSessionBeersWithBeer } from "~/database/schema.types";
 import { showDangerToast } from "~/utils/toasts";
 import { createBeerLink, createProfileLink } from "~/utils/untappd";
+import { sortByDisplayName } from "~/utils/utils";
 
+import BeerThumbnail from "./BeerThumbnail";
 import ModalAddBeers, { ModalAddBeersTrigger } from "./modals/ModalAddBeers";
+import NavbarBars from "./NavbarBars";
 
 type InputProps = {
 	user: SessionUser;
 	sessionProgress: SessionProgress | null;
 	sessionBeers: SelectSessionBeersWithBeer[];
+	sessionBars: SessionBar[];
 	closeMobile: () => void;
 	closeDesktop: () => void;
 };
+
+function ParticipantRow({
+	user: rowUser,
+	canKick,
+	onKick,
+}: {
+	user: SessionProgressUser;
+	canKick: boolean;
+	onKick: (userId: number) => void;
+}) {
+	const firstLetter = (rowUser.name ?? rowUser.username ?? "?")
+		.slice(0, 1)
+		.toUpperCase();
+
+	const isGone = rowUser.status !== "active";
+	const goneLabel =
+		rowUser.status === "kicked"
+			? "Stemt ud af smagningen"
+			: "Forlod smagningen";
+
+	const nameAndAvatar = (
+		<Flex align="center">
+			<Avatar
+				src={rowUser?.avatarURL}
+				name={rowUser.username ?? rowUser.name ?? firstLetter}
+				color="initials"
+				size="sm"
+				mr="xs"
+			/>
+
+			<Text
+				size="sm"
+				fw="500"
+				lineClamp={1}
+				td={isGone ? "line-through" : undefined}
+			>
+				{rowUser.name ?? rowUser.username ?? "Deltager"}
+			</Text>
+		</Flex>
+	);
+
+	return (
+		<Flex
+			justify="space-between"
+			pos="relative"
+			align="center"
+			h={25}
+			mb="xs"
+			opacity={isGone ? 0.5 : 1}
+		>
+			{isGone ? (
+				<Tooltip label={goneLabel} position="bottom">
+					{nameAndAvatar}
+				</Tooltip>
+			) : (
+				nameAndAvatar
+			)}
+
+			<Flex align="center" gap={4}>
+				{rowUser?.untappdId && rowUser.username && (
+					<Tooltip label="Se Untappd-profil" position="bottom">
+						<ActionIcon
+							component={Link}
+							variant="subtle"
+							color="slateIndigo"
+							to={createProfileLink(rowUser.username)}
+							target="_blank"
+						>
+							<IconExternalLink size={16} stroke={1.5} />
+						</ActionIcon>
+					</Tooltip>
+				)}
+
+				{canKick && (
+					<Tooltip label="Start afstemning om at kicke" position="bottom">
+						<ActionIcon
+							variant="subtle"
+							color="red"
+							onClick={() => onKick(rowUser.id)}
+						>
+							<IconUserX size={16} stroke={1.5} />
+						</ActionIcon>
+					</Tooltip>
+				)}
+			</Flex>
+		</Flex>
+	);
+}
+
+function UserBeerRow({
+	beer,
+	onRemove,
+}: {
+	beer: SelectSessionBeersWithBeer;
+	onRemove: (beerId: number) => void;
+}) {
+	const {
+		beer: { id, name, breweryName, label, untappdBeerId },
+	} = beer;
+
+	const isDisabled =
+		beer.status === SessionBeerStatus.rating ||
+		beer.status === SessionBeerStatus.rated;
+
+	const untappdLink = createBeerLink(untappdBeerId);
+
+	return (
+		<Flex justify="space-between" pos="relative">
+			<Stack gap={0} mb="sm">
+				<Anchor underline="never" href={untappdLink} target="_blank">
+					<Group gap="xs" wrap="nowrap">
+						<BeerThumbnail src={label} />
+						<Stack gap={0}>
+							<Text size="sm" fw="500" mr="xs" c="black">
+								{name}
+							</Text>
+							<Text size="sm" c="dimmed">
+								{breweryName}
+							</Text>
+						</Stack>
+					</Group>
+				</Anchor>
+			</Stack>
+
+			<ActionIcon
+				variant="subtle"
+				color="slateIndigo"
+				onClick={() => onRemove(id)}
+				disabled={isDisabled}
+			>
+				<IconTrash style={{ width: "70%", height: "70%" }} stroke={1.5} />
+			</ActionIcon>
+		</Flex>
+	);
+}
 
 export default function Navbar({
 	user,
 	sessionProgress,
 	sessionBeers,
+	sessionBars,
 	closeMobile,
 	closeDesktop,
 }: InputProps) {
@@ -63,6 +206,7 @@ export default function Navbar({
 	const leaveFetcher = useFetcher();
 	const removeFetcher = useFetcher();
 	const kickFetcher = useFetcher();
+	const finishFetcher = useFetcher();
 	const { revalidate } = useRevalidator();
 
 	const [localSessionBeers, setLocalSessionBeers] = useState(sessionBeers);
@@ -89,6 +233,29 @@ export default function Navbar({
 				action: `/api/sessions/${sessionId}/leave`,
 			});
 		}
+	};
+
+	const canFinish =
+		inProgressSession &&
+		!readOnly &&
+		(sessionProgress.createdBy === user?.id || user?.admin);
+
+	const handleFinishSession = () => {
+		const sessionId = sessionProgress?.sessionId;
+		if (!sessionId) return;
+
+		const confirmed = window.confirm(
+			"Vil du afslutte smagningen for alle? Det kan ikke fortrydes.",
+		);
+		if (!confirmed) return;
+
+		closeMobile();
+		closeDesktop();
+
+		finishFetcher.submit(null, {
+			method: "POST",
+			action: `/api/sessions/${sessionId}/finish`,
+		});
 	};
 
 	const handleKick = (targetUserId: number) => {
@@ -160,6 +327,16 @@ export default function Navbar({
 	}, [leaveFetcher.state, leaveFetcher.data, navigate]);
 
 	useEffect(() => {
+		if (finishFetcher.state !== "idle" || !finishFetcher.data) return;
+
+		const result = finishFetcher.data as { success?: true; message?: string };
+
+		if (!result.success) {
+			showDangerToast(result.message ?? "Kunne ikke afslutte smagningen");
+		}
+	}, [finishFetcher.state, finishFetcher.data]);
+
+	useEffect(() => {
 		if (kickFetcher.state !== "idle" || !kickFetcher.data) return;
 
 		const result = kickFetcher.data as { success: true } | { message?: string };
@@ -171,125 +348,6 @@ export default function Navbar({
 
 	const viewerIsActive =
 		sessionProgress?.users.find((u) => u.id === user?.id)?.status === "active";
-
-	const UserListItem = ({ user: rowUser }: { user: SessionProgressUser }) => {
-		const firstLetter = (rowUser.name ?? rowUser.username ?? "?")
-			.slice(0, 1)
-			.toUpperCase();
-
-		const isGone = rowUser.status !== "active";
-		const goneLabel =
-			rowUser.status === "kicked"
-				? "Stemt ud af smagningen"
-				: "Forlod smagningen";
-
-		const canKick =
-			!readOnly && !isGone && viewerIsActive && rowUser.id !== user.id;
-
-		const nameAndAvatar = (
-			<Flex align="center">
-				<Avatar
-					src={rowUser?.avatarURL}
-					name={rowUser.username ?? rowUser.name ?? firstLetter}
-					color="initials"
-					size="sm"
-					mr="xs"
-				/>
-
-				<Text
-					size="sm"
-					fw="500"
-					lineClamp={1}
-					td={isGone ? "line-through" : undefined}
-				>
-					{rowUser.name ?? rowUser.username ?? "Deltager"}
-				</Text>
-			</Flex>
-		);
-
-		return (
-			<Flex
-				justify="space-between"
-				pos="relative"
-				align="center"
-				h={25}
-				mb="xs"
-				opacity={isGone ? 0.5 : 1}
-			>
-				{isGone ? (
-					<Tooltip label={goneLabel} position="bottom">
-						{nameAndAvatar}
-					</Tooltip>
-				) : (
-					nameAndAvatar
-				)}
-
-				<Flex align="center" gap={4}>
-					{rowUser?.untappdId && rowUser.username && (
-						<Tooltip label="Se Untappd-profil" position="bottom">
-							<ActionIcon
-								component={Link}
-								variant="subtle"
-								color="slateIndigo"
-								to={createProfileLink(rowUser.username)}
-								target="_blank"
-							>
-								<IconExternalLink size={16} stroke={1.5} />
-							</ActionIcon>
-						</Tooltip>
-					)}
-
-					{canKick && (
-						<Tooltip label="Start afstemning om at kicke" position="bottom">
-							<ActionIcon
-								variant="subtle"
-								color="red"
-								onClick={() => handleKick(rowUser.id)}
-							>
-								<IconUserX size={16} stroke={1.5} />
-							</ActionIcon>
-						</Tooltip>
-					)}
-				</Flex>
-			</Flex>
-		);
-	};
-
-	const ListItem = ({ beer }: { beer: SelectSessionBeersWithBeer }) => {
-		const {
-			beer: { id, name, breweryName, untappdBeerId },
-		} = beer;
-
-		const isDisabled =
-			beer.status === SessionBeerStatus.rating ||
-			beer.status === SessionBeerStatus.rated;
-
-		const untappdLink = createBeerLink(untappdBeerId);
-
-		return (
-			<Flex justify="space-between" pos="relative">
-				<Stack gap={0} mb="sm">
-					<Anchor underline="never" href={untappdLink} target="_blank">
-						<Text size="sm" fw="500" lineClamp={1} mr="xs" c="black">
-							{name}
-						</Text>
-						<Text size="sm" c="dimmed" lineClamp={1}>
-							{breweryName}
-						</Text>
-					</Anchor>
-				</Stack>
-
-				<ActionIcon
-					variant="subtle"
-					color="slateIndigo"
-					onClick={() => handleRemoveBeer(id)}
-					disabled={isDisabled}
-				>
-					<IconTrash style={{ width: "70%", height: "70%" }} stroke={1.5} />
-				</ActionIcon>
-			</Flex>
-		);
-	};
 
 	if (!sessionProgress) return "None";
 
@@ -347,6 +405,21 @@ export default function Navbar({
 						{inProgressSession ? "Forlad smagning" : "Tilbage til smagninger"}
 					</Button>
 
+					{canFinish && (
+						<Button
+							justify="center"
+							variant="default"
+							leftSection={<IconFlag size={14} />}
+							color="slateIndigo"
+							fw={500}
+							mt="xs"
+							onClick={handleFinishSession}
+							loading={finishFetcher.state !== "idle"}
+						>
+							Afslut smagning
+						</Button>
+					)}
+
 					{sessionProgress.users.length > 0 && (
 						<>
 							<Group mt="xl" justify="space-between">
@@ -358,42 +431,70 @@ export default function Navbar({
 							<Divider opacity={0.5} mb="md" />
 
 							<List spacing="xs" size="sm" pl={0}>
-								{sessionProgress.users.map((user) => (
-									<UserListItem key={user.id} user={user} />
+								{sortByDisplayName(sessionProgress.users).map((rowUser) => (
+									<ParticipantRow
+										key={rowUser.id}
+										user={rowUser}
+										canKick={
+											!readOnly &&
+											rowUser.status === "active" &&
+											viewerIsActive &&
+											rowUser.id !== user.id
+										}
+										onKick={handleKick}
+									/>
 								))}
 							</List>
 						</>
 					)}
 
-					{inProgressSession && !readOnly && (
-						<>
-							<Group mt="xl" justify="space-between">
-								<Text size="md" tt="uppercase">
-									Dine øl
-								</Text>
+					{inProgressSession &&
+						!readOnly &&
+						viewerIsActive &&
+						sessionProgress.mode === SessionMode.oneBeer && (
+							<NavbarBars
+								user={user}
+								session={sessionProgress}
+								bars={sessionBars}
+								onBarAdded={closeMobile}
+							/>
+						)}
 
-								<ModalAddBeersTrigger>
-									<ActionIcon variant="subtle" color="slateIndigo">
-										<IconPlus size={14} />
-									</ActionIcon>
-								</ModalAddBeersTrigger>
-							</Group>
+					{inProgressSession &&
+						!readOnly &&
+						sessionProgress.mode !== SessionMode.oneBeer && (
+							<>
+								<Group mt="xl" justify="space-between">
+									<Text size="md" tt="uppercase">
+										Dine øl
+									</Text>
 
-							<Divider opacity={0.5} mb="md" />
+									<ModalAddBeersTrigger>
+										<ActionIcon variant="subtle" color="slateIndigo">
+											<IconPlus size={14} />
+										</ActionIcon>
+									</ModalAddBeersTrigger>
+								</Group>
 
-							{usersBeers.length > 0 ? (
-								<List spacing="xs" size="sm" pl={0}>
-									{usersBeers.map((beer) => (
-										<ListItem key={beer.beerId} beer={beer} />
-									))}
-								</List>
-							) : (
-								<Text c="dimmed" fs="italic" ta="center">
-									Der er ikke tilføjet nogle øl
-								</Text>
-							)}
-						</>
-					)}
+								<Divider opacity={0.5} mb="md" />
+
+								{usersBeers.length > 0 ? (
+									<List spacing="xs" size="sm" pl={0}>
+										{usersBeers.map((beer) => (
+											<UserBeerRow
+												key={beer.beerId}
+												beer={beer}
+												onRemove={handleRemoveBeer}
+											/>
+										))}
+									</List>
+								) : (
+									<Text c="dimmed" fs="italic" ta="center">
+										Der er ikke tilføjet nogle øl
+									</Text>
+								)}
+							</>
+						)}
 				</Stack>
 			</ScrollArea>
 		</ModalAddBeers>

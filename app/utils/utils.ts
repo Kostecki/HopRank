@@ -225,3 +225,33 @@ export const isSafeRedirect = (target: string | null | undefined) => {
 
 	return true;
 };
+
+/** Alphabetical by the name shown in the app, using Danish letter order. */
+export function sortByDisplayName<
+	T extends { name: string | null; username: string | null },
+>(users: T[]) {
+	const displayName = (user: T) => user.name ?? user.username ?? "";
+
+	return [...users].sort((a, b) =>
+		displayName(a).localeCompare(displayName(b), "da", {
+			sensitivity: "base",
+		}),
+	);
+}
+
+/**
+ * A "localhost" socket address only works on the machine running the server. On
+ * a phone opening the dev server by IP, localhost would be the phone itself, so
+ * this swaps in the host the page was opened on. Real addresses are left alone.
+ */
+export function resolveSocketUrl(socketUrl: string, pageHostname: string) {
+	const url = new URL(socketUrl);
+
+	if (url.hostname !== "localhost" && url.hostname !== "127.0.0.1") {
+		return socketUrl;
+	}
+
+	url.hostname = pageHostname;
+
+	return url.toString();
+}

@@ -2,7 +2,11 @@ import { Burger, Group, Paper, Text, useMantineTheme } from "@mantine/core";
 import { IconBeer, IconUsers } from "@tabler/icons-react";
 import { useRevalidator } from "react-router";
 
-import { type SessionProgress, SessionStatus } from "~/types/session";
+import {
+	SessionMode,
+	type SessionProgress,
+	SessionStatus,
+} from "~/types/session";
 import type { SessionUser } from "~/types/user";
 
 import { useDebouncedSocketEvent } from "~/hooks/useDebouncedSocketEvent";
@@ -41,11 +45,16 @@ export function Header({
 		session?.sessionId,
 	);
 
-	const BeerCount = () => {
+	const getBeerCount = () => {
 		if (!session) return "-";
 
 		if (inProgressSession) {
-			return `${session.ratedBeers.length} / ${session.beersTotalCount}`;
+			const finished =
+				session.mode === SessionMode.oneBeer
+					? session.finishedBarsCount
+					: session.ratedBeers.length;
+
+			return `${finished} / ${session.beersTotalCount}`;
 		}
 
 		return session.beersTotalCount;
@@ -80,7 +89,7 @@ export function Header({
 							<Group gap="5">
 								<IconBeer color={slateIndigo} size={20} />
 								<Text c="slateIndigo" fw={600}>
-									<BeerCount />
+									{getBeerCount()}
 								</Text>
 							</Group>
 						</>

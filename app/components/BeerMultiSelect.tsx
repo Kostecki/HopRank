@@ -21,6 +21,8 @@ import type { RatedBeers } from "~/types/session";
 
 import type { SelectBeers } from "~/database/schema.types";
 
+import BeerThumbnail from "./BeerThumbnail";
+
 type InputProps = {
 	selectedBeers: BeerOption[];
 	setSelectedBeers: (value: BeerOption[]) => void;
@@ -66,8 +68,9 @@ const getComboboxOptions = (
 				active={isSelected}
 				disabled={isAlreadyInSession}
 			>
-				<Group gap="sm">
+				<Group gap="sm" wrap="nowrap">
 					{isSelected && <CheckIcon size={12} />}
+					<BeerThumbnail src={option.label} />
 					<Box>
 						<Text size="sm">{option.name}</Text>
 						<Text size="xs" c="gray" mt="3">

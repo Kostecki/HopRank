@@ -1,6 +1,6 @@
 import { and, eq } from "drizzle-orm";
 
-import { SessionBeerStatus, SessionStatus } from "~/types/session";
+import { SessionBeerStatus, SessionMode, SessionStatus } from "~/types/session";
 
 import { db } from "../config.server";
 import {
@@ -8,10 +8,22 @@ import {
 	sessionBeers,
 	sessionCriteria,
 	sessionState,
+	sessions,
 	sessionUsers,
 } from "../schema.server";
+import { advanceBars } from "./oneBeer.server";
 
 export const tryAdvanceSession = async (sessionId: number) => {
+	const session = await db.query.sessions.findFirst({
+		where: eq(sessions.id, sessionId),
+		columns: { mode: true },
+	});
+
+	if (session?.mode === SessionMode.oneBeer) {
+		advanceBars(sessionId);
+		return;
+	}
+
 	const state = await db.query.sessionState.findFirst({
 		where: eq(sessionState.sessionId, sessionId),
 	});

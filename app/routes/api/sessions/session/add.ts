@@ -4,7 +4,10 @@ import type { Route } from "./+types/add";
 
 import { userSessionGet } from "~/auth/users.server";
 import { addBeersToSession } from "~/database/utils/addBeersToSession.server";
-import { requireSessionParticipant } from "~/database/utils/assertSessionAccess.server";
+import {
+	requireNormalSession,
+	requireSessionParticipant,
+} from "~/database/utils/assertSessionAccess.server";
 import { extractSessionId } from "~/utils/utils";
 import { emitGlobalEvent, emitSessionEvent } from "~/utils/websocket.server";
 
@@ -17,6 +20,7 @@ export async function action({ request, params }: Route.ActionArgs) {
 	}
 
 	await requireSessionParticipant(sessionId, user.id);
+	await requireNormalSession(sessionId);
 
 	const form = await request.formData();
 	const beersJson = form.get("beers");

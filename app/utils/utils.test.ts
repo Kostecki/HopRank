@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import { isSafeRedirect, isValidVoteScore, sliderConf } from "./utils";
+import {
+	isSafeRedirect,
+	isValidVoteScore,
+	resolveSocketUrl,
+	sliderConf,
+	sortByDisplayName,
+} from "./utils";
 
 describe("isValidVoteScore", () => {
 	const { stepSize, max } = sliderConf();
@@ -60,5 +66,55 @@ describe("isSafeRedirect", () => {
 		"javascript:alert(1)",
 	])("rejects unsafe target %s", (target) => {
 		expect(isSafeRedirect(target)).toBe(false);
+	});
+});
+
+describe("sortByDisplayName", () => {
+	const user = (name: string | null, username: string | null = null) => ({
+		name,
+		username,
+	});
+	const names = (users: ReturnType<typeof user>[]) =>
+		sortByDisplayName(users).map((u) => u.name ?? u.username);
+
+	it("sorts alphabetically, ignoring case", () => {
+		expect(names([user("bo"), user("Cy"), user("Ann")])).toEqual([
+			"Ann",
+			"bo",
+			"Cy",
+		]);
+	});
+
+	it("puts Æ, Ø and Å after Z", () => {
+		expect(
+			names([user("Åse"), user("Ømer"), user("Zoe"), user("Ægir")]),
+		).toEqual(["Zoe", "Ægir", "Ømer", "Åse"]);
+	});
+
+	it("uses the username when there's no name", () => {
+		expect(names([user("Cy"), user(null, "bo")])).toEqual(["bo", "Cy"]);
+	});
+});
+
+describe("resolveSocketUrl", () => {
+	it("uses the page's host for a localhost address, keeping the port", () => {
+		expect(resolveSocketUrl("http://localhost:4000", "192.168.1.20")).toBe(
+			"http://192.168.1.20:4000/",
+		);
+		expect(resolveSocketUrl("http://127.0.0.1:4000", "192.168.1.20")).toBe(
+			"http://192.168.1.20:4000/",
+		);
+	});
+
+	it("still works when the page is on localhost too", () => {
+		expect(resolveSocketUrl("http://localhost:4000", "localhost")).toBe(
+			"http://localhost:4000/",
+		);
+	});
+
+	it("leaves a real address alone", () => {
+		expect(resolveSocketUrl("wss://example.com", "example.com")).toBe(
+			"wss://example.com",
+		);
 	});
 });

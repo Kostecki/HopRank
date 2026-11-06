@@ -1,10 +1,11 @@
 import { and, eq } from "drizzle-orm";
 import { data } from "react-router";
 
+import { SessionMode } from "~/types/session";
 import type { SessionUser } from "~/types/user";
 
 import { db } from "../config.server";
-import { sessionUsers } from "../schema.server";
+import { sessions, sessionUsers } from "../schema.server";
 import type { SelectSessions } from "../schema.types";
 
 const forbidden = (message: string) => data({ message }, { status: 403 });
@@ -31,6 +32,21 @@ export async function requireSessionParticipant(
 ) {
 	if (!(await isActiveSessionParticipant(sessionId, userId))) {
 		throw forbidden("Du er ikke en del af denne smagning");
+	}
+}
+
+/** Throws a 400 for One Beer sessions, which have no beer queue or scores. */
+export async function requireNormalSession(sessionId: number) {
+	const session = await db.query.sessions.findFirst({
+		where: eq(sessions.id, sessionId),
+		columns: { mode: true },
+	});
+
+	if (session?.mode === SessionMode.oneBeer) {
+		throw data(
+			{ message: "Det kan man ikke i en One Beer-smagning" },
+			{ status: 400 },
+		);
 	}
 }
 

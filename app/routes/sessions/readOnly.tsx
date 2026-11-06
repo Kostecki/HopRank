@@ -1,17 +1,20 @@
-import { Box, Flex, Grid, Group, Paper, Table, Text } from "@mantine/core";
+import { Box, Flex, Group, Paper, Table, Text } from "@mantine/core";
 import { useMemo } from "react";
 import { useLoaderData, useRevalidator } from "react-router";
 
-import type { SessionProgress } from "~/types/session";
+import { SessionMode, type SessionProgress } from "~/types/session";
 import type { SocketEvent } from "~/types/websocket";
 import type { Route } from "./+types/readOnly";
 
 import MedalPodium from "~/components/MedalPodium";
+import OneBeerResults from "~/components/OneBeerResults";
+import ResultsSection from "~/components/ResultsSection";
 import SessionStatsCard from "~/components/SessionStatsCard";
 import { getSessionProgress } from "~/database/utils/getSessionProgress.server";
 import { getSessionStats } from "~/database/utils/getStats.server";
+import { getOneBeerRanking } from "~/database/utils/oneBeer.server";
 import { useDebouncedSocketEvent } from "~/hooks/useDebouncedSocketEvent";
-import { groupRatedBeersByScore } from "~/utils/podium";
+import { groupByAverageScore } from "~/utils/podium";
 import { createBeerLink } from "~/utils/untappd";
 import { displayScore, extractSessionId, getPageTitle } from "~/utils/utils";
 
@@ -37,11 +40,21 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 	}
 
 	const sessionProgress: SessionProgress = sessionProgressResult;
+
+	if (sessionProgress.mode === SessionMode.oneBeer) {
+		return {
+			sessionProgress,
+			sessionStats: null,
+			oneBeerRanking: await getOneBeerRanking(sessionId),
+		};
+	}
+
 	const sessionStats = await getSessionStats(sessionId);
 
 	return {
 		sessionProgress,
 		sessionStats,
+		oneBeerRanking: null,
 	};
 }
 
@@ -51,7 +64,8 @@ const viewBeerUntappd = (untappdBeerId: number) => {
 };
 
 export default function SessionView() {
-	const { sessionProgress, sessionStats } = useLoaderData<typeof loader>();
+	const { sessionProgress, sessionStats, oneBeerRanking } =
+		useLoaderData<typeof loader>();
 
 	const { revalidate } = useRevalidator();
 
@@ -72,7 +86,7 @@ export default function SessionView() {
 	);
 
 	const { podiumGroups, nonPodiumGroups } = useMemo(() => {
-		const rankedGroups = groupRatedBeersByScore(sessionProgress.ratedBeers);
+		const rankedGroups = groupByAverageScore(sessionProgress.ratedBeers);
 		const topGroups = rankedGroups.slice(0, 3);
 		const remainingGroups = rankedGroups.slice(topGroups.length);
 
@@ -82,10 +96,30 @@ export default function SessionView() {
 		};
 	}, [sessionProgress.ratedBeers]);
 
+	const podiumEntries = useMemo(
+		() =>
+			sessionProgress.ratedBeers.map((beer) => ({
+				id: beer.beerId,
+				label: beer.label,
+				title: beer.name,
+				subtitle: beer.breweryName,
+				averageScore: beer.averageScore,
+				addedByUserId: beer.addedByUserId,
+				href: createBeerLink(beer.untappdBeerId),
+			})),
+		[sessionProgress.ratedBeers],
+	);
+
+	if (oneBeerRanking) {
+		return (
+			<OneBeerResults users={sessionProgress.users} ranking={oneBeerRanking} />
+		);
+	}
+
 	const tableRows = nonPodiumGroups.flatMap((group, groupIndex) => {
 		const rank = podiumGroups.length + groupIndex + 1;
 
-		return group.beers.map((beer, beerIndex) => {
+		return group.entries.map((beer, beerIndex) => {
 			const beerAddedByUserId = beer.addedByUserId;
 			const user = sessionProgress.users.find(
 				(sessionUser) => sessionUser.id === beerAddedByUserId,
@@ -99,7 +133,7 @@ export default function SessionView() {
 					style={{ cursor: "pointer" }}
 				>
 					{beerIndex === 0 && (
-						<Table.Td ta="center" rowSpan={group.beers.length} fw={600}>
+						<Table.Td ta="center" rowSpan={group.entries.length} fw={600}>
 							{rank}
 						</Table.Td>
 					)}
@@ -143,7 +177,7 @@ export default function SessionView() {
 
 	return (
 		<Box data-breakout mt="md">
-			<MedalPodium session={sessionProgress} />
+			<MedalPodium entries={podiumEntries} users={sessionProgress.users} />
 
 			{!hasRatings && (
 				<Flex justify="center" mt="xl">
@@ -183,16 +217,14 @@ export default function SessionView() {
 				</Flex>
 			)}
 
-			{hasRatings && (
+			{hasRatings && sessionStats && (
 				<>
-					<Grid justify="center">
-						<Grid.Col span={10}>
-							<SessionStatsCard mt={25} sessionStats={sessionStats} />
-						</Grid.Col>
-					</Grid>
+					<ResultsSection>
+						<SessionStatsCard sessionStats={sessionStats} />
+					</ResultsSection>
 
-					<Grid mt={50} justify="center" gap="xl">
-						<Grid.Col span={10}>
+					<ResultsSection>
+						<Table.ScrollContainer minWidth={0} type="native">
 							<Table highlightOnHover={!showTablePlaceholder} striped>
 								<Table.Thead>
 									<Table.Tr>
@@ -217,8 +249,8 @@ export default function SessionView() {
 									{unratedRows}
 								</Table.Tbody>
 							</Table>
-						</Grid.Col>
-					</Grid>
+						</Table.ScrollContainer>
+					</ResultsSection>
 				</>
 			)}
 		</Box>

@@ -78,7 +78,11 @@ export type SessionProgress = {
 	createdAt: BaseSession["createdAt"];
 	createdBy: BaseSession["createdBy"];
 	joinCode: BaseSession["joinCode"];
+	mode: SessionMode;
+	// The beer every bar is ranked on; only set in One Beer mode.
+	beer: BaseBeer | null;
 	beersTotalCount: number;
+	finishedBarsCount: number;
 	users: SessionProgressUser[];
 	scoredCriteria: ScoredCriterion[];
 	currentBeer: CurrentBeer | null;
@@ -92,6 +96,12 @@ export type Criterion = Pick<
 	BaseCriterion,
 	"id" | "name" | "description" | "weight"
 >;
+
+export const SessionMode = {
+	normal: "normal",
+	oneBeer: "oneBeer",
+} as const;
+export type SessionMode = (typeof SessionMode)[keyof typeof SessionMode];
 
 export const SessionStatus = {
 	created: "created",

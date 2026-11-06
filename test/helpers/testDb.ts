@@ -7,6 +7,8 @@ import * as schema from "~/database/schema.server";
 export type TestDb = ReturnType<typeof drizzle<typeof schema>>;
 
 const TABLE_NAMES = [
+	"bar_placements",
+	"session_bars",
 	"ratings",
 	"session_beers",
 	"session_criteria",

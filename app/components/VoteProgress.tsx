@@ -1,22 +1,19 @@
 import { RingProgress, Text } from "@mantine/core";
 import { useEffect, useState } from "react";
 
-import type { SessionProgress } from "~/types/session";
-
 type InputProps = {
-	session: SessionProgress;
+	current?: number;
+	total?: number;
 };
 
-export default function VoteProgress({ session }: InputProps) {
+export default function VoteProgress({ current, total }: InputProps) {
 	const [progress, setProgress] = useState(0);
 
 	useEffect(() => {
-		if (!session.currentBeer) return;
-		const { currentVoteCount, totalPossibleVoteCount } = session.currentBeer;
-		const progress = (currentVoteCount / totalPossibleVoteCount) * 100;
+		if (current === undefined || total === undefined) return;
 
-		setProgress(progress);
-	}, [session.currentBeer]);
+		setProgress((current / total) * 100);
+	}, [current, total]);
 
 	return (
 		<RingProgress
@@ -24,7 +21,7 @@ export default function VoteProgress({ session }: InputProps) {
 			thickness={6}
 			label={
 				<Text size="xs" ta="center" fw="600" style={{ pointerEvents: "none" }}>
-					{`${session.currentBeer?.currentVoteCount}/${session.currentBeer?.totalPossibleVoteCount}`}
+					{`${current}/${total}`}
 				</Text>
 			}
 			sections={[{ value: progress, color: "slateIndigo" }]}

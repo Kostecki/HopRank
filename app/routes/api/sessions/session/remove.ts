@@ -3,6 +3,7 @@ import { data } from "react-router";
 import type { Route } from "./+types/remove";
 
 import { userSessionGet } from "~/auth/users.server";
+import { requireNormalSession } from "~/database/utils/assertSessionAccess.server";
 import { removeBeersFromSession } from "~/database/utils/removeBeersFromSession.server";
 import { extractSessionId } from "~/utils/utils";
 import { emitGlobalEvent, emitSessionEvent } from "~/utils/websocket.server";
@@ -19,6 +20,8 @@ export async function action({ request, params }: Route.ActionArgs) {
 	if (!sessionId || !beerId) {
 		return data({ message: "Invalid session or beer ID" }, { status: 400 });
 	}
+
+	await requireNormalSession(sessionId);
 
 	try {
 		await removeBeersFromSession(sessionId, [beerId], user.id);
