@@ -92,19 +92,18 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	return data({ user, toast }, { headers });
 }
 
-export function Layout({ children }: { children: React.ReactNode }) {
-	const loaderData = useLoaderData<typeof loader>();
-	const toast = loaderData?.toast;
-
+function UmamiScript() {
 	const SRC_URL = import.meta.env.VITE_UMAMI_SRC_URL;
 	const WEBSITE_ID = import.meta.env.VITE_UMAMI_WEBSITE_ID;
 
-	const UmamiScript = () => {
-		const isProd = import.meta.env.PROD;
-		if (!isProd || !SRC_URL || !WEBSITE_ID) return null;
+	if (!import.meta.env.PROD || !SRC_URL || !WEBSITE_ID) return null;
 
-		return <script defer src={SRC_URL} data-website-id={WEBSITE_ID} />;
-	};
+	return <script defer src={SRC_URL} data-website-id={WEBSITE_ID} />;
+}
+
+export function Layout({ children }: { children: React.ReactNode }) {
+	const loaderData = useLoaderData<typeof loader>();
+	const toast = loaderData?.toast;
 
 	useEffect(() => {
 		if (toast) {

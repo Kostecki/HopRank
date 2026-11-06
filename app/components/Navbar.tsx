@@ -57,6 +57,141 @@ type InputProps = {
 	closeDesktop: () => void;
 };
 
+function ParticipantRow({
+	user: rowUser,
+	canKick,
+	onKick,
+}: {
+	user: SessionProgressUser;
+	canKick: boolean;
+	onKick: (userId: number) => void;
+}) {
+	const firstLetter = (rowUser.name ?? rowUser.username ?? "?")
+		.slice(0, 1)
+		.toUpperCase();
+
+	const isGone = rowUser.status !== "active";
+	const goneLabel =
+		rowUser.status === "kicked"
+			? "Stemt ud af smagningen"
+			: "Forlod smagningen";
+
+	const nameAndAvatar = (
+		<Flex align="center">
+			<Avatar
+				src={rowUser?.avatarURL}
+				name={rowUser.username ?? rowUser.name ?? firstLetter}
+				color="initials"
+				size="sm"
+				mr="xs"
+			/>
+
+			<Text
+				size="sm"
+				fw="500"
+				lineClamp={1}
+				td={isGone ? "line-through" : undefined}
+			>
+				{rowUser.name ?? rowUser.username ?? "Deltager"}
+			</Text>
+		</Flex>
+	);
+
+	return (
+		<Flex
+			justify="space-between"
+			pos="relative"
+			align="center"
+			h={25}
+			mb="xs"
+			opacity={isGone ? 0.5 : 1}
+		>
+			{isGone ? (
+				<Tooltip label={goneLabel} position="bottom">
+					{nameAndAvatar}
+				</Tooltip>
+			) : (
+				nameAndAvatar
+			)}
+
+			<Flex align="center" gap={4}>
+				{rowUser?.untappdId && rowUser.username && (
+					<Tooltip label="Se Untappd-profil" position="bottom">
+						<ActionIcon
+							component={Link}
+							variant="subtle"
+							color="slateIndigo"
+							to={createProfileLink(rowUser.username)}
+							target="_blank"
+						>
+							<IconExternalLink size={16} stroke={1.5} />
+						</ActionIcon>
+					</Tooltip>
+				)}
+
+				{canKick && (
+					<Tooltip label="Start afstemning om at kicke" position="bottom">
+						<ActionIcon
+							variant="subtle"
+							color="red"
+							onClick={() => onKick(rowUser.id)}
+						>
+							<IconUserX size={16} stroke={1.5} />
+						</ActionIcon>
+					</Tooltip>
+				)}
+			</Flex>
+		</Flex>
+	);
+}
+
+function UserBeerRow({
+	beer,
+	onRemove,
+}: {
+	beer: SelectSessionBeersWithBeer;
+	onRemove: (beerId: number) => void;
+}) {
+	const {
+		beer: { id, name, breweryName, label, untappdBeerId },
+	} = beer;
+
+	const isDisabled =
+		beer.status === SessionBeerStatus.rating ||
+		beer.status === SessionBeerStatus.rated;
+
+	const untappdLink = createBeerLink(untappdBeerId);
+
+	return (
+		<Flex justify="space-between" pos="relative">
+			<Stack gap={0} mb="sm">
+				<Anchor underline="never" href={untappdLink} target="_blank">
+					<Group gap="xs" wrap="nowrap">
+						<BeerThumbnail src={label} />
+						<Stack gap={0}>
+							<Text size="sm" fw="500" mr="xs" c="black">
+								{name}
+							</Text>
+							<Text size="sm" c="dimmed">
+								{breweryName}
+							</Text>
+						</Stack>
+					</Group>
+				</Anchor>
+			</Stack>
+
+			<ActionIcon
+				variant="subtle"
+				color="slateIndigo"
+				onClick={() => onRemove(id)}
+				disabled={isDisabled}
+			>
+				<IconTrash style={{ width: "70%", height: "70%" }} stroke={1.5} />
+			</ActionIcon>
+		</Flex>
+	);
+}
+
 export default function Navbar({
 	user,
 	sessionProgress,
@@ -179,130 +314,6 @@ export default function Navbar({
 	const viewerIsActive =
 		sessionProgress?.users.find((u) => u.id === user?.id)?.status === "active";
 
-	const UserListItem = ({ user: rowUser }: { user: SessionProgressUser }) => {
-		const firstLetter = (rowUser.name ?? rowUser.username ?? "?")
-			.slice(0, 1)
-			.toUpperCase();
-
-		const isGone = rowUser.status !== "active";
-		const goneLabel =
-			rowUser.status === "kicked"
-				? "Stemt ud af smagningen"
-				: "Forlod smagningen";
-
-		const canKick =
-			!readOnly && !isGone && viewerIsActive && rowUser.id !== user.id;
-
-		const nameAndAvatar = (
-			<Flex align="center">
-				<Avatar
-					src={rowUser?.avatarURL}
-					name={rowUser.username ?? rowUser.name ?? firstLetter}
-					color="initials"
-					size="sm"
-					mr="xs"
-				/>
-
-				<Text
-					size="sm"
-					fw="500"
-					lineClamp={1}
-					td={isGone ? "line-through" : undefined}
-				>
-					{rowUser.name ?? rowUser.username ?? "Deltager"}
-				</Text>
-			</Flex>
-		);
-
-		return (
-			<Flex
-				justify="space-between"
-				pos="relative"
-				align="center"
-				h={25}
-				mb="xs"
-				opacity={isGone ? 0.5 : 1}
-			>
-				{isGone ? (
-					<Tooltip label={goneLabel} position="bottom">
-						{nameAndAvatar}
-					</Tooltip>
-				) : (
-					nameAndAvatar
-				)}
-
-				<Flex align="center" gap={4}>
-					{rowUser?.untappdId && rowUser.username && (
-						<Tooltip label="Se Untappd-profil" position="bottom">
-							<ActionIcon
-								component={Link}
-								variant="subtle"
-								color="slateIndigo"
-								to={createProfileLink(rowUser.username)}
-								target="_blank"
-							>
-								<IconExternalLink size={16} stroke={1.5} />
-							</ActionIcon>
-						</Tooltip>
-					)}
-
-					{canKick && (
-						<Tooltip label="Start afstemning om at kicke" position="bottom">
-							<ActionIcon
-								variant="subtle"
-								color="red"
-								onClick={() => handleKick(rowUser.id)}
-							>
-								<IconUserX size={16} stroke={1.5} />
-							</ActionIcon>
-						</Tooltip>
-					)}
-				</Flex>
-			</Flex>
-		);
-	};
-
-	const ListItem = ({ beer }: { beer: SelectSessionBeersWithBeer }) => {
-		const {
-			beer: { id, name, breweryName, label, untappdBeerId },
-		} = beer;
-
-		const isDisabled =
-			beer.status === SessionBeerStatus.rating ||
-			beer.status === SessionBeerStatus.rated;
-
-		const untappdLink = createBeerLink(untappdBeerId);
-
-		return (
-			<Flex justify="space-between" pos="relative">
-				<Stack gap={0} mb="sm">
-					<Anchor underline="never" href={untappdLink} target="_blank">
-						<Group gap="xs" wrap="nowrap">
-							<BeerThumbnail src={label} />
-							<Stack gap={0}>
-								<Text size="sm" fw="500" mr="xs" c="black">
-									{name}
-								</Text>
-								<Text size="sm" c="dimmed">
-									{breweryName}
-								</Text>
-							</Stack>
-						</Group>
-					</Anchor>
-				</Stack>
-
-				<ActionIcon
-					variant="subtle"
-					color="slateIndigo"
-					onClick={() => handleRemoveBeer(id)}
-					disabled={isDisabled}
-				>
-					<IconTrash style={{ width: "70%", height: "70%" }} stroke={1.5} />
-				</ActionIcon>
-			</Flex>
-		);
-	};
-
 	if (!sessionProgress) return "None";
 
 	return (
@@ -370,8 +381,18 @@ export default function Navbar({
 							<Divider opacity={0.5} mb="md" />
 
 							<List spacing="xs" size="sm" pl={0}>
-								{sortByDisplayName(sessionProgress.users).map((user) => (
-									<UserListItem key={user.id} user={user} />
+								{sortByDisplayName(sessionProgress.users).map((rowUser) => (
+									<ParticipantRow
+										key={rowUser.id}
+										user={rowUser}
+										canKick={
+											!readOnly &&
+											rowUser.status === "active" &&
+											viewerIsActive &&
+											rowUser.id !== user.id
+										}
+										onKick={handleKick}
+									/>
 								))}
 							</List>
 						</>
@@ -410,7 +431,11 @@ export default function Navbar({
 								{usersBeers.length > 0 ? (
 									<List spacing="xs" size="sm" pl={0}>
 										{usersBeers.map((beer) => (
-											<ListItem key={beer.beerId} beer={beer} />
+											<UserBeerRow
+												key={beer.beerId}
+												beer={beer}
+												onRemove={handleRemoveBeer}
+											/>
 										))}
 									</List>
 								) : (

@@ -1,4 +1,4 @@
-import nodemailer from "nodemailer";
+import nodemailer, { type Transporter } from "nodemailer";
 
 import { getMagicLinkEmail } from "~/utils/email";
 import { invariant } from "~/utils/invariant";
@@ -15,7 +15,7 @@ export const sendMagicLinkEmail = async ({
 	code: string;
 	magicLink: string;
 }) => {
-	let transporter: nodemailer.Transporter;
+	let transporter: Transporter;
 
 	if (process.env.NODE_ENV !== "production") {
 		const etherealAccount = await nodemailer.createTestAccount();

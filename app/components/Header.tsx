@@ -45,7 +45,7 @@ export function Header({
 		session?.sessionId,
 	);
 
-	const BeerCount = () => {
+	const getBeerCount = () => {
 		if (!session) return "-";
 
 		if (inProgressSession) {
@@ -89,7 +89,7 @@ export function Header({
 							<Group gap="5">
 								<IconBeer color={slateIndigo} size={20} />
 								<Text c="slateIndigo" fw={600}>
-									<BeerCount />
+									{getBeerCount()}
 								</Text>
 							</Group>
 						</>
