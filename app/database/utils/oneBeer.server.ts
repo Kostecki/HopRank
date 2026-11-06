@@ -10,6 +10,7 @@ import type {
 import { SessionBeerStatus, SessionMode, SessionStatus } from "~/types/session";
 
 import {
+	findDuplicateBar,
 	getBarStats,
 	getPersonalPlacements,
 	rankBars,
@@ -79,18 +80,6 @@ const getBars = (tx: Transaction, sessionId: number) =>
 		.where(eq(sessionBars.sessionId, sessionId))
 		.orderBy(asc(sessionBars.order))
 		.all();
-
-const findDuplicate = (
-	bars: SelectSessionBars[],
-	input: Pick<BarSelection, "name" | "foursquareId">,
-	ignoreBarId?: number,
-) =>
-	bars.find(
-		(bar) =>
-			bar.id !== ignoreBarId &&
-			((input.foursquareId && bar.foursquareId === input.foursquareId) ||
-				normalizeName(bar.name) === normalizeName(input.name)),
-	);
 
 const getSessionWithState = (tx: Transaction, sessionId: number) =>
 	tx
@@ -289,7 +278,7 @@ export function addBar(
 
 		const bars = getBars(tx, sessionId);
 
-		const duplicate = findDuplicate(bars, bar);
+		const duplicate = findDuplicateBar(bars, bar);
 		if (duplicate) {
 			// Not added, but this is fresh data about a bar we already have.
 			applyVenueUpdate(tx, bars, bar);
@@ -338,7 +327,7 @@ export function correctBar(
 		if (!target) return fail(404, "Baren findes ikke");
 		if (target.foursquareId) return fail(409, "Baren er allerede rettet");
 
-		const duplicate = findDuplicate(bars, bar, barId);
+		const duplicate = findDuplicateBar(bars, bar, barId);
 		if (duplicate) {
 			return fail(409, `${duplicate.name} er allerede på listen`);
 		}

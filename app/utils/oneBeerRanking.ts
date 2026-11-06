@@ -1,5 +1,27 @@
 import type { VenueDetails } from "~/types/oneBeer";
 
+const normalizeBarName = (name: string) => name.trim().toLocaleLowerCase("da");
+
+type BarIdentity = { name: string; foursquareId: string | null };
+
+/**
+ * The bar already on the list that a new one would duplicate: the same venue, or
+ * the same name ignoring case and spaces. `ignoreBarId` leaves one bar out, for
+ * when that bar is the one being changed.
+ */
+export function findDuplicateBar<T extends BarIdentity & { id: number }>(
+	bars: T[],
+	input: BarIdentity,
+	ignoreBarId?: number,
+) {
+	return bars.find(
+		(bar) =>
+			bar.id !== ignoreBarId &&
+			((input.foursquareId && bar.foursquareId === input.foursquareId) ||
+				normalizeBarName(bar.name) === normalizeBarName(input.name)),
+	);
+}
+
 type BarLocation = Pick<VenueDetails, "address" | "city" | "lat" | "lng">;
 
 export const formatBarAddress = ({ address, city }: BarLocation) =>

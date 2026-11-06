@@ -22,6 +22,8 @@ interface InputProps extends BoxProps {
 	withinPortal?: boolean;
 	// Called with fresh results from Untappd, not with cached ones.
 	onVenuesLoaded?: (venues: VenueItem[]) => void;
+	// Shown in the list, but can't be selected.
+	isVenueDisabled?: (venue: { value: string; label: string }) => boolean;
 	lat: number;
 	lng: number;
 	untappdAccessToken: string;
@@ -58,6 +60,7 @@ export default function VenueSearch({
 	excludeVenueIds = [],
 	withinPortal = false,
 	onVenuesLoaded,
+	isVenueDisabled,
 	lat,
 	lng,
 	untappdAccessToken,
@@ -130,8 +133,13 @@ export default function VenueSearch({
 				return (
 					<Combobox.Group key={group.label} label={group.label}>
 						{items.map((venue) => (
-							<Combobox.Option key={venue.value} value={venue.value}>
+							<Combobox.Option
+								key={venue.value}
+								value={venue.value}
+								disabled={isVenueDisabled?.(venue)}
+							>
 								{venue.label}
+								{isVenueDisabled?.(venue) && " • Allerede tilføjet"}
 							</Combobox.Option>
 						))}
 					</Combobox.Group>

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
 	findAgreement,
+	findDuplicateBar,
 	formatBarAddress,
 	getBarMapUrl,
 	getBarStats,
@@ -235,6 +236,43 @@ describe("bar locations", () => {
 
 	it("keeps a coordinate of exactly 0", () => {
 		expect(getBarMapUrl({ ...empty, lat: 0, lng: 0 })).toContain("0%2C0");
+	});
+});
+
+describe("findDuplicateBar", () => {
+	const bars = [
+		{ id: 1, name: "Bar A", foursquareId: "fsq1" },
+		{ id: 2, name: "typed bar", foursquareId: null },
+	];
+
+	it("matches the same venue, even under another name", () => {
+		expect(
+			findDuplicateBar(bars, { name: "Renamed", foursquareId: "fsq1" })?.id,
+		).toBe(1);
+	});
+
+	it("matches the same name, ignoring case and spaces", () => {
+		expect(
+			findDuplicateBar(bars, { name: " TYPED BAR ", foursquareId: "fsq2" })?.id,
+		).toBe(2);
+	});
+
+	it("doesn't match a different bar", () => {
+		expect(
+			findDuplicateBar(bars, { name: "Other", foursquareId: "fsq2" }),
+		).toBeUndefined();
+	});
+
+	it("doesn't treat two typed bars as the same venue", () => {
+		expect(
+			findDuplicateBar(bars, { name: "Other", foursquareId: null }),
+		).toBeUndefined();
+	});
+
+	it("can leave out the bar being changed", () => {
+		expect(
+			findDuplicateBar(bars, { name: "Typed Bar", foursquareId: "fsq2" }, 2),
+		).toBeUndefined();
 	});
 });
 

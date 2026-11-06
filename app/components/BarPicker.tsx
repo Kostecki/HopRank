@@ -1,10 +1,13 @@
 import { Anchor, Box, type BoxProps, Text, TextInput } from "@mantine/core";
 import { useEffect, useRef, useState } from "react";
+import { useRouteLoaderData } from "react-router";
 
 import type { BarSelection, VenueDetails } from "~/types/oneBeer";
 import type { SessionUser } from "~/types/user";
 
 import { useGeolocation } from "~/hooks/useGeolocation";
+import type { loader as layoutLoader } from "~/routes/layout";
+import { findDuplicateBar } from "~/utils/oneBeerRanking";
 import { UAH_VENUE_ID } from "~/utils/untappd";
 
 import VenueSearch from "./VenueSearch";
@@ -12,6 +15,8 @@ import VenueSearch from "./VenueSearch";
 type InputProps = {
 	user: SessionUser;
 	sessionId: number;
+	// The bar being changed, which isn't a duplicate of itself.
+	ignoreBarId?: number;
 	onChange: (bar: BarSelection | null) => void;
 	// False when the point is to find the bar through search.
 	allowTyped?: boolean;
@@ -47,11 +52,14 @@ const syncVenues = (
 export default function BarPicker({
 	user,
 	sessionId,
+	ignoreBarId,
 	onChange,
 	allowTyped = true,
 	...props
 }: InputProps) {
 	const accessToken = user.untappd?.accessToken;
+	const sessionBars =
+		useRouteLoaderData<typeof layoutLoader>("routes/layout")?.sessionBars ?? [];
 
 	const [isTyping, setIsTyping] = useState(!accessToken);
 	const [typedName, setTypedName] = useState("");
@@ -119,6 +127,13 @@ export default function BarPicker({
 				excludeVenueIds={EXCLUDED_VENUES}
 				withinPortal
 				onVenuesLoaded={(venues) => syncVenues(sessionId, venues)}
+				isVenueDisabled={({ value, label }) =>
+					!!findDuplicateBar(
+						sessionBars,
+						{ name: label, foursquareId: value },
+						ignoreBarId,
+					)
+				}
 				selectedVenue=""
 				onChange={(foursquareId, name, details) =>
 					onChange(name ? { name, foursquareId, ...details } : null)

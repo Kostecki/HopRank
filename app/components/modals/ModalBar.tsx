@@ -104,6 +104,7 @@ export function ModalCorrectBar({
 						<BarPicker
 							user={user}
 							sessionId={sessionId}
+							ignoreBarId={bar.id}
 							onChange={setSelection}
 							allowTyped={false}
 						/>
