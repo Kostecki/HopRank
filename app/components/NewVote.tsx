@@ -1,18 +1,6 @@
-import {
-	Avatar,
-	Button,
-	Card,
-	Divider,
-	Flex,
-	Group,
-	LoadingOverlay,
-	Paper,
-	Stack,
-	Text,
-} from "@mantine/core";
+import { Button, Divider, LoadingOverlay, Paper, Stack } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useDebouncedValue } from "@mantine/hooks";
-import { IconCheck } from "@tabler/icons-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useFetcher, useParams } from "react-router";
 
@@ -24,6 +12,7 @@ import { calculateVoteScore } from "~/utils/score";
 import { sliderConf } from "~/utils/utils";
 
 import RatingSlider from "./RatingSlider";
+import SavedCard from "./SavedCard";
 import { UntappdCheckinSection } from "./UntappdCheckinSection";
 
 type InputProps = {
@@ -166,7 +155,10 @@ export default function NewVote({ user, session, criteria }: InputProps) {
 
 				{userHasRated && (
 					<>
-						<Card shadow="xs" radius="md">
+						<SavedCard
+							title="Din bedømmelse er gemt!"
+							description="Så længe der stadig bliver stemt kan du altid ændre din score ved at gemme bedømmelsen igen."
+						>
 							<LoadingOverlay
 								visible={
 									!userHasRated &&
@@ -176,47 +168,14 @@ export default function NewVote({ user, session, criteria }: InputProps) {
 								overlayProps={{ radius: "sm", blur: 2 }}
 								loaderProps={{ color: "slateIndigo" }}
 							/>
-							<Flex align="center">
-								<Avatar
-									color="slateIndigo"
-									variant="outline"
-									size="lg"
-									radius="xl"
-								>
-									<IconCheck color="#484F65" size={30} />
-								</Avatar>
-
-								<Group ml="xl" gap={3}>
-									<Text>Din bedømmelse er gemt!</Text>
-									<Text size="sm" c="dimmed">
-										Så længe der stadig bliver stemt kan du altid ændre din
-										score ved at gemme bedømmelsen igen.
-									</Text>
-								</Group>
-							</Flex>
-						</Card>
+						</SavedCard>
 
 						{untappd.checkinId && (
-							<Card shadow="xs" radius="md" mt="md">
-								<Flex align="center">
-									<Avatar
-										color="slateIndigo"
-										variant="outline"
-										size="lg"
-										radius="xl"
-									>
-										<IconCheck color="#484F65" size={30} />
-									</Avatar>
-
-									<Group ml="xl" gap={3}>
-										<Text>Dit check-in er oprettet i Untappd!</Text>
-										<Text size="sm" c="dimmed">
-											Du kan finde det i appen, eller ved at trykke på linket
-											herunder - så bliver du taget direkte til det.
-										</Text>
-									</Group>
-								</Flex>
-
+							<SavedCard
+								mt="md"
+								title="Dit check-in er oprettet i Untappd!"
+								description="Du kan finde det i appen, eller ved at trykke på linket herunder - så bliver du taget direkte til det."
+							>
 								<Button
 									variant="default"
 									color="slateIndigo"
@@ -227,7 +186,7 @@ export default function NewVote({ user, session, criteria }: InputProps) {
 								>
 									Se check-in i Untappd
 								</Button>
-							</Card>
+							</SavedCard>
 						)}
 					</>
 				)}
