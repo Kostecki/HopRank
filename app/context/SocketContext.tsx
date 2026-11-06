@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { io, type Socket } from "socket.io-client";
 
 import { invariant } from "~/utils/invariant";
+import { resolveSocketUrl } from "~/utils/utils";
 
 export const SocketContext = createContext<Socket | null>(null);
 
@@ -9,8 +10,13 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
 	const [socket, setSocket] = useState<Socket | null>(null);
 
 	useEffect(() => {
-		const WS_URL = import.meta.env.VITE_WS_URL;
-		invariant(WS_URL, "VITE_WS_URL must be set in .env");
+		const CONFIGURED_WS_URL = import.meta.env.VITE_WS_URL;
+		invariant(CONFIGURED_WS_URL, "VITE_WS_URL must be set in .env");
+
+		const WS_URL = resolveSocketUrl(
+			CONFIGURED_WS_URL,
+			window.location.hostname,
+		);
 
 		const s = io(WS_URL, {
 			path: "/ws",

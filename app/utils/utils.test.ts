@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
 	isSafeRedirect,
 	isValidVoteScore,
+	resolveSocketUrl,
 	sliderConf,
 	sortByDisplayName,
 } from "./utils";
@@ -92,5 +93,28 @@ describe("sortByDisplayName", () => {
 
 	it("uses the username when there's no name", () => {
 		expect(names([user("Cy"), user(null, "bo")])).toEqual(["bo", "Cy"]);
+	});
+});
+
+describe("resolveSocketUrl", () => {
+	it("uses the page's host for a localhost address, keeping the port", () => {
+		expect(resolveSocketUrl("http://localhost:4000", "192.168.1.20")).toBe(
+			"http://192.168.1.20:4000/",
+		);
+		expect(resolveSocketUrl("http://127.0.0.1:4000", "192.168.1.20")).toBe(
+			"http://192.168.1.20:4000/",
+		);
+	});
+
+	it("still works when the page is on localhost too", () => {
+		expect(resolveSocketUrl("http://localhost:4000", "localhost")).toBe(
+			"http://localhost:4000/",
+		);
+	});
+
+	it("leaves a real address alone", () => {
+		expect(resolveSocketUrl("wss://example.com", "example.com")).toBe(
+			"wss://example.com",
+		);
 	});
 });
