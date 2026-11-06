@@ -41,6 +41,7 @@ import type { SelectSessionBeersWithBeer } from "~/database/schema.types";
 import { showDangerToast } from "~/utils/toasts";
 import { createBeerLink, createProfileLink } from "~/utils/untappd";
 
+import BeerThumbnail from "./BeerThumbnail";
 import ModalAddBeers, { ModalAddBeersTrigger } from "./modals/ModalAddBeers";
 
 type InputProps = {
@@ -257,7 +258,7 @@ export default function Navbar({
 
 	const ListItem = ({ beer }: { beer: SelectSessionBeersWithBeer }) => {
 		const {
-			beer: { id, name, breweryName, untappdBeerId },
+			beer: { id, name, breweryName, label, untappdBeerId },
 		} = beer;
 
 		const isDisabled =
@@ -270,12 +271,17 @@ export default function Navbar({
 			<Flex justify="space-between" pos="relative">
 				<Stack gap={0} mb="sm">
 					<Anchor underline="never" href={untappdLink} target="_blank">
-						<Text size="sm" fw="500" lineClamp={1} mr="xs" c="black">
-							{name}
-						</Text>
-						<Text size="sm" c="dimmed" lineClamp={1}>
-							{breweryName}
-						</Text>
+						<Group gap="xs" wrap="nowrap">
+							<BeerThumbnail src={label} />
+							<Stack gap={0}>
+								<Text size="sm" fw="500" mr="xs" c="black">
+									{name}
+								</Text>
+								<Text size="sm" c="dimmed">
+									{breweryName}
+								</Text>
+							</Stack>
+						</Group>
 					</Anchor>
 				</Stack>
 
