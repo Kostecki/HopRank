@@ -236,7 +236,7 @@ export default function Navbar({
 	};
 
 	const canFinish =
-		sessionProgress?.status === SessionStatus.active &&
+		inProgressSession &&
 		!readOnly &&
 		(sessionProgress.createdBy === user?.id || user?.admin);
 

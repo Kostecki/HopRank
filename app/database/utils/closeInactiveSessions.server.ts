@@ -20,7 +20,7 @@ const hoursAgoAsSqliteTimestamp = (hours: number) =>
 
 /**
  * Closes sessions that are more than 24 hours old and have had no activity in the last 6 hours,
- * regardless of whether a beer is still being rated.
+ * regardless of whether a beer is still being rated or the session was ever started.
  */
 export const closeInactiveSessions = async () => {
 	const sessionAgeCutoff = hoursAgoAsSqliteTimestamp(MAX_SESSION_AGE_HOURS);
@@ -39,7 +39,8 @@ export const closeInactiveSessions = async () => {
 	const staleSessions = oldActiveSessions
 		.filter(
 			(s) =>
-				s.state?.status === SessionStatus.active &&
+				(s.state?.status === SessionStatus.active ||
+					s.state?.status === SessionStatus.created) &&
 				s.state.lastUpdatedAt &&
 				s.state.lastUpdatedAt < recentActivityCutoff,
 		)

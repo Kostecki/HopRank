@@ -35,8 +35,15 @@ export async function action({ request, params }: Route.ActionArgs) {
 		where: eq(sessionState.sessionId, sessionId),
 	});
 
-	if (state?.status !== SessionStatus.active) {
-		return data({ message: "Smagningen er ikke i gang" }, { status: 400 });
+	// A session that never got started can be ended too, or it would stay open.
+	if (
+		state?.status !== SessionStatus.active &&
+		state?.status !== SessionStatus.created
+	) {
+		return data(
+			{ message: "Smagningen er allerede afsluttet" },
+			{ status: 400 },
+		);
 	}
 
 	try {

@@ -15,7 +15,11 @@ const { users, sessions, sessionState, sessionUsers } = await import(
 	"../schema.server"
 );
 
-async function seedActiveSession(createdAt: string, lastUpdatedAt: string) {
+async function seedActiveSession(
+	createdAt: string,
+	lastUpdatedAt: string,
+	status: string = SessionStatus.active,
+) {
 	const [user] = await testDb
 		.insert(users)
 		.values({ email: "a@test.com" })
@@ -31,7 +35,7 @@ async function seedActiveSession(createdAt: string, lastUpdatedAt: string) {
 		.returning();
 	await testDb.insert(sessionState).values({
 		sessionId: session.id,
-		status: SessionStatus.active,
+		status,
 		lastUpdatedAt,
 	});
 	await testDb
@@ -70,6 +74,30 @@ describe("closeInactiveSessions", () => {
 		await closeInactiveSessions();
 
 		expect(await statusOf(id)).toBe(SessionStatus.finished);
+	});
+
+	it("closes a session that was never started once it's old and idle", async () => {
+		const id = await seedActiveSession(
+			"2026-11-03 12:00:00",
+			"2026-11-05 05:00:00",
+			SessionStatus.created,
+		);
+
+		await closeInactiveSessions();
+
+		expect(await statusOf(id)).toBe(SessionStatus.finished);
+	});
+
+	it("keeps a recent session that hasn't been started yet", async () => {
+		const id = await seedActiveSession(
+			"2026-11-05 11:00:00",
+			"2026-11-05 11:00:00",
+			SessionStatus.created,
+		);
+
+		await closeInactiveSessions();
+
+		expect(await statusOf(id)).toBe(SessionStatus.created);
 	});
 
 	it("keeps an old session with activity later on the same date as the idle cutoff", async () => {
