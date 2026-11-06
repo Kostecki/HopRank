@@ -11,6 +11,7 @@ import {
 
 import {
 	SessionBeerStatus,
+	SessionMode,
 	SessionStatus,
 	SessionUserExitReason,
 } from "~/types/session";
@@ -43,6 +44,13 @@ export const sessions = sqliteTable(
 			.notNull()
 			.references(() => users.id),
 		createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+		mode: text({
+			enum: Object.values(SessionMode) as [SessionMode, ...SessionMode[]],
+		})
+			.notNull()
+			.default(SessionMode.normal),
+		// The beer every bar is ranked on; only set in One Beer mode.
+		beerId: integer("beer_id").references(() => beers.id),
 	},
 	(table) => [uniqueIndex("unique_session_name").on(lower(table.name))],
 );
@@ -103,6 +111,58 @@ export const sessionBeers = sqliteTable(
 		createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 	},
 	(table) => [unique("unique_session_beer").on(table.sessionId, table.beerId)],
+);
+
+export const sessionBars = sqliteTable(
+	"session_bars",
+	{
+		id: integer("id").primaryKey({ autoIncrement: true }),
+		sessionId: integer("session_id")
+			.notNull()
+			.references(() => sessions.id),
+		name: text("name").notNull(),
+		// Null for a bar typed by hand rather than found through venue search.
+		foursquareId: text("foursquare_id"),
+		// Details from the venue search. Empty for a bar typed by hand.
+		address: text("address"),
+		city: text("city"),
+		category: text("category"),
+		lat: real("lat"),
+		lng: real("lng"),
+		addedByUserId: integer("added_by_user_id")
+			.notNull()
+			.references(() => users.id),
+		order: integer("order").notNull(),
+		status: text({
+			enum: Object.values(SessionBeerStatus) as [string, ...string[]],
+		})
+			.notNull()
+			.default(SessionBeerStatus.waiting),
+		createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+	},
+	(table) => [
+		uniqueIndex("unique_session_bar_venue")
+			.on(table.sessionId, table.foursquareId)
+			.where(sql`${table.foursquareId} IS NOT NULL`),
+	],
+);
+
+export const barPlacements = sqliteTable(
+	"bar_placements",
+	{
+		id: integer("id").primaryKey({ autoIncrement: true }),
+		sessionId: integer("session_id")
+			.notNull()
+			.references(() => sessions.id),
+		barId: integer("bar_id")
+			.notNull()
+			.references(() => sessionBars.id),
+		userId: integer("user_id")
+			.notNull()
+			.references(() => users.id),
+		position: integer("position").notNull(),
+	},
+	(table) => [unique("unique_bar_placement").on(table.barId, table.userId)],
 );
 
 export const criteria = sqliteTable("criteria", {

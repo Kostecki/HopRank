@@ -1,0 +1,1 @@
+ALTER TABLE `session_bars` DROP COLUMN `icon_url`;

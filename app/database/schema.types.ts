@@ -1,10 +1,12 @@
 import type { InferInsertModel, InferSelectModel } from "drizzle-orm";
 
 import type {
+	barPlacements,
 	beers,
 	criteria,
 	pendingRedirects,
 	ratings,
+	sessionBars,
 	sessionBeers,
 	sessionCriteria,
 	sessionState,
@@ -30,6 +32,12 @@ export type SelectSessionBeersWithBeer = SelectSessionBeers & {
 	beer: SelectBeers;
 };
 export type InsertSessionBeers = InferInsertModel<typeof sessionBeers>;
+
+export type SelectSessionBars = InferSelectModel<typeof sessionBars>;
+export type InsertSessionBars = InferInsertModel<typeof sessionBars>;
+
+export type SelectBarPlacements = InferSelectModel<typeof barPlacements>;
+export type InsertBarPlacements = InferInsertModel<typeof barPlacements>;
 
 export type SelectCriteria = InferSelectModel<typeof criteria>;
 export type InsertCriteria = InferInsertModel<typeof criteria>;

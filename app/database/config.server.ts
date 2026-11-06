@@ -6,10 +6,12 @@ import { drizzle } from "drizzle-orm/better-sqlite3";
 import { invariant } from "~/utils/invariant";
 
 import {
+	barPlacements,
 	beers,
 	criteria,
 	pendingRedirects,
 	ratings,
+	sessionBars,
 	sessionBeers,
 	sessionBeersRelations,
 	sessionCriteria,
@@ -48,6 +50,8 @@ export const db = drizzle(new Database(fullDatabasePath), {
 		ratings,
 		sessionState,
 		pendingRedirects,
+		sessionBars,
+		barPlacements,
 	},
 });
 

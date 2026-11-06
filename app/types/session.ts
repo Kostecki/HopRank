@@ -93,6 +93,12 @@ export type Criterion = Pick<
 	"id" | "name" | "description" | "weight"
 >;
 
+export const SessionMode = {
+	normal: "normal",
+	oneBeer: "oneBeer",
+} as const;
+export type SessionMode = (typeof SessionMode)[keyof typeof SessionMode];
+
 export const SessionStatus = {
 	created: "created",
 	active: "active",

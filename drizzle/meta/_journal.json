@@ -15,6 +15,27 @@
       "when": 1785409363244,
       "tag": "0001_violet_silk_fever",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1793914215664,
+      "tag": "0002_shiny_thaddeus_ross",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1793998417692,
+      "tag": "0003_spotty_liz_osborn",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1793998905919,
+      "tag": "0004_far_ma_gnuci",
+      "breakpoints": true
     }
   ]
 }
