@@ -1,10 +1,26 @@
 import { and, count, eq } from "drizzle-orm";
 
+import { SessionMode } from "~/types/session";
+
 import { db } from "../config.server";
-import { sessionBeers, sessionState, sessionUsers } from "../schema.server";
+import {
+	sessionBars,
+	sessionBeers,
+	sessionState,
+	sessions,
+	sessionUsers,
+} from "../schema.server";
 
 export const getSessionCounts = async (sessionId: number) => {
 	try {
+		const session = await db.query.sessions.findFirst({
+			where: eq(sessions.id, sessionId),
+			columns: { mode: true },
+		});
+		// In One Beer mode, each bar is one beer drunk.
+		const countedTable =
+			session?.mode === SessionMode.oneBeer ? sessionBars : sessionBeers;
+
 		const [state, participantCount, beerCount] = await Promise.all([
 			db.query.sessionState.findFirst({
 				where: eq(sessionState.sessionId, sessionId),
@@ -20,8 +36,8 @@ export const getSessionCounts = async (sessionId: number) => {
 				),
 			db
 				.select({ count: count() })
-				.from(sessionBeers)
-				.where(eq(sessionBeers.sessionId, sessionId)),
+				.from(countedTable)
+				.where(eq(countedTable.sessionId, sessionId)),
 		]);
 
 		return {

@@ -1,3 +1,5 @@
+import { SessionMode } from "~/types/session";
+
 import { db } from "../config.server";
 import { sessionCriteria, sessionState, sessions } from "../schema.server";
 import type { SelectSessions } from "../schema.types";
@@ -16,24 +18,36 @@ export function createSessionWithCriteria(input: {
 	createdBy: number;
 	joinCode: string;
 	criterionIds: number[];
+	mode?: SessionMode;
+	beerId?: number;
 }): SelectSessions {
-	const { name, createdBy, joinCode, criterionIds } = input;
+	const {
+		name,
+		createdBy,
+		joinCode,
+		criterionIds,
+		mode = SessionMode.normal,
+		beerId,
+	} = input;
 
 	return db.transaction((tx) => {
 		const session = tx
 			.insert(sessions)
-			.values({ name, createdBy, joinCode })
+			.values({ name, createdBy, joinCode, mode, beerId })
 			.returning()
 			.get();
 
-		tx.insert(sessionCriteria)
-			.values(
-				criterionIds.map((criterionId) => ({
-					sessionId: session.id,
-					criterionId,
-				})),
-			)
-			.run();
+		// One Beer sessions have no criteria, and an empty insert would throw.
+		if (criterionIds.length > 0) {
+			tx.insert(sessionCriteria)
+				.values(
+					criterionIds.map((criterionId) => ({
+						sessionId: session.id,
+						criterionId,
+					})),
+				)
+				.run();
+		}
 
 		tx.insert(sessionState).values({ sessionId: session.id }).run();
 

@@ -5,18 +5,9 @@ import { SessionBeerStatus, SessionStatus } from "~/types/session";
 import { shuffleBeersInSession } from "~/utils/shuffle";
 
 import { db } from "../config.server";
-import { beers, sessionBeers, sessionState } from "../schema.server";
+import { sessionBeers, sessionState } from "../schema.server";
 import { bumpLastUpdatedAt } from "./bumpLastUpdatedAt.server";
-
-type BeerInput = {
-	untappdBeerId: number;
-	name: string;
-	breweryName: string;
-	abv: number;
-	style: string;
-	label: string;
-	label_hd?: string;
-};
+import { type BeerInput, upsertBeer } from "./upsertBeer.server";
 
 export const addBeersToSession = async (
 	sessionId: number,
@@ -29,37 +20,13 @@ export const addBeersToSession = async (
 
 	const sessionBeersToInsert = [];
 	for (const beerData of beerInputs) {
-		const { untappdBeerId, name, breweryName, abv, style, label, label_hd } =
-			beerData;
+		const { untappdBeerId, name, breweryName, abv, style, label } = beerData;
 
 		if (!untappdBeerId || !name || !breweryName || !abv || !style || !label) {
 			continue;
 		}
 
-		const existingBeer = await db.query.beers.findFirst({
-			where: eq(beers.untappdBeerId, untappdBeerId),
-		});
-
-		let beerId: number;
-
-		if (existingBeer) {
-			beerId = existingBeer.id;
-		} else {
-			const [newBeer] = await db
-				.insert(beers)
-				.values({
-					untappdBeerId,
-					name,
-					breweryName,
-					abv,
-					style,
-					label,
-					label_hd,
-				})
-				.returning();
-
-			beerId = newBeer.id;
-		}
+		const beerId = await upsertBeer(beerData);
 
 		// No explicit order: shuffleBeersInSession below always assigns it,
 		// mixing every newly-added beer in among whatever is still waiting

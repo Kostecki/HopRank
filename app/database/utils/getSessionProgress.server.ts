@@ -3,6 +3,7 @@ import { and, eq, inArray } from "drizzle-orm";
 import type { SessionProgressUser } from "~/types/session";
 import {
 	SessionBeerStatus,
+	SessionMode,
 	SessionStatus,
 	SessionUserExitReason,
 } from "~/types/session";
@@ -12,6 +13,7 @@ import { db } from "~/database/config.server";
 import {
 	beers,
 	ratings,
+	sessionBars,
 	sessionBeers,
 	sessionCriteria,
 	sessionState,
@@ -357,6 +359,41 @@ export async function getSessionProgress({
 	const currentBeer = currentBeerData
 		? { ...currentBeerData, userHadBeer }
 		: null;
+
+	if (session.mode === SessionMode.oneBeer) {
+		const [beer, bars] = await Promise.all([
+			session.beerId
+				? db.query.beers.findFirst({ where: eq(beers.id, session.beerId) })
+				: undefined,
+			db.query.sessionBars.findMany({
+				where: eq(sessionBars.sessionId, sessionId),
+				columns: { status: true },
+			}),
+		]);
+
+		return {
+			sessionId,
+			sessionName: session.name,
+			status: state?.status,
+			createdAt: session.createdAt,
+			createdBy: session.createdBy,
+			joinCode: session.joinCode,
+			mode: session.mode,
+			beer: beer ?? null,
+			beersTotalCount: bars.length,
+			finishedBarsCount: bars.filter(
+				(bar) => bar.status === SessionBeerStatus.rated,
+			).length,
+			users: allRelevantUsers,
+			scoredCriteria: [],
+			currentBeer: null,
+			ratedBeers: [],
+			unratedBeers: [],
+			// No progress bar: the number of stops isn't known in advance.
+			progressPercentage: undefined,
+		};
+	}
+
 	const beersTotalCount = sessionBeerRowsWithBeer.length;
 
 	const progressPercentage =
@@ -369,7 +406,10 @@ export async function getSessionProgress({
 		createdAt: session.createdAt,
 		createdBy: session.createdBy,
 		joinCode: session.joinCode,
+		mode: session.mode,
+		beer: null,
 		beersTotalCount,
+		finishedBarsCount: 0,
 		users: allRelevantUsers,
 		scoredCriteria,
 		currentBeer,

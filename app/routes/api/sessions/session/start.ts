@@ -1,13 +1,14 @@
 import { and, eq } from "drizzle-orm";
 import { data } from "react-router";
 
-import { SessionBeerStatus, SessionStatus } from "~/types/session";
+import { SessionBeerStatus, SessionMode, SessionStatus } from "~/types/session";
 import type { Route } from "./+types/start";
 
 import { userSessionGet } from "~/auth/users.server";
 import { db } from "~/database/config.server";
 import { sessionBeers, sessionState, sessions } from "~/database/schema.server";
 import { requireSessionOwnerOrAdmin } from "~/database/utils/assertSessionAccess.server";
+import { startOneBeerSession } from "~/database/utils/oneBeer.server";
 import { shuffleBeersInSession } from "~/utils/shuffle";
 import { extractSessionId } from "~/utils/utils";
 import { emitSessionEvent } from "~/utils/websocket.server";
@@ -31,6 +32,13 @@ export async function action({ request, params }: Route.ActionArgs) {
 	requireSessionOwnerOrAdmin(session, user);
 
 	try {
+		if (session.mode === SessionMode.oneBeer) {
+			startOneBeerSession(sessionId);
+
+			emitSessionEvent(sessionId, "session:started");
+			return data({ success: true });
+		}
+
 		// Shuffle beers in session
 		await shuffleBeersInSession(sessionId);
 

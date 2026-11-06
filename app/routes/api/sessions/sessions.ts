@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 import { data, redirect } from "react-router";
 
+import { SessionMode } from "~/types/session";
 import type { Route } from "./+types/sessions";
 
 import { userSessionGet } from "~/auth/users.server";
@@ -10,8 +11,16 @@ import type { SelectSessions } from "~/database/schema.types";
 import { addBeersToSession } from "~/database/utils/addBeersToSession.server";
 import { createSessionWithCriteria } from "~/database/utils/createSessionWithCriteria.server";
 import { joinSessionById } from "~/database/utils/joinSessionById.server";
+import { type BeerInput, upsertBeer } from "~/database/utils/upsertBeer.server";
 import { generateJoinCode } from "~/utils/utils";
 import { emitGlobalEvent } from "~/utils/websocket.server";
+
+const isValidOneBeer = (beers: unknown): beers is [BeerInput] => {
+	if (!Array.isArray(beers) || beers.length !== 1) return false;
+
+	const { untappdBeerId, name, breweryName, style, label } = beers[0] ?? {};
+	return !!(untappdBeerId && name && breweryName && style && label);
+};
 
 export async function action({ request }: Route.ActionArgs) {
 	const formData = await request.formData();
@@ -26,13 +35,28 @@ export async function action({ request }: Route.ActionArgs) {
 		return data({ message: "User not authenticated" }, { status: 401 });
 	}
 
-	const criteriaInput = JSON.parse(String(criteriaJson)) ?? [];
-	if (criteriaInput.length === 0) {
+	const mode =
+		formData.get("mode") === SessionMode.oneBeer
+			? SessionMode.oneBeer
+			: SessionMode.normal;
+	const isOneBeer = mode === SessionMode.oneBeer;
+
+	const criteriaInput = isOneBeer
+		? []
+		: (JSON.parse(String(criteriaJson)) ?? []);
+	if (!isOneBeer && criteriaInput.length === 0) {
 		return data(
 			{ message: "En smagning skal have mindst ét bedømmelseskriterie." },
 			{ status: 400 },
 		);
 	}
+
+	const beersInput = JSON.parse(String(beersJson)) ?? [];
+	if (isOneBeer && !isValidOneBeer(beersInput)) {
+		return data({ message: "Vælg øllen til smagningen." }, { status: 400 });
+	}
+
+	const beerId = isOneBeer ? await upsertBeer(beersInput[0]) : undefined;
 
 	const generateUniqueJoinCode = async () => {
 		let joinCode = generateJoinCode();
@@ -70,6 +94,8 @@ export async function action({ request }: Route.ActionArgs) {
 				createdBy: userId,
 				joinCode,
 				criterionIds: criteriaInput,
+				mode,
+				beerId,
 			});
 		} catch (error) {
 			lastError = error;
@@ -91,9 +117,7 @@ export async function action({ request }: Route.ActionArgs) {
 			userId,
 		});
 
-		const beersInput = JSON.parse(String(beersJson)) ?? [];
-
-		if (Array.isArray(beersInput) && beersInput.length > 0) {
+		if (!isOneBeer && Array.isArray(beersInput) && beersInput.length > 0) {
 			await addBeersToSession(session.id, beersInput, userId);
 		}
 
