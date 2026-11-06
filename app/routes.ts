@@ -38,6 +38,7 @@ export default [
 				route("bars", "routes/api/sessions/session/bars.ts"),
 				route("bars/:barId", "routes/api/sessions/session/bar.ts"),
 				route("bars-sync", "routes/api/sessions/session/barsSync.ts"),
+				route("finish", "routes/api/sessions/session/finish.ts"),
 				route("join", "routes/api/sessions/session/join.ts"),
 				route("kick", "routes/api/sessions/session/kick.ts"),
 				route("kick-vote", "routes/api/sessions/session/kickVote.ts"),

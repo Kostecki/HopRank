@@ -1,11 +1,12 @@
-import { inArray, lt } from "drizzle-orm";
+import { lt } from "drizzle-orm";
 
 import { SessionStatus } from "~/types/session";
 
 import dayjs from "~/utils/dayjs";
 
 import { db } from "../config.server";
-import { sessionState, sessions, sessionUsers } from "../schema.server";
+import { sessions } from "../schema.server";
+import { finishSessions } from "./finishSessions.server";
 
 const MAX_SESSION_AGE_HOURS = Number(process.env.MAX_SESSION_AGE_HOURS) || 24;
 const MAX_SESSION_IDLE_TIME_HOURS =
@@ -15,11 +16,7 @@ const MAX_SESSION_IDLE_TIME_HOURS =
 // compared as strings. With an ISO cutoff, a value on the cutoff's date always
 // sorts as older, since the space in "YYYY-MM-DD HH:MM:SS" sorts before "T".
 const hoursAgoAsSqliteTimestamp = (hours: number) =>
-	dayjs()
-		.subtract(hours, "hour")
-		.toISOString()
-		.slice(0, 19)
-		.replace("T", " ");
+	dayjs().subtract(hours, "hour").toISOString().slice(0, 19).replace("T", " ");
 
 /**
  * Closes sessions that are more than 24 hours old and have had no activity in the last 6 hours,
@@ -50,17 +47,7 @@ export const closeInactiveSessions = async () => {
 
 	if (staleSessions.length === 0) return;
 
-	// Mark all stale sessions as finished
-	await db
-		.update(sessionState)
-		.set({ status: SessionStatus.finished })
-		.where(inArray(sessionState.sessionId, staleSessions));
-
-	// Rmove all users from stale sessions
-	await db
-		.update(sessionUsers)
-		.set({ active: false })
-		.where(inArray(sessionUsers.sessionId, staleSessions));
+	finishSessions(staleSessions);
 
 	console.log(
 		`[DB] Closed ${staleSessions.length} stale session${

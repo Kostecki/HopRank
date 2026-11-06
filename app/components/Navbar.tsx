@@ -16,6 +16,7 @@ import {
 import {
 	IconDoorExit,
 	IconExternalLink,
+	IconFlag,
 	IconPlus,
 	IconTrash,
 	IconUserX,
@@ -205,6 +206,7 @@ export default function Navbar({
 	const leaveFetcher = useFetcher();
 	const removeFetcher = useFetcher();
 	const kickFetcher = useFetcher();
+	const finishFetcher = useFetcher();
 	const { revalidate } = useRevalidator();
 
 	const [localSessionBeers, setLocalSessionBeers] = useState(sessionBeers);
@@ -231,6 +233,29 @@ export default function Navbar({
 				action: `/api/sessions/${sessionId}/leave`,
 			});
 		}
+	};
+
+	const canFinish =
+		sessionProgress?.status === SessionStatus.active &&
+		!readOnly &&
+		(sessionProgress.createdBy === user?.id || user?.admin);
+
+	const handleFinishSession = () => {
+		const sessionId = sessionProgress?.sessionId;
+		if (!sessionId) return;
+
+		const confirmed = window.confirm(
+			"Vil du afslutte smagningen for alle? Det kan ikke fortrydes.",
+		);
+		if (!confirmed) return;
+
+		closeMobile();
+		closeDesktop();
+
+		finishFetcher.submit(null, {
+			method: "POST",
+			action: `/api/sessions/${sessionId}/finish`,
+		});
 	};
 
 	const handleKick = (targetUserId: number) => {
@@ -302,6 +327,16 @@ export default function Navbar({
 	}, [leaveFetcher.state, leaveFetcher.data, navigate]);
 
 	useEffect(() => {
+		if (finishFetcher.state !== "idle" || !finishFetcher.data) return;
+
+		const result = finishFetcher.data as { success?: true; message?: string };
+
+		if (!result.success) {
+			showDangerToast(result.message ?? "Kunne ikke afslutte smagningen");
+		}
+	}, [finishFetcher.state, finishFetcher.data]);
+
+	useEffect(() => {
 		if (kickFetcher.state !== "idle" || !kickFetcher.data) return;
 
 		const result = kickFetcher.data as { success: true } | { message?: string };
@@ -369,6 +404,21 @@ export default function Navbar({
 					>
 						{inProgressSession ? "Forlad smagning" : "Tilbage til smagninger"}
 					</Button>
+
+					{canFinish && (
+						<Button
+							justify="center"
+							variant="default"
+							leftSection={<IconFlag size={14} />}
+							color="slateIndigo"
+							fw={500}
+							mt="xs"
+							onClick={handleFinishSession}
+							loading={finishFetcher.state !== "idle"}
+						>
+							Afslut smagning
+						</Button>
+					)}
 
 					{sessionProgress.users.length > 0 && (
 						<>

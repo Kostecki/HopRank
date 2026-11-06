@@ -67,7 +67,7 @@ A session runs in one of two modes, chosen when it's created. The mode can't be 
 ### 5. Session States
 - **Created**: Session setup, adding beers
 - **Active**: Started by the owner. Rating beers, and stays active after the last beer is rated
-- **Finished**: Closed by a cleanup job once the session is both old and idle (see `MAX_SESSION_AGE_HOURS` and `MAX_SESSION_IDLE_TIME_HOURS`). There is no manual way to end a session
+- **Finished**: Ended by the owner or an admin with "Afslut smagning", or by a cleanup job once the session is both old and idle (see `MAX_SESSION_AGE_HOURS` and `MAX_SESSION_IDLE_TIME_HOURS`). This can't be undone
 
 ### One Beer Mode
 
