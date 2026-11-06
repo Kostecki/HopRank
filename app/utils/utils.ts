@@ -225,3 +225,16 @@ export const isSafeRedirect = (target: string | null | undefined) => {
 
 	return true;
 };
+
+/** Alphabetical by the name shown in the app, using Danish letter order. */
+export function sortByDisplayName<
+	T extends { name: string | null; username: string | null },
+>(users: T[]) {
+	const displayName = (user: T) => user.name ?? user.username ?? "";
+
+	return [...users].sort((a, b) =>
+		displayName(a).localeCompare(displayName(b), "da", {
+			sensitivity: "base",
+		}),
+	);
+}

@@ -40,6 +40,7 @@ import type { SessionUser } from "~/types/user";
 import type { SelectSessionBeersWithBeer } from "~/database/schema.types";
 import { showDangerToast } from "~/utils/toasts";
 import { createBeerLink, createProfileLink } from "~/utils/untappd";
+import { sortByDisplayName } from "~/utils/utils";
 
 import BeerThumbnail from "./BeerThumbnail";
 import ModalAddBeers, { ModalAddBeersTrigger } from "./modals/ModalAddBeers";
@@ -364,7 +365,7 @@ export default function Navbar({
 							<Divider opacity={0.5} mb="md" />
 
 							<List spacing="xs" size="sm" pl={0}>
-								{sessionProgress.users.map((user) => (
+								{sortByDisplayName(sessionProgress.users).map((user) => (
 									<UserListItem key={user.id} user={user} />
 								))}
 							</List>

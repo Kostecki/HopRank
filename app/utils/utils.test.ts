@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { isSafeRedirect, isValidVoteScore, sliderConf } from "./utils";
+import {
+	isSafeRedirect,
+	isValidVoteScore,
+	sliderConf,
+	sortByDisplayName,
+} from "./utils";
 
 describe("isValidVoteScore", () => {
 	const { stepSize, max } = sliderConf();
@@ -60,5 +65,32 @@ describe("isSafeRedirect", () => {
 		"javascript:alert(1)",
 	])("rejects unsafe target %s", (target) => {
 		expect(isSafeRedirect(target)).toBe(false);
+	});
+});
+
+describe("sortByDisplayName", () => {
+	const user = (name: string | null, username: string | null = null) => ({
+		name,
+		username,
+	});
+	const names = (users: ReturnType<typeof user>[]) =>
+		sortByDisplayName(users).map((u) => u.name ?? u.username);
+
+	it("sorts alphabetically, ignoring case", () => {
+		expect(names([user("bo"), user("Cy"), user("Ann")])).toEqual([
+			"Ann",
+			"bo",
+			"Cy",
+		]);
+	});
+
+	it("puts Æ, Ø and Å after Z", () => {
+		expect(
+			names([user("Åse"), user("Ømer"), user("Zoe"), user("Ægir")]),
+		).toEqual(["Zoe", "Ægir", "Ømer", "Åse"]);
+	});
+
+	it("uses the username when there's no name", () => {
+		expect(names([user("Cy"), user(null, "bo")])).toEqual(["bo", "Cy"]);
 	});
 });
