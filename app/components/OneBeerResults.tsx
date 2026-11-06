@@ -3,14 +3,16 @@ import {
 	Box,
 	Card,
 	Flex,
-	Grid,
 	Group,
 	Paper,
 	SimpleGrid,
 	Table,
+	type TableTdProps,
 	Text,
 	Tooltip,
 } from "@mantine/core";
+
+import type { ReactNode } from "react";
 
 import type { OneBeerRanking, RankedBar } from "~/types/oneBeer";
 import type { SessionProgressUser } from "~/types/session";
@@ -21,6 +23,7 @@ import { sortByDisplayName } from "~/utils/utils";
 
 import BeerHeader from "./BeerHeader";
 import MedalPodium from "./MedalPodium";
+import ResultsSection from "./ResultsSection";
 
 type InputProps = {
 	users: SessionProgressUser[];
@@ -43,8 +46,24 @@ const stickyColumn = {
 	left: 0,
 	zIndex: 1,
 	background: "var(--mantine-color-body)",
-	minWidth: 130,
+	boxShadow: "inset -1px 0 0 var(--mantine-color-gray-3)",
 } as const;
+
+// Set on what's inside the cells, because browsers can ignore a minimum width on
+// a table cell. Without these, the columns squeeze together instead of scrolling.
+const BAR_COLUMN_WIDTH = 140;
+const PERSON_COLUMN_WIDTH = 44;
+
+function BarCell({
+	children,
+	...props
+}: { children: ReactNode } & TableTdProps) {
+	return (
+		<Table.Td style={stickyColumn} {...props}>
+			<Box w={BAR_COLUMN_WIDTH}>{children}</Box>
+		</Table.Td>
+	);
+}
 
 function ParticipantAvatar({ user }: { user: SessionProgressUser }) {
 	const name = user.name ?? user.username ?? "Deltager";
@@ -63,6 +82,8 @@ function ParticipantAvatar({ user }: { user: SessionProgressUser }) {
 	);
 }
 
+const MEDALS: Record<number, string> = { 1: "🥇", 2: "🥈", 3: "🥉" };
+
 function PlacementCell({
 	position,
 	isGone = false,
@@ -72,7 +93,9 @@ function PlacementCell({
 }) {
 	return (
 		<Table.Td ta="center" c={isGone || !position ? "dimmed" : undefined}>
-			{position === 1 ? "🥇" : (position ?? "-")}
+			<Box miw={PERSON_COLUMN_WIDTH}>
+				{(position && MEDALS[position]) ?? position ?? "-"}
+			</Box>
 		</Table.Td>
 	);
 }
@@ -137,9 +160,9 @@ export default function OneBeerResults({ users, ranking }: InputProps) {
 	return (
 		<Box data-breakout mt="md">
 			{beer && (
-				<Box maw={500} mx="auto" px="md">
+				<ResultsSection mt={0}>
 					<BeerHeader beer={beer} />
-				</Box>
+				</ResultsSection>
 			)}
 
 			<Box my={40}>
@@ -185,72 +208,68 @@ export default function OneBeerResults({ users, ranking }: InputProps) {
 			)}
 
 			{agreement && (
-				<Grid justify="center" mt="xl">
-					<Grid.Col span={10}>
-						<Card shadow="xs" radius="md">
-							<SimpleGrid cols={2}>
-								<AgreementStat
-									title="Mest enige"
-									description="Tættest placeret"
-									bar={agreement.mostAgreed}
-								/>
-								<AgreementStat
-									title="Mest uenige"
-									description="Størst spænd"
-									bar={agreement.mostDisagreed}
-								/>
-							</SimpleGrid>
-						</Card>
-					</Grid.Col>
-				</Grid>
+				<ResultsSection>
+					<Card shadow="xs" radius="md">
+						<SimpleGrid cols={2}>
+							<AgreementStat
+								title="Mest enige"
+								description="Tættest placeret"
+								bar={agreement.mostAgreed}
+							/>
+							<AgreementStat
+								title="Mest uenige"
+								description="Størst spænd"
+								bar={agreement.mostDisagreed}
+							/>
+						</SimpleGrid>
+					</Card>
+				</ResultsSection>
 			)}
 
 			{hasRankedBars && (
-				<Grid mt="xl" justify="center" gap="xl">
-					<Grid.Col span={{ base: 12, sm: 10 }}>
-						<Table.ScrollContainer minWidth={0} type="native">
-							<Table>
-								<Table.Thead>
-									<Table.Tr>
-										<Table.Th style={stickyColumn}>Bar</Table.Th>
-										{participants.map(({ user }) => (
-											<Table.Th key={user.id}>
-												<ParticipantAvatar user={user} />
-											</Table.Th>
+				<ResultsSection>
+					<Table.ScrollContainer minWidth={0} type="native">
+						<Table>
+							<Table.Thead>
+								<Table.Tr>
+									<Table.Th style={stickyColumn}>
+										<Box w={BAR_COLUMN_WIDTH}>Bar</Box>
+									</Table.Th>
+									{participants.map(({ user }) => (
+										<Table.Th key={user.id}>
+											<ParticipantAvatar user={user} />
+										</Table.Th>
+									))}
+								</Table.Tr>
+							</Table.Thead>
+							<Table.Tbody>
+								{rankedRows.map(({ bar, rank }) => (
+									<Table.Tr key={bar.id}>
+										<BarCell fw={500}>
+											{rank}. {bar.name}
+										</BarCell>
+										{participants.map(({ user, positions }) => (
+											<PlacementCell
+												key={user.id}
+												position={positions[bar.id]}
+												isGone={user.status !== "active"}
+											/>
 										))}
 									</Table.Tr>
-								</Table.Thead>
-								<Table.Tbody>
-									{rankedRows.map(({ bar, rank }) => (
-										<Table.Tr key={bar.id}>
-											<Table.Td style={stickyColumn} fw={500}>
-												{rank}. {bar.name}
-											</Table.Td>
-											{participants.map(({ user, positions }) => (
-												<PlacementCell
-													key={user.id}
-													position={positions[bar.id]}
-													isGone={user.status !== "active"}
-												/>
-											))}
-										</Table.Tr>
-									))}
+								))}
 
-									{unrankedBars.map((bar) => (
-										<Table.Tr key={bar.id}>
-											<Table.Td style={stickyColumn} c="dimmed">
-												{bar.name}
-											</Table.Td>
-											{participants.map(({ user }) => (
-												<PlacementCell key={user.id} isGone />
-											))}
-										</Table.Tr>
-									))}
-								</Table.Tbody>
-							</Table>
-						</Table.ScrollContainer>
-					</Grid.Col>
-				</Grid>
+								{unrankedBars.map((bar) => (
+									<Table.Tr key={bar.id}>
+										<BarCell c="dimmed">{bar.name}</BarCell>
+										{participants.map(({ user }) => (
+											<PlacementCell key={user.id} isGone />
+										))}
+									</Table.Tr>
+								))}
+							</Table.Tbody>
+						</Table>
+					</Table.ScrollContainer>
+				</ResultsSection>
 			)}
 		</Box>
 	);

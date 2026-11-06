@@ -4,8 +4,10 @@ import {
 	Box,
 	Card,
 	Flex,
+	type FlexProps,
 	Image,
 	rem,
+	Stack,
 	Text,
 	ThemeIcon,
 } from "@mantine/core";
@@ -164,62 +166,88 @@ export default function MedalPodium({
 		</Flex>
 	);
 
-	return (
-		<Flex justify="center" align="flex-end" gap="xl" aria-label="Podium">
-			{podiumGroups.map((group, i) => {
-				const place = i === 1 ? 1 : i === 0 ? 2 : 3;
-				const bg = placementColors[i];
-				const height = heights[i] || rem(120);
+	const renderColumn = (
+		group: ScoreGroup<PodiumEntry> | null,
+		i: number,
+		size: FlexProps,
+	) => {
+		const place = i === 1 ? 1 : i === 0 ? 2 : 3;
+		const bg = placementColors[i];
+		const height = heights[i] || rem(120);
 
-				return (
-					<Flex direction="column" align="center" key={place} w={280}>
-						{group ? (
-							group.entries.length > 1 ? (
-								<Carousel
-									withIndicators
-									withControls={false}
-									slideSize="100%"
-									slideGap="md"
-									maw="100%"
-									styles={{
-										indicator: {
-											width: 7,
-											height: 7,
-										},
-										control: {
-											backgroundColor: "unset",
-											border: "unset",
-											boxShadow: "unset",
-										},
-									}}
-									style={{ width: "100%" }}
-									emblaOptions={{
-										loop: true,
-										duration: 60,
-									}}
-									plugins={[
-										AutoPlay({
-											delay: 10000,
-											stopOnMouseEnter: true,
-											stopOnInteraction: false,
-										}),
-									]}
-								>
-									{group.entries.map((entry) => (
-										<Carousel.Slide key={entry.id}>
-											{renderPodiumEntry(entry, place, bg, height)}
-										</Carousel.Slide>
-									))}
-								</Carousel>
-							) : (
-								renderPodiumEntry(group.entries[0], place, bg, height)
-							)
-						) : (
-							renderEmptyPedestal(place, bg, height)
-						)}
-					</Flex>
-				);
-			})}
-		</Flex>
+		return (
+			<Flex direction="column" align="center" key={place} {...size}>
+				{group ? (
+					group.entries.length > 1 ? (
+						<Carousel
+							withIndicators
+							withControls={false}
+							slideSize="100%"
+							slideGap="md"
+							maw="100%"
+							styles={{
+								indicator: {
+									width: 7,
+									height: 7,
+								},
+								control: {
+									backgroundColor: "unset",
+									border: "unset",
+									boxShadow: "unset",
+								},
+							}}
+							style={{ width: "100%" }}
+							emblaOptions={{
+								loop: true,
+								duration: 60,
+							}}
+							plugins={[
+								AutoPlay({
+									delay: 10000,
+									stopOnMouseEnter: true,
+									stopOnInteraction: false,
+								}),
+							]}
+						>
+							{group.entries.map((entry) => (
+								<Carousel.Slide key={entry.id}>
+									{renderPodiumEntry(entry, place, bg, height)}
+								</Carousel.Slide>
+							))}
+						</Carousel>
+					) : (
+						renderPodiumEntry(group.entries[0], place, bg, height)
+					)
+				) : (
+					renderEmptyPedestal(place, bg, height)
+				)}
+			</Flex>
+		);
+	};
+
+	// Two layouts rather than a media query in JS, so the server's HTML is already
+	// right. Empty spots are left out of the stack, where they'd only take up room.
+	return (
+		<>
+			<Flex
+				visibleFrom="sm"
+				justify="center"
+				align="flex-end"
+				gap="xl"
+				aria-label="Podium"
+			>
+				{podiumGroups.map((group, i) =>
+					renderColumn(group, i, { flex: 1, miw: 0 }),
+				)}
+			</Flex>
+
+			<Stack hiddenFrom="sm" gap="sm" aria-label="Podium">
+				{[1, 0, 2].map((i) =>
+					podiumGroups[i]
+						? renderColumn(podiumGroups[i], i, { w: "100%" })
+						: null,
+				)}
+			</Stack>
+		</>
 	);
 }

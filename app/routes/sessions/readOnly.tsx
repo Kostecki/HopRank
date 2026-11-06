@@ -1,4 +1,4 @@
-import { Box, Flex, Grid, Group, Paper, Table, Text } from "@mantine/core";
+import { Box, Flex, Group, Paper, Table, Text } from "@mantine/core";
 import { useMemo } from "react";
 import { useLoaderData, useRevalidator } from "react-router";
 
@@ -8,6 +8,7 @@ import type { Route } from "./+types/readOnly";
 
 import MedalPodium from "~/components/MedalPodium";
 import OneBeerResults from "~/components/OneBeerResults";
+import ResultsSection from "~/components/ResultsSection";
 import SessionStatsCard from "~/components/SessionStatsCard";
 import { getSessionProgress } from "~/database/utils/getSessionProgress.server";
 import { getSessionStats } from "~/database/utils/getStats.server";
@@ -218,14 +219,12 @@ export default function SessionView() {
 
 			{hasRatings && sessionStats && (
 				<>
-					<Grid justify="center">
-						<Grid.Col span={10}>
-							<SessionStatsCard mt={25} sessionStats={sessionStats} />
-						</Grid.Col>
-					</Grid>
+					<ResultsSection>
+						<SessionStatsCard sessionStats={sessionStats} />
+					</ResultsSection>
 
-					<Grid mt={50} justify="center" gap="xl">
-						<Grid.Col span={10}>
+					<ResultsSection>
+						<Table.ScrollContainer minWidth={0} type="native">
 							<Table highlightOnHover={!showTablePlaceholder} striped>
 								<Table.Thead>
 									<Table.Tr>
@@ -250,8 +249,8 @@ export default function SessionView() {
 									{unratedRows}
 								</Table.Tbody>
 							</Table>
-						</Grid.Col>
-					</Grid>
+						</Table.ScrollContainer>
+					</ResultsSection>
 				</>
 			)}
 		</Box>
