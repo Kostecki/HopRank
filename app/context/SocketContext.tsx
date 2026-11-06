@@ -23,9 +23,9 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
 			transports: ["websocket"],
 			autoConnect: true,
 			reconnection: true,
-			// No reconnectionAttempts cap: a fixed cap (previously 12 attempts *
-			// 5s = ~60s) can be exhausted while a phone is locked/backgrounded
-			// between beers, permanently giving up until a manual page reload.
+			// No reconnectionAttempts cap: a fixed cap can be exhausted while a phone
+			// is locked/backgrounded between beers, permanently giving up until a
+			// manual page reload.
 			reconnectionDelay: 5000, // wait 5s between attempts
 		});
 

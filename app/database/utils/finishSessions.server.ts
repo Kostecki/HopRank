@@ -8,8 +8,7 @@ import { sessionState, sessionUsers } from "../schema.server";
 /**
  * Finishes sessions and takes everyone out of them. No exit reason is set: they
  * stayed until the end, rather than leaving or being kicked. The current beer is
- * cleared so that one still being rated shows up in the results as unrated,
- * instead of disappearing from them.
+ * cleared, so one still being rated shows up in the results as unrated.
  */
 export function finishSessions(sessionIds: number[]) {
 	if (sessionIds.length === 0) return;

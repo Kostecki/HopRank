@@ -9,9 +9,9 @@ import type { SelectSessions } from "../schema.types";
  * atomically. A synchronous transaction callback is required here:
  * better-sqlite3's transaction wrapper throws if the callback returns a
  * promise, so every query inside uses the sync .get()/.run() finalizers
- * instead of await. Without this, a failure partway through (e.g. an
- * invalid criterion id) used to leave a session row with no criteria and
- * no state, which could never be voted on.
+ * instead of await. This way, a failure partway through (e.g. an invalid
+ * criterion id) can't leave a session row with no criteria and no state, which
+ * could never be voted on.
  */
 export function createSessionWithCriteria(input: {
 	name: string;
