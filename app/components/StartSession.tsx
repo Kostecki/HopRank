@@ -9,10 +9,10 @@ import {
 	Tooltip,
 } from "@mantine/core";
 import { AnimatePresence, motion } from "motion/react";
-import { useEffect } from "react";
+import { type ReactNode, useEffect } from "react";
 import { useFetcher } from "react-router";
 
-import type { SessionProgress } from "~/types/session";
+import { SessionMode, type SessionProgress } from "~/types/session";
 import type { SessionUser } from "~/types/user";
 
 import dayjs from "~/utils/dayjs";
@@ -22,9 +22,10 @@ import { capitalizeFirstLetter } from "~/utils/utils";
 type InputProps = {
 	user: SessionUser;
 	session: SessionProgress;
+	children?: ReactNode;
 };
 
-export function StartSession({ user, session }: InputProps) {
+export function StartSession({ user, session, children }: InputProps) {
 	const startFetcher = useFetcher();
 
 	const handleStartSession = async () => {
@@ -56,6 +57,8 @@ export function StartSession({ user, session }: InputProps) {
 	}, [startFetcher.state, startFetcher.data]);
 
 	const isSubmitting = startFetcher.state !== "idle";
+	const isOneBeer = session.mode === SessionMode.oneBeer;
+	const canStart = isOneBeer || session.beersTotalCount > 0;
 
 	return (
 		<Card shadow="lg" padding="lg" radius="md" ta="center">
@@ -75,9 +78,13 @@ export function StartSession({ user, session }: InputProps) {
 						Smagningen er endnu ikke startet
 					</Text>
 					<Text c="dimmed" size="md">
-						Vi venter på at alle øl bliver tilføjet
+						{isOneBeer
+							? `Vi venter på at alle er klar til ${session.beer?.name ?? "øllen"}`
+							: "Vi venter på at alle øl bliver tilføjet"}
 					</Text>
 				</Stack>
+
+				{children}
 
 				<Group justify="center" mt="lg">
 					<AnimatePresence>
@@ -116,13 +123,13 @@ export function StartSession({ user, session }: InputProps) {
 						<Divider my="xs" />
 						<Tooltip
 							label="Tilføj mindst én øl for at starte smagningen"
-							disabled={session.beersTotalCount > 0}
+							disabled={canStart}
 						>
 							<Button
 								onClick={handleStartSession}
 								variant="gradient"
 								loading={isSubmitting}
-								disabled={session.beersTotalCount === 0}
+								disabled={!canStart}
 							>
 								Start Smagning
 							</Button>

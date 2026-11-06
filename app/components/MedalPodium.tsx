@@ -11,53 +11,70 @@ import {
 } from "@mantine/core";
 import AutoPlay from "embla-carousel-autoplay";
 
-import type { RatedBeers, SessionProgress } from "~/types/session";
+import type { SessionProgressUser } from "~/types/session";
 
-import { groupRatedBeersByScore } from "~/utils/podium";
-import { createBeerLink } from "~/utils/untappd";
+import { groupByAverageScore, type ScoreGroup } from "~/utils/podium";
 import { displayScore } from "~/utils/utils";
 
+export type PodiumEntry = {
+	id: number;
+	label?: string;
+	title: string;
+	subtitle?: string;
+	averageScore: number;
+	// Shown instead of the score, for modes where the score says nothing the
+	// podium doesn't already show.
+	note?: string;
+	addedByUserId: number | null;
+	// Opened in a new tab when the entry is clicked.
+	href?: string;
+};
+
 type inputProps = {
-	session: SessionProgress;
+	entries: PodiumEntry[];
+	users: SessionProgressUser[];
+	// Shorter columns, for entries with no image.
+	compact?: boolean;
 };
 
 // Colors for 1st, 2nd, 3rd place: Gold, Silver, Bronze
 // Ordered by podium display order: 2nd, 1st, 3rd
 const placementColors = ["#BFC9D6", "#E9C46A", "#C0893A"];
 
-export default function MedalPodium({ session }: inputProps) {
-	const { ratedBeers, users } = session;
-
+export default function MedalPodium({
+	entries,
+	users,
+	compact = false,
+}: inputProps) {
 	// heights for podium positions in display order: 2nd, 1st, 3rd
-	const heights = [rem(285), rem(310), rem(285)];
+	const heights = compact
+		? [rem(120), rem(145), rem(120)]
+		: [rem(285), rem(310), rem(285)];
 
-	const rankedGroups = groupRatedBeersByScore(ratedBeers);
+	const rankedGroups = groupByAverageScore(entries);
 	const podiumSource = rankedGroups.slice(0, 3);
 
-	const podiumGroups: Array<{ score: number; beers: RatedBeers[] } | null> = [
+	const podiumGroups: Array<ScoreGroup<PodiumEntry> | null> = [
 		podiumSource[1] ?? null,
 		podiumSource[0] ?? null,
 		podiumSource[2] ?? null,
 	];
 
-	const viewBeerUntappd = (untappdBeerId: number) => {
-		const untappdLink = createBeerLink(untappdBeerId);
-		window.open(untappdLink, "_blank");
-	};
-
 	const renderPodiumEntry = (
-		beer: RatedBeers,
+		entry: PodiumEntry,
 		place: number,
 		bg: string,
 		height: string,
 	) => {
-		const addedByUser = users.find((u) => u.id === beer.addedByUserId);
+		const addedByUser = users.find((u) => u.id === entry.addedByUserId);
 
 		return (
 			<Flex
 				direction="column"
 				align="center"
-				justify={place === 1 ? "space-between" : "flex-end"}
+				justify={
+					compact ? "center" : place === 1 ? "space-between" : "flex-end"
+				}
 				pos="relative"
 				h={height}
 				w="100%"
@@ -68,9 +85,11 @@ export default function MedalPodium({ session }: inputProps) {
 				style={{
 					boxShadow: "0 2px 6px rgba(0, 0, 0, 0.08)",
 					overflow: "hidden",
-					cursor: "pointer",
+					cursor: entry.href ? "pointer" : undefined,
 				}}
-				onClick={() => viewBeerUntappd(beer.untappdBeerId)}
+				onClick={() => {
+					if (entry.href) window.open(entry.href, "_blank");
+				}}
 			>
 				{addedByUser && (
 					<Avatar
@@ -84,26 +103,36 @@ export default function MedalPodium({ session }: inputProps) {
 						style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.35)" }}
 					/>
 				)}
-				<Card withBorder shadow="sm" p="xs" radius="md" mb="sm" bg="white">
-					<Image
-						src={beer.label}
-						alt={beer.name}
-						fit="contain"
-						maw={rem(100)}
-					/>
-				</Card>
+				{entry.label && (
+					<Card withBorder shadow="sm" p="xs" radius="md" mb="sm" bg="white">
+						<Image
+							src={entry.label}
+							alt={entry.title}
+							fit="contain"
+							maw={rem(100)}
+						/>
+					</Card>
+				)}
 				<Box ta="center">
-					<Text size="lg" c="gray.7">
-						{beer.breweryName}
-					</Text>
+					{entry.subtitle && (
+						<Text size="lg" c="gray.7">
+							{entry.subtitle}
+						</Text>
+					)}
 
 					<Text size="xl" mt={3} fw={700} ta="center">
-						{beer.name}
+						{entry.title}
 					</Text>
 
-					<Text size="lg" fw={700} mt={5} c="dimmed" fs="italic" mb="lg">
-						{displayScore(beer.averageScore)}
-					</Text>
+					{entry.note ? (
+						<Text size="sm" mt={5} c="gray.7" fs="italic">
+							{entry.note}
+						</Text>
+					) : (
+						<Text size="lg" fw={700} mt={5} c="dimmed" fs="italic" mb="lg">
+							{displayScore(entry.averageScore)}
+						</Text>
+					)}
 				</Box>
 			</Flex>
 		);
@@ -145,7 +174,7 @@ export default function MedalPodium({ session }: inputProps) {
 				return (
 					<Flex direction="column" align="center" key={place} w={280}>
 						{group ? (
-							group.beers.length > 1 ? (
+							group.entries.length > 1 ? (
 								<Carousel
 									withIndicators
 									withControls={false}
@@ -176,14 +205,14 @@ export default function MedalPodium({ session }: inputProps) {
 										}),
 									]}
 								>
-									{group.beers.map((beer) => (
-										<Carousel.Slide key={beer.beerId}>
-											{renderPodiumEntry(beer, place, bg, height)}
+									{group.entries.map((entry) => (
+										<Carousel.Slide key={entry.id}>
+											{renderPodiumEntry(entry, place, bg, height)}
 										</Carousel.Slide>
 									))}
 								</Carousel>
 							) : (
-								renderPodiumEntry(group.beers[0], place, bg, height)
+								renderPodiumEntry(group.entries[0], place, bg, height)
 							)
 						) : (
 							renderEmptyPedestal(place, bg, height)

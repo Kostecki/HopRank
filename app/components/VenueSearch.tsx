@@ -8,11 +8,20 @@ import {
 } from "@mantine/core";
 import { useRef, useState } from "react";
 
+import type { VenueDetails } from "~/types/oneBeer";
+
 import { getVenues } from "~/utils/untappd";
 
 interface InputProps extends BoxProps {
 	selectedVenue: string;
-	onChange: (value: string) => void;
+	onChange: (value: string, label?: string, details?: VenueDetails) => void;
+	label?: string;
+	placeholder?: string;
+	excludeVenueIds?: string[];
+	// Lets the dropdown extend past a modal or card that would clip it.
+	withinPortal?: boolean;
+	// Called with fresh results from Untappd, not with cached ones.
+	onVenuesLoaded?: (venues: VenueItem[]) => void;
 	lat: number;
 	lng: number;
 	untappdAccessToken: string;
@@ -20,6 +29,7 @@ interface InputProps extends BoxProps {
 }
 
 interface VenueItem {
+	details?: VenueDetails;
 	value: string;
 	label: string;
 }
@@ -43,6 +53,11 @@ const venuesCache = new Map<string, Awaited<ReturnType<typeof getVenues>>>();
 export default function VenueSearch({
 	selectedVenue,
 	onChange,
+	label = "Lokation",
+	placeholder = "Søg efter lokation",
+	excludeVenueIds = [],
+	withinPortal = false,
+	onVenuesLoaded,
 	lat,
 	lng,
 	untappdAccessToken,
@@ -84,6 +99,7 @@ export default function VenueSearch({
 		getVenues(untappdAccessToken, lat, lng, query)
 			.then((result) => {
 				venuesCache.set(key, result);
+				onVenuesLoaded?.(result.flatMap((group) => group.items));
 				setData(result);
 				setLoading(false);
 				setEmpty(result[0].items.length === 0 || result[1].items.length === 0);
@@ -104,15 +120,23 @@ export default function VenueSearch({
 
 	const options = (
 		<>
-			{(data || []).map((group) => (
-				<Combobox.Group key={group.label} label={group.label}>
-					{group.items.map((venue) => (
-						<Combobox.Option key={venue.value} value={venue.value}>
-							{venue.label}
-						</Combobox.Option>
-					))}
-				</Combobox.Group>
-			))}
+			{(data || []).map((group) => {
+				const items = group.items.filter(
+					(venue) => !excludeVenueIds.includes(venue.value),
+				);
+
+				if (items.length === 0) return null;
+
+				return (
+					<Combobox.Group key={group.label} label={group.label}>
+						{items.map((venue) => (
+							<Combobox.Option key={venue.value} value={venue.value}>
+								{venue.label}
+							</Combobox.Option>
+						))}
+					</Combobox.Group>
+				);
+			})}
 		</>
 	);
 
@@ -120,24 +144,24 @@ export default function VenueSearch({
 		<Box {...props}>
 			<Combobox
 				onOptionSubmit={(optionValue) => {
-					const label = data
+					const option = data
 						?.flatMap((group) => group.items)
-						.find((item) => item.value === optionValue)?.label;
+						.find((item) => item.value === optionValue);
 
-					if (label) {
-						setValue(label);
+					if (option?.label) {
+						setValue(option.label);
 					}
 
 					combobox.closeDropdown();
-					onChange(optionValue);
+					onChange(optionValue, option?.label, option?.details);
 				}}
-				withinPortal={false}
+				withinPortal={withinPortal}
 				store={combobox}
 			>
 				<Combobox.Target>
 					<TextInput
-						label="Lokation"
-						placeholder="Søg efter lokation"
+						label={label}
+						placeholder={placeholder}
 						value={value}
 						onChange={(event) => {
 							setValue(event.currentTarget.value);

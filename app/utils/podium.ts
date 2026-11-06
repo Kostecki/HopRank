@@ -1,29 +1,28 @@
-import type { RatedBeers } from "~/types/session";
-
-export type RatedBeerGroup = {
+export type ScoreGroup<T> = {
 	score: number;
-	beers: RatedBeers[];
+	entries: T[];
 };
 
 const SCORE_TOLERANCE = 0.000001;
 
-export function groupRatedBeersByScore(
-	ratedBeers: RatedBeers[],
-): RatedBeerGroup[] {
-	const groups: RatedBeerGroup[] = [];
+/** Groups entries with the same score. Input must already be in rank order. */
+export function groupByAverageScore<T extends { averageScore: number }>(
+	items: T[],
+): ScoreGroup<T>[] {
+	const groups: ScoreGroup<T>[] = [];
 
-	for (const beer of ratedBeers) {
+	for (const item of items) {
 		const lastGroup = groups[groups.length - 1];
 
 		if (
 			lastGroup &&
-			Math.abs(lastGroup.score - beer.averageScore) <= SCORE_TOLERANCE
+			Math.abs(lastGroup.score - item.averageScore) <= SCORE_TOLERANCE
 		) {
-			lastGroup.beers.push(beer);
+			lastGroup.entries.push(item);
 			continue;
 		}
 
-		groups.push({ score: beer.averageScore, beers: [beer] });
+		groups.push({ score: item.averageScore, entries: [item] });
 	}
 
 	return groups;

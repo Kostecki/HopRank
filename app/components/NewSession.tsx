@@ -4,6 +4,7 @@ import {
 	type BoxProps,
 	Button,
 	Divider,
+	SegmentedControl,
 	Stack,
 	Text,
 	TextInput,
@@ -13,10 +14,12 @@ import { useCallback, useEffect, useState } from "react";
 import { useFetcher } from "react-router";
 
 import type { BeerOption } from "~/types/misc";
+import { SessionMode } from "~/types/session";
 
 import type { SelectCriteria } from "~/database/schema.types";
 
 import BeerMultiSelect from "./BeerMultiSelect";
+import BeerSelect from "./BeerSelect";
 import SelectRatings from "./SelectRatings";
 
 type InputProps = {
@@ -41,7 +44,22 @@ export const criteriaGroups = [
 	},
 ];
 
+const modes = [
+	{
+		value: SessionMode.normal,
+		label: "Normal",
+		description: "Smag forskellige øl og giv dem point.",
+	},
+	{
+		value: SessionMode.oneBeer,
+		label: "One Beer",
+		description:
+			"Den samme øl på forskellige barer. Hver deltager rangerer barerne på sin egen liste.",
+	},
+];
+
 export default function NewSession({ criteria, ...props }: InputProps) {
+	const [mode, setMode] = useState<SessionMode>(SessionMode.normal);
 	const [selectedBeers, setSelectedBeers] = useState<BeerOption[]>([]);
 	const [activeCriteria, setActiveCriteria] = useState<number[]>(() => {
 		const group = criteriaGroups.find((group) => group.id === "minimal");
@@ -58,6 +76,7 @@ export default function NewSession({ criteria, ...props }: InputProps) {
 	const handleSubmit = () => {
 		const formData = new FormData();
 		formData.append("name", sessionName);
+		formData.append("mode", mode);
 		formData.append("beers", JSON.stringify(selectedBeers));
 		formData.append("criteria", JSON.stringify(activeCriteria));
 
@@ -79,6 +98,15 @@ export default function NewSession({ criteria, ...props }: InputProps) {
 		},
 		[uniqueNameFetcher.submit],
 	);
+
+	const handleModeChange = (value: string) => {
+		const newMode = value as SessionMode;
+		setMode(newMode);
+
+		if (newMode === SessionMode.oneBeer) {
+			setSelectedBeers((beers) => beers.slice(0, 1));
+		}
+	};
 
 	const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		setSessionName(e.currentTarget.value);
@@ -105,7 +133,11 @@ export default function NewSession({ criteria, ...props }: InputProps) {
 		}
 	}, [uniqueNameFetcher.data]);
 
+	const isOneBeer = mode === SessionMode.oneBeer;
 	const noCriteriaSelected = activeCriteria.length === 0;
+	const isMissingSetup = isOneBeer
+		? selectedBeers.length !== 1
+		: noCriteriaSelected;
 	const nameNotUnique =
 		uniqueNameFetcher.data?.name === sessionName &&
 		uniqueNameFetcher.data?.unique === false;
@@ -118,6 +150,19 @@ export default function NewSession({ criteria, ...props }: InputProps) {
 			<Text fw="bold">Ny smagning</Text>
 
 			<Stack mt="xs">
+				<Stack gap={5}>
+					<SegmentedControl
+						fullWidth
+						color="slateIndigo"
+						value={mode}
+						onChange={handleModeChange}
+						data={modes.map(({ value, label }) => ({ value, label }))}
+					/>
+					<Text size="sm" c="dimmed" fs="italic">
+						{modes.find(({ value }) => value === mode)?.description}
+					</Text>
+				</Stack>
+
 				<Stack gap={5}>
 					<Text size="sm" c="dimmed">
 						Giv smagningen et navn eller behold det tilfældigt genererede navn
@@ -147,23 +192,33 @@ export default function NewSession({ criteria, ...props }: InputProps) {
 
 				<Stack gap={5}>
 					<Text size="sm" c="dimmed" fs="italic">
-						Du kan tilføje øl direkte til smagningen ved at søge efter dem
-						herunder
+						{isOneBeer
+							? "Søg efter øllen til smagningen"
+							: "Du kan tilføje øl direkte til smagningen ved at søge efter dem herunder"}
 					</Text>
 
-					<BeerMultiSelect
-						selectedBeers={selectedBeers}
-						setSelectedBeers={setSelectedBeers}
-					/>
+					{isOneBeer ? (
+						<BeerSelect
+							value={selectedBeers[0] ?? null}
+							onChange={(beer) => setSelectedBeers(beer ? [beer] : [])}
+						/>
+					) : (
+						<BeerMultiSelect
+							selectedBeers={selectedBeers}
+							setSelectedBeers={setSelectedBeers}
+						/>
+					)}
 				</Stack>
 
-				<Stack gap={0}>
-					<SelectRatings
-						criteria={criteria}
-						activeCriteria={activeCriteria}
-						setActiveCriteria={setActiveCriteria}
-					/>
-				</Stack>
+				{!isOneBeer && (
+					<Stack gap={0}>
+						<SelectRatings
+							criteria={criteria}
+							activeCriteria={activeCriteria}
+							setActiveCriteria={setActiveCriteria}
+						/>
+					</Stack>
+				)}
 
 				<Button
 					color="slateIndigo"
@@ -171,10 +226,10 @@ export default function NewSession({ criteria, ...props }: InputProps) {
 					radius="md"
 					onClick={handleSubmit}
 					mt="md"
-					disabled={noCriteriaSelected || nameIsEmpty || nameNotUnique}
+					disabled={isMissingSetup || nameIsEmpty || nameNotUnique}
 					loading={newSessionLoader}
 				>
-					🍻 Opret ny smagning 🍻
+					🍻 Opret smagning 🍻
 				</Button>
 			</Stack>
 		</Box>

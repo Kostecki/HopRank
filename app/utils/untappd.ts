@@ -1,7 +1,31 @@
 import type { Checkin, VenuesResponse } from "~/types/untappd";
 
+type ApiVenue = {
+	venue_name: string;
+	foursquare: { foursquare_id: string };
+	primary_category?: string;
+	location?: {
+		venue_address?: string;
+		venue_city?: string;
+		lat?: number;
+		lng?: number;
+	};
+};
+
+const toVenueItem = (venue: ApiVenue) => ({
+	value: String(venue.foursquare.foursquare_id),
+	label: venue.venue_name,
+	details: {
+		address: venue.location?.venue_address || null,
+		city: venue.location?.venue_city || null,
+		category: venue.primary_category || null,
+		lat: venue.location?.lat ?? null,
+		lng: venue.location?.lng ?? null,
+	},
+});
+
 const API_URL = "https://api.untappd.com/v4";
-const UAH_VENUE_ID = "5e7b4d99c91df60008e8b168";
+export const UAH_VENUE_ID = "5e7b4d99c91df60008e8b168";
 const UAH_LABEL = "🏡 Untappd at Home";
 
 /**
@@ -133,25 +157,8 @@ export const getVenues = async (
 
 		const jsonData = await response.json();
 
-		const recent = jsonData.response.recent.items.map(
-			(venue: {
-				foursquare: { foursquare_id: string };
-				venue_name: string;
-			}) => ({
-				value: String(venue.foursquare.foursquare_id),
-				label: venue.venue_name,
-			}),
-		);
-
-		const foursquare = jsonData.response.foursquare.items.map(
-			(venue: {
-				venue_name: string;
-				foursquare: { foursquare_id: string };
-			}) => ({
-				value: String(venue.foursquare.foursquare_id),
-				label: venue.venue_name,
-			}),
-		);
+		const recent = jsonData.response.recent.items.map(toVenueItem);
+		const foursquare = jsonData.response.foursquare.items.map(toVenueItem);
 
 		const grouped: VenuesResponse = [
 			{ label: "Seneste", items: recent },

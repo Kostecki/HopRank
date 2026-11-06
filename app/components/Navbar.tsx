@@ -29,8 +29,10 @@ import {
 	useRevalidator,
 } from "react-router";
 
+import type { SessionBar } from "~/types/oneBeer";
 import {
 	SessionBeerStatus,
+	SessionMode,
 	type SessionProgress,
 	type SessionProgressUser,
 	SessionStatus,
@@ -44,11 +46,13 @@ import { sortByDisplayName } from "~/utils/utils";
 
 import BeerThumbnail from "./BeerThumbnail";
 import ModalAddBeers, { ModalAddBeersTrigger } from "./modals/ModalAddBeers";
+import NavbarBars from "./NavbarBars";
 
 type InputProps = {
 	user: SessionUser;
 	sessionProgress: SessionProgress | null;
 	sessionBeers: SelectSessionBeersWithBeer[];
+	sessionBars: SessionBar[];
 	closeMobile: () => void;
 	closeDesktop: () => void;
 };
@@ -57,6 +61,7 @@ export default function Navbar({
 	user,
 	sessionProgress,
 	sessionBeers,
+	sessionBars,
 	closeMobile,
 	closeDesktop,
 }: InputProps) {
@@ -372,35 +377,49 @@ export default function Navbar({
 						</>
 					)}
 
-					{inProgressSession && !readOnly && (
-						<>
-							<Group mt="xl" justify="space-between">
-								<Text size="md" tt="uppercase">
-									Dine øl
-								</Text>
+					{inProgressSession &&
+						!readOnly &&
+						viewerIsActive &&
+						sessionProgress.mode === SessionMode.oneBeer && (
+							<NavbarBars
+								user={user}
+								session={sessionProgress}
+								bars={sessionBars}
+								onBarAdded={closeMobile}
+							/>
+						)}
 
-								<ModalAddBeersTrigger>
-									<ActionIcon variant="subtle" color="slateIndigo">
-										<IconPlus size={14} />
-									</ActionIcon>
-								</ModalAddBeersTrigger>
-							</Group>
+					{inProgressSession &&
+						!readOnly &&
+						sessionProgress.mode !== SessionMode.oneBeer && (
+							<>
+								<Group mt="xl" justify="space-between">
+									<Text size="md" tt="uppercase">
+										Dine øl
+									</Text>
 
-							<Divider opacity={0.5} mb="md" />
+									<ModalAddBeersTrigger>
+										<ActionIcon variant="subtle" color="slateIndigo">
+											<IconPlus size={14} />
+										</ActionIcon>
+									</ModalAddBeersTrigger>
+								</Group>
 
-							{usersBeers.length > 0 ? (
-								<List spacing="xs" size="sm" pl={0}>
-									{usersBeers.map((beer) => (
-										<ListItem key={beer.beerId} beer={beer} />
-									))}
-								</List>
-							) : (
-								<Text c="dimmed" fs="italic" ta="center">
-									Der er ikke tilføjet nogle øl
-								</Text>
-							)}
-						</>
-					)}
+								<Divider opacity={0.5} mb="md" />
+
+								{usersBeers.length > 0 ? (
+									<List spacing="xs" size="sm" pl={0}>
+										{usersBeers.map((beer) => (
+											<ListItem key={beer.beerId} beer={beer} />
+										))}
+									</List>
+								) : (
+									<Text c="dimmed" fs="italic" ta="center">
+										Der er ikke tilføjet nogle øl
+									</Text>
+								)}
+							</>
+						)}
 				</Stack>
 			</ScrollArea>
 		</ModalAddBeers>

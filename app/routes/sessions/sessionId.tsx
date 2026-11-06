@@ -1,9 +1,8 @@
-import { Accordion, Box, Divider } from "@mantine/core";
 import { eq } from "drizzle-orm";
 import { useMemo } from "react";
 import { redirect, useLoaderData, useRevalidator } from "react-router";
 
-import { SessionStatus } from "~/types/session";
+import { SessionMode, SessionStatus } from "~/types/session";
 import type { SocketEvent } from "~/types/websocket";
 import type { Route } from "./+types/sessionId";
 
@@ -11,12 +10,19 @@ import { userSessionGet } from "~/auth/users.server";
 import { BeerCard } from "~/components/BeerCard";
 import { BeerCardDetails } from "~/components/BeerCardDetails";
 import EmptySession from "~/components/EmptySession";
+import OneBeerSession from "~/components/OneBeerSession";
+import RankedAccordion from "~/components/RankedAccordion";
 import { StartSession } from "~/components/StartSession";
 import UpNext from "~/components/UpNext";
 import { db } from "~/database/config.server";
 import { beers, sessionBeers, sessionCriteria } from "~/database/schema.server";
 import type { SelectBeers } from "~/database/schema.types";
+import { isActiveSessionParticipant } from "~/database/utils/assertSessionAccess.server";
 import { getSessionProgress } from "~/database/utils/getSessionProgress.server";
+import {
+	getOneBeerRanking,
+	getPersonalBarList,
+} from "~/database/utils/oneBeer.server";
 import { useDebouncedSocketEvent } from "~/hooks/useDebouncedSocketEvent";
 import { ERROR_CODES, errorJson } from "~/utils/errors";
 import { extractSessionId, getPageTitle } from "~/utils/utils";
@@ -46,6 +52,15 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 	if (sessionProgress.status === SessionStatus.finished) {
 		return redirect("view");
 	}
+
+	const oneBeer =
+		sessionProgress.mode === SessionMode.oneBeer
+			? {
+					ranking: await getOneBeerRanking(sessionId),
+					personalList: await getPersonalBarList(sessionId, user.id),
+					canPlace: await isActiveSessionParticipant(sessionId, user.id),
+				}
+			: null;
 
 	const [criteriaWithDetails, sessionBeerRows] = await Promise.all([
 		db.query.sessionCriteria.findMany({
@@ -85,11 +100,12 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 		sessionProgress,
 		criteria,
 		sessionBeers: sessionBeersList,
+		oneBeer,
 	};
 }
 
 export default function Session() {
-	const { user, sessionProgress, criteria, sessionBeers } =
+	const { user, sessionProgress, criteria, sessionBeers, oneBeer } =
 		useLoaderData<typeof loader>();
 
 	const { revalidate } = useRevalidator();
@@ -122,6 +138,12 @@ export default function Session() {
 		sessionProgress.sessionId,
 	);
 
+	if (oneBeer) {
+		return (
+			<OneBeerSession user={user} session={sessionProgress} {...oneBeer} />
+		);
+	}
+
 	return (
 		<>
 			{emptySession && (
@@ -141,45 +163,14 @@ export default function Session() {
 				/>
 			)}
 
-			<Accordion unstyled chevron={null}>
-				{sessionProgress.ratedBeers.map((beer, index) => {
-					const { beerId } = beer;
-
-					return (
-						<Box key={beerId}>
-							<Accordion.Item
-								value={beerId.toString()}
-								m={0}
-								mb={index === 2 ? "30px" : "8px"}
-							>
-								<Accordion.Control
-									style={{
-										background: "none",
-										border: "none",
-										padding: 0,
-										margin: 0,
-										width: "100%",
-										cursor: "pointer",
-										userSelect: "none",
-									}}
-								>
-									<BeerCard
-										session={sessionProgress}
-										beer={beer}
-										rank={index + 1}
-									/>
-								</Accordion.Control>
-
-								<Accordion.Panel>
-									<BeerCardDetails beer={beer} />
-								</Accordion.Panel>
-							</Accordion.Item>
-
-							{index === 2 ? <Divider my="30px" opacity={0.5} /> : null}
-						</Box>
-					);
-				})}
-			</Accordion>
+			<RankedAccordion
+				items={sessionProgress.ratedBeers}
+				getKey={(beer) => beer.beerId}
+				renderCard={(beer, rank) => (
+					<BeerCard session={sessionProgress} beer={beer} rank={rank} />
+				)}
+				renderPanel={(beer) => <BeerCardDetails beer={beer} />}
+			/>
 		</>
 	);
 }

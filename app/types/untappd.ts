@@ -1,3 +1,5 @@
+import type { VenueDetails } from "./oneBeer";
+
 type AliasAlt = string[];
 type SpellingAlt = string[];
 type BreweryAlias = string[];
@@ -143,6 +145,7 @@ export type UntappdVenue = {
 };
 
 type VenueItem = {
+	details?: VenueDetails;
 	value: string;
 	label: string;
 };

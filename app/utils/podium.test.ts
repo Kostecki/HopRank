@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import type { RatedBeers } from "~/types/session";
 
-import { groupRatedBeersByScore } from "./podium";
+import { groupByAverageScore } from "./podium";
 
 const beer = (beerId: number, averageScore: number): RatedBeers => ({
 	beerId,
@@ -19,17 +19,17 @@ const beer = (beerId: number, averageScore: number): RatedBeers => ({
 	votesCount: 1,
 });
 
-describe("groupRatedBeersByScore", () => {
+describe("groupByAverageScore", () => {
 	it("returns one group per beer when all scores differ", () => {
-		const groups = groupRatedBeersByScore([beer(1, 4.5), beer(2, 3.2)]);
+		const groups = groupByAverageScore([beer(1, 4.5), beer(2, 3.2)]);
 
 		expect(groups).toHaveLength(2);
-		expect(groups[0].beers).toHaveLength(1);
-		expect(groups[1].beers).toHaveLength(1);
+		expect(groups[0].entries).toHaveLength(1);
+		expect(groups[1].entries).toHaveLength(1);
 	});
 
 	it("groups adjacent beers with the same score into a tie", () => {
-		const groups = groupRatedBeersByScore([
+		const groups = groupByAverageScore([
 			beer(1, 4.5),
 			beer(2, 4.5),
 			beer(3, 3.0),
@@ -37,22 +37,22 @@ describe("groupRatedBeersByScore", () => {
 
 		expect(groups).toHaveLength(2);
 		expect(groups[0].score).toBe(4.5);
-		expect(groups[0].beers.map((b) => b.beerId)).toEqual([1, 2]);
-		expect(groups[1].beers.map((b) => b.beerId)).toEqual([3]);
+		expect(groups[0].entries.map((b) => b.beerId)).toEqual([1, 2]);
+		expect(groups[1].entries.map((b) => b.beerId)).toEqual([3]);
 	});
 
 	it("treats scores within the tolerance as a tie", () => {
-		const groups = groupRatedBeersByScore([
+		const groups = groupByAverageScore([
 			beer(1, 4.5),
 			beer(2, 4.5 + 0.0000001),
 		]);
 
 		expect(groups).toHaveLength(1);
-		expect(groups[0].beers).toHaveLength(2);
+		expect(groups[0].entries).toHaveLength(2);
 	});
 
 	it("does not group beers with the same score if they aren't adjacent", () => {
-		const groups = groupRatedBeersByScore([
+		const groups = groupByAverageScore([
 			beer(1, 4.5),
 			beer(2, 3.0),
 			beer(3, 4.5),
@@ -62,6 +62,6 @@ describe("groupRatedBeersByScore", () => {
 	});
 
 	it("returns an empty array for no beers", () => {
-		expect(groupRatedBeersByScore([])).toEqual([]);
+		expect(groupByAverageScore([])).toEqual([]);
 	});
 });
