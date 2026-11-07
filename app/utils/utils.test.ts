@@ -21,41 +21,28 @@ describe("isValidVoteScore", () => {
 		expect(isValidVoteScore(score)).toBe(true);
 	});
 
-	it.each([
-		0,
-		-1,
-		-0.25,
-		5.25,
-		100,
-		0.3,
-		1.1,
-		NaN,
-		Infinity,
-		-Infinity,
-	])("rejects invalid value %s", (score) => {
-		expect(isValidVoteScore(score)).toBe(false);
-	});
+	it.each([0, -1, -0.25, 5.25, 100, 0.3, 1.1, NaN, Infinity, -Infinity])(
+		"rejects invalid value %s",
+		(score) => {
+			expect(isValidVoteScore(score)).toBe(false);
+		},
+	);
 
-	it.each([
-		"3",
-		null,
-		undefined,
-		{},
-		[],
-		true,
-	])("rejects non-number input %s", (score) => {
-		expect(isValidVoteScore(score)).toBe(false);
-	});
+	it.each(["3", null, undefined, {}, [], true])(
+		"rejects non-number input %s",
+		(score) => {
+			expect(isValidVoteScore(score)).toBe(false);
+		},
+	);
 });
 
 describe("isSafeRedirect", () => {
-	it.each([
-		"/sessions",
-		"/sessions/123",
-		"/",
-	])("accepts a same-origin path %s", (target) => {
-		expect(isSafeRedirect(target)).toBe(true);
-	});
+	it.each(["/sessions", "/sessions/123", "/"])(
+		"accepts a same-origin path %s",
+		(target) => {
+			expect(isSafeRedirect(target)).toBe(true);
+		},
+	);
 
 	it.each([
 		null,

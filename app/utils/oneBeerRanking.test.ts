@@ -7,13 +7,13 @@ import {
 	getBarMapUrl,
 	getBarStats,
 	getPersonalPlacements,
-	mergeBarOrder,
-	RANKING_START,
 	getRankedBarIds,
 	getRowPlacements,
 	isValidArrangement,
-	withWaitingArea,
+	mergeBarOrder,
+	RANKING_START,
 	rankBars,
+	withWaitingArea,
 } from "./oneBeerRanking";
 
 const list = (userId: number, barIds: number[]) =>

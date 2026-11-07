@@ -11,7 +11,6 @@ import {
 	Text,
 	Tooltip,
 } from "@mantine/core";
-
 import type { ReactNode } from "react";
 
 import type { OneBeerRanking, RankedBar } from "~/types/oneBeer";

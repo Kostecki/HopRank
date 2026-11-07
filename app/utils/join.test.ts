@@ -14,23 +14,17 @@ describe("normalizeJoinCode", () => {
 });
 
 describe("isValidJoinCode", () => {
-	it.each([
-		"ABC12",
-		"00000",
-		"ZZZZZ",
-		" abc12 ",
-	])("accepts a valid 5-character alphanumeric code %s", (code) => {
-		expect(isValidJoinCode(code)).toBe(true);
-	});
+	it.each(["ABC12", "00000", "ZZZZZ", " abc12 "])(
+		"accepts a valid 5-character alphanumeric code %s",
+		(code) => {
+			expect(isValidJoinCode(code)).toBe(true);
+		},
+	);
 
-	it.each([
-		"ABC1",
-		"ABC123",
-		"",
-		"AB-12",
-		null,
-		undefined,
-	])("rejects an invalid code %s", (code) => {
-		expect(isValidJoinCode(code)).toBe(false);
-	});
+	it.each(["ABC1", "ABC123", "", "AB-12", null, undefined])(
+		"rejects an invalid code %s",
+		(code) => {
+			expect(isValidJoinCode(code)).toBe(false);
+		},
+	);
 });
