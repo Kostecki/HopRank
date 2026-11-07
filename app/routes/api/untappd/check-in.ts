@@ -2,16 +2,14 @@ import { data } from "react-router";
 
 import type { Route } from "./+types/check-in";
 
-import { userSessionGet } from "~/auth/users.server";
+import { requireUser } from "~/auth/requireUser.server";
+import { checkinSchema } from "~/schemas/checkin";
 import { env } from "~/utils/env.server";
 import { checkinBeer } from "~/utils/untappd";
+import { parseFormFields } from "~/utils/validation.server";
 
 export async function action({ request }: Route.ActionArgs) {
-	const user = await userSessionGet(request);
-
-	if (!user) {
-		return data({ message: "User not authenticated" }, { status: 401 });
-	}
+	const user = await requireUser(request);
 
 	if (!user.untappd?.accessToken) {
 		return data(
@@ -25,24 +23,22 @@ export async function action({ request }: Route.ActionArgs) {
 	const accessToken = user.untappd.accessToken;
 
 	const form = await request.formData();
-	const checkin = {
-		bid: String(form.get("bid")),
-		rating: String(form.get("rating") || ""),
-		geolat: String(form.get("geolat")),
-		geolng: String(form.get("geolng")),
-		foursquare_id: String(form.get("foursquare_id")),
-		shout: String(form.get("shout") || ""),
-		timezone: String(form.get("timezone")),
-		gmt_offset: String(form.get("gmt_offset")),
-	};
+	const checkin = parseFormFields(form, checkinSchema, [
+		"bid",
+		"geolat",
+		"geolng",
+		"foursquare_id",
+		"shout",
+		"rating",
+		"timezone",
+		"gmt_offset",
+	]);
 
 	const response = await checkinBeer(checkin, clientId, accessToken);
 
+	// Untappd failed, not us.
 	if (!response.success) {
-		return data(
-			{ message: response.error || "Failed to check in beer" },
-			{ status: 500 },
-		);
+		return data({ message: "Untappd check-in fejlede" }, { status: 502 });
 	}
 
 	return data(response);

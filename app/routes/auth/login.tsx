@@ -1,4 +1,4 @@
-import { type MetaFunction, redirect } from "react-router";
+import { data, type MetaFunction, redirect } from "react-router";
 
 import type { Route } from "./+types/login";
 
@@ -56,9 +56,10 @@ export async function action({ request }: Route.ActionArgs) {
 
 		console.error("error", error);
 
-		return {
-			error: "An error occurred during login. Please try again.",
-		};
+		return data(
+			{ error: "Der skete en fejl under login. Prøv igen." },
+			{ status: 500 },
+		);
 	}
 }
 

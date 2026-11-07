@@ -17,7 +17,7 @@ import type { BeerOption } from "~/types/misc";
 import { SessionMode } from "~/types/session";
 
 import type { SelectCriteria } from "~/database/schema.types";
-import { showDangerToast } from "~/utils/toasts";
+import { useFetcherErrorToast } from "~/hooks/useFetcherErrorToast";
 
 import BeerMultiSelect from "./BeerMultiSelect";
 import BeerSelect from "./BeerSelect";
@@ -71,6 +71,7 @@ export default function NewSession({ criteria, ...props }: InputProps) {
 
 	const newSessionFetcher = useFetcher();
 	const uniqueNameFetcher = useFetcher();
+	useFetcherErrorToast(newSessionFetcher, "Smagningen kunne ikke oprettes");
 
 	const newSessionLoader = newSessionFetcher.state !== "idle";
 
@@ -127,15 +128,6 @@ export default function NewSession({ criteria, ...props }: InputProps) {
 
 		return () => clearTimeout(timeout);
 	}, [sessionName, fetchName]);
-
-	// Success redirects to the new session, so data is only ever an error.
-	useEffect(() => {
-		const message = (newSessionFetcher.data as { message?: string } | undefined)
-			?.message;
-		if (newSessionFetcher.state === "idle" && message) {
-			showDangerToast(message);
-		}
-	}, [newSessionFetcher.state, newSessionFetcher.data]);
 
 	useEffect(() => {
 		if (uniqueNameFetcher.data?.name && uniqueNameFetcher.data?.unique) {

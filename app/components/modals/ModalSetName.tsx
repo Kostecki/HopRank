@@ -27,10 +27,10 @@ export function ModalSetName({ user }: InputProps) {
 
 	useEffect(() => {
 		if (fetcher.state === "idle" && fetcher.data && !handled) {
-			const { status, message } = fetcher.data;
+			const { success, message } = fetcher.data;
 
-			if (status === 200) {
-				showSuccessToast(message || "Dit navn er blevet opdateret!");
+			if (success) {
+				showSuccessToast("Dit navn er blevet opdateret!");
 				form.reset();
 				close();
 			} else {

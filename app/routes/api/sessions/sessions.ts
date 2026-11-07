@@ -5,7 +5,7 @@ import { z } from "zod";
 import { SessionMode } from "~/types/session";
 import type { Route } from "./+types/sessions";
 
-import { userSessionGet } from "~/auth/users.server";
+import { requireUser } from "~/auth/requireUser.server";
 import { db } from "~/database/config.server";
 import { criteria, sessions } from "~/database/schema.server";
 import type { SelectSessions } from "~/database/schema.types";
@@ -25,12 +25,7 @@ import { parseFormJson, parseOrThrow } from "~/utils/validation.server";
 import { emitGlobalEvent } from "~/utils/websocket.server";
 
 export async function action({ request }: Route.ActionArgs) {
-	const user = await userSessionGet(request);
-	const userId = user?.id;
-
-	if (!userId) {
-		return data({ message: "User not authenticated" }, { status: 401 });
-	}
+	const { id: userId } = await requireUser(request);
 
 	const formData = await request.formData();
 

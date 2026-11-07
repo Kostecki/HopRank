@@ -1,21 +1,19 @@
 import { data } from "react-router";
 
-import type { BarSelection } from "~/types/oneBeer";
 import type { Route } from "./+types/bars";
 
-import { userSessionGet } from "~/auth/users.server";
+import { requireUser } from "~/auth/requireUser.server";
 import { requireSessionParticipant } from "~/database/utils/assertSessionAccess.server";
 import { addBar, reorderQueue } from "~/database/utils/oneBeer.server";
+import { idListSchema } from "~/schemas/common";
+import { barSelectionSchema } from "~/schemas/oneBeer";
 import { extractSessionId } from "~/utils/utils";
+import { parseFormJson } from "~/utils/validation.server";
 import { emitGlobalEvent, emitSessionEvent } from "~/utils/websocket.server";
 
 export async function action({ request, params }: Route.ActionArgs) {
 	const sessionId = extractSessionId(params.sessionId);
-	const user = await userSessionGet(request);
-
-	if (!user) {
-		return data({ message: "User not authenticated" }, { status: 401 });
-	}
+	const user = await requireUser(request);
 
 	await requireSessionParticipant(sessionId, user.id);
 
@@ -24,17 +22,15 @@ export async function action({ request, params }: Route.ActionArgs) {
 	let result: ReturnType<typeof addBar>;
 
 	if (request.method === "PATCH") {
-		const barIds = JSON.parse(String(form.get("barIds"))) as number[];
+		const barIds = parseFormJson(form, "barIds", idListSchema);
 
 		result = reorderQueue(sessionId, barIds);
-	} else {
-		const bar = JSON.parse(String(form.get("bar"))) as BarSelection;
+	} else if (request.method === "POST") {
+		const bar = parseFormJson(form, "bar", barSelectionSchema);
 
-		result = addBar(sessionId, user.id, {
-			...bar,
-			name: String(bar?.name ?? ""),
-			foursquareId: bar?.foursquareId ?? null,
-		});
+		result = addBar(sessionId, user.id, bar);
+	} else {
+		return data({ message: "Method not allowed" }, { status: 405 });
 	}
 
 	if (!result.ok) {
