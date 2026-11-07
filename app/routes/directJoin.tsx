@@ -5,12 +5,14 @@ import type { Route } from "./+types/directJoin";
 
 import { commitSession, getSession } from "~/auth/session.server";
 import { userSessionGet } from "~/auth/users.server";
+import { addViewGrant } from "~/auth/viewGrants.server";
 import {
 	joinSessionByCode,
 	SessionNotFoundError,
 	SessionStateNotFoundError,
 } from "~/database/utils/joinSessionByCode.server";
 import { JOIN_CODE_PATTERN, normalizeJoinCode } from "~/utils/join";
+import { joinCodeLimiter } from "~/utils/rateLimit.server";
 import { isSafeRedirect } from "~/utils/utils";
 
 export async function loader({ params, request }: Route.LoaderArgs) {
@@ -46,15 +48,27 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 		});
 	}
 
+	const limiterKey = `user:${user.id}`;
+	if (joinCodeLimiter.isLimited(limiterKey)) {
+		throw new Response("For mange forkerte pinkoder. Prøv igen om lidt.", {
+			status: 429,
+		});
+	}
+
 	try {
 		const result = await joinSessionByCode({ joinCode, userId: user.id });
 		if (result.readOnly) {
-			return redirect(`/sessions/${result.session.id}/view`);
+			return redirect(`/sessions/${result.session.id}/view`, {
+				headers: {
+					"Set-Cookie": await addViewGrant(request, result.session.id),
+				},
+			});
 		}
 
 		return redirect(`/sessions/${result.session.id}`);
 	} catch (error) {
 		if (error instanceof SessionNotFoundError) {
+			joinCodeLimiter.recordFailure(limiterKey);
 			throw new Response("Pinkoden er ikke gyldig", { status: 404 });
 		}
 

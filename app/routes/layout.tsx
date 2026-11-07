@@ -17,6 +17,7 @@ import { SocketProvider } from "~/context/SocketContext";
 import { db } from "~/database/config.server";
 import { beers, sessionBeers } from "~/database/schema.server";
 import type { SelectSessionBeersWithBeer } from "~/database/schema.types";
+import { requireSessionViewer } from "~/database/utils/assertSessionAccess.server";
 import { getSessionProgress } from "~/database/utils/getSessionProgress.server";
 import { getSessionBars } from "~/database/utils/oneBeer.server";
 import { extractSessionId } from "~/utils/utils";
@@ -33,6 +34,8 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 	let sessionBeersList: SelectSessionBeersWithBeer[] = [];
 	let sessionBars: SessionBar[] = [];
 	if (sessionId) {
+		await requireSessionViewer(request, sessionId);
+
 		const [sessionProgressResult, sessionBeersResult] = await Promise.all([
 			getSessionProgress({ request, sessionId }),
 			db

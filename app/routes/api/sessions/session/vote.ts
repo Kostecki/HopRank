@@ -7,7 +7,11 @@ import type { Route } from "./+types/vote";
 
 import { userSessionGet } from "~/auth/users.server";
 import { db } from "~/database/config.server";
-import { ratings, sessionState } from "~/database/schema.server";
+import {
+	ratings,
+	sessionCriteria,
+	sessionState,
+} from "~/database/schema.server";
 import {
 	requireNormalSession,
 	requireSessionParticipant,
@@ -59,17 +63,33 @@ export async function action({ request, params }: Route.ActionArgs) {
 		);
 	}
 
-	for (const r of vote.ratings) {
-		const { sessionId, beerId } = vote;
-		const { criterionId, score } = r;
+	if (!Array.isArray(vote.ratings) || vote.ratings.length === 0) {
+		return data({ message: "Invalid vote data" }, { status: 400 });
+	}
 
-		if (typeof criterionId !== "number") {
+	const criteriaRows = await db.query.sessionCriteria.findMany({
+		where: eq(sessionCriteria.sessionId, sessionId),
+		columns: { criterionId: true },
+	});
+	const sessionCriterionIds = new Set(criteriaRows.map((c) => c.criterionId));
+
+	// Validate every rating before writing any, so a bad one can't leave the
+	// vote half-saved.
+	for (const { criterionId, score } of vote.ratings) {
+		if (
+			typeof criterionId !== "number" ||
+			!sessionCriterionIds.has(criterionId)
+		) {
 			return data({ message: "Invalid criterion in vote" }, { status: 400 });
 		}
 
 		if (!isValidVoteScore(score)) {
 			return data({ message: "Invalid score in vote" }, { status: 400 });
 		}
+	}
+
+	for (const { criterionId, score } of vote.ratings) {
+		const { beerId } = vote;
 
 		try {
 			await db

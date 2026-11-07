@@ -3,12 +3,12 @@ import type { Route } from "./+types/search";
 
 import { invariant } from "~/utils/invariant";
 
-const ALGOLIA_APP_ID = import.meta.env.VITE_ALGOLIA_APP_ID;
-const ALGOLIA_API_K = import.meta.env.VITE_ALGOLIA_API_K;
-invariant(ALGOLIA_APP_ID, "VITE_ALGOLIA_APP_ID must be set in .env");
-invariant(ALGOLIA_API_K, "VITE_ALGOLIA_API_K must be set in .env");
-
 export async function loader({ request }: Route.LoaderArgs) {
+	const ALGOLIA_APP_ID = import.meta.env.VITE_ALGOLIA_APP_ID;
+	const ALGOLIA_API_K = import.meta.env.VITE_ALGOLIA_API_K;
+	invariant(ALGOLIA_APP_ID, "VITE_ALGOLIA_APP_ID must be set in .env");
+	invariant(ALGOLIA_API_K, "VITE_ALGOLIA_API_K must be set in .env");
+
 	const url = new URL(request.url);
 	const searchString = url.searchParams.get("q") || "";
 
@@ -20,7 +20,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify({
-			params: `query=${searchString}`,
+			params: new URLSearchParams({ query: searchString }).toString(),
 		}),
 	});
 

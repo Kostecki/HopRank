@@ -3,12 +3,14 @@ import { data, redirect } from "react-router";
 import type { Route } from "./+types/joinByCode";
 
 import { userSessionGet } from "~/auth/users.server";
+import { addViewGrant } from "~/auth/viewGrants.server";
 import {
 	joinSessionByCode,
 	SessionNotFoundError,
 	SessionStateNotFoundError,
 } from "~/database/utils/joinSessionByCode.server";
 import { JOIN_CODE_PATTERN, normalizeJoinCode } from "~/utils/join";
+import { joinCodeLimiter } from "~/utils/rateLimit.server";
 
 export async function action({ request, params }: Route.ActionArgs) {
 	const rawCode = params.joinCode;
@@ -32,17 +34,28 @@ export async function action({ request, params }: Route.ActionArgs) {
 		);
 	}
 
+	const limiterKey = `user:${user.id}`;
+	if (joinCodeLimiter.isLimited(limiterKey)) {
+		return data(
+			{ message: "For mange forkerte pinkoder. Prøv igen om lidt." },
+			{ status: 429 },
+		);
+	}
+
 	try {
 		const result = await joinSessionByCode({ joinCode, userId: user.id });
 		const sessionId = result.session.id;
 
 		if (result.readOnly) {
-			return redirect(`/sessions/${sessionId}/view`);
+			return redirect(`/sessions/${sessionId}/view`, {
+				headers: { "Set-Cookie": await addViewGrant(request, sessionId) },
+			});
 		}
 
 		return redirect(`/sessions/${sessionId}`);
 	} catch (error) {
 		if (error instanceof SessionNotFoundError) {
+			joinCodeLimiter.recordFailure(limiterKey);
 			return data({ message: "Pinkoden er ikke gyldig" }, { status: 404 });
 		}
 		if (error instanceof SessionStateNotFoundError) {

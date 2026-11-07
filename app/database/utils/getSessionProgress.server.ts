@@ -24,12 +24,12 @@ import {
 import type { SelectSessionUsers, SelectUsers } from "~/database/schema.types";
 import { getBeerInfo } from "~/utils/untappd";
 
-// Module-level, single-process cache: intentionally not shared across
-// instances if this app is ever scaled horizontally.
-const beerInfoCache = new Map<
-	number,
-	Awaited<ReturnType<typeof getBeerInfo>>
->();
+// Whether a user has had a beer, per Untappd. Keyed by user and beer, since
+// Untappd's user_count is relative to whoever's token made the request.
+// Module-level, single-process cache.
+const HAD_BEER_TTL_MS = 60 * 60 * 1000;
+const HAD_BEER_MAX_ENTRIES = 5_000;
+const hadBeerCache = new Map<string, { hadBeer: boolean; expiresAt: number }>();
 
 // Exported for tests: this is the boundary that must never leak email/admin
 // to SessionProgress.users, since that shape is returned to unauthenticated
@@ -55,14 +55,36 @@ export const toSessionProgressUser = (
 				: "active",
 });
 
-async function getCachedBeerInfo(beerId: number, accessToken: string) {
-	if (beerInfoCache.has(beerId)) {
-		return beerInfoCache.get(beerId);
+async function getUserHadBeer(
+	userId: number,
+	untappdBeerId: number,
+	accessToken: string,
+) {
+	const key = `${userId}:${untappdBeerId}`;
+	const now = Date.now();
+
+	const cached = hadBeerCache.get(key);
+	if (cached && cached.expiresAt > now) {
+		return cached.hadBeer;
 	}
 
-	const data = await getBeerInfo(beerId, accessToken);
-	beerInfoCache.set(beerId, data);
-	return data;
+	const beerInfo = await getBeerInfo(untappdBeerId, accessToken);
+	if (!beerInfo) {
+		// Don't cache failures: the next request retries.
+		return false;
+	}
+
+	const hadBeer = beerInfo.stats?.user_count > 0;
+
+	if (hadBeerCache.size >= HAD_BEER_MAX_ENTRIES) {
+		// Maps iterate in insertion order, so this drops the oldest entry.
+		const oldest = hadBeerCache.keys().next().value;
+		if (oldest !== undefined) hadBeerCache.delete(oldest);
+	}
+	hadBeerCache.delete(key);
+	hadBeerCache.set(key, { hadBeer, expiresAt: now + HAD_BEER_TTL_MS });
+
+	return hadBeer;
 }
 
 export async function getSessionProgress({
@@ -349,11 +371,11 @@ export async function getSessionProgress({
 
 	let userHadBeer = false;
 	if (currentBeerData && user?.untappd) {
-		const beerInfo = await getCachedBeerInfo(
+		userHadBeer = await getUserHadBeer(
+			user.id,
 			currentBeerData.untappdBeerId,
 			user.untappd.accessToken,
 		);
-		userHadBeer = beerInfo?.stats?.user_count > 0;
 	}
 
 	const currentBeer = currentBeerData

@@ -1,8 +1,5 @@
-import { Card, Divider } from "@mantine/core";
-import { eq } from "drizzle-orm";
-import { type MetaFunction, redirect, useLoaderData } from "react-router";
+import { type MetaFunction, redirect } from "react-router";
 
-import { SessionStatus } from "~/types/session";
 import type { Route } from "./+types/login";
 
 import { authenticator } from "~/auth/auth.server";
@@ -10,10 +7,6 @@ import { setPendingRedirect } from "~/auth/pending-redirect.server";
 import { commitSession, getSession } from "~/auth/session.server";
 import { userSessionGet } from "~/auth/users.server";
 import LoginForm from "~/components/auth/LoginForm";
-import { SessionTabs } from "~/components/SessionTabs";
-import { db } from "~/database/config.server";
-import { sessionState, sessions } from "~/database/schema.server";
-import { getSessionCounts } from "~/database/utils/getSessionCounts.server";
 import { getPageTitle, isSafeRedirect } from "~/utils/utils";
 
 export const meta: MetaFunction = () => {
@@ -39,36 +32,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 		});
 	}
 
-	const sessionsRaw = await db
-		.select()
-		.from(sessions)
-		.innerJoin(sessionState, eq(sessions.id, sessionState.sessionId));
-
-	const allSessions = await Promise.all(
-		sessionsRaw.map(async ({ sessions: session, session_state }) => {
-			const counts = await getSessionCounts(session.id);
-
-			return {
-				id: session.id,
-				name: session.name,
-				joinCode: session.joinCode,
-				participants: counts.participantCount,
-				beers: counts.beerCount,
-				status: session_state.status,
-				createdAt: session.createdAt,
-			};
-		}),
-	);
-
-	return {
-		inProgressSessions: allSessions.filter(
-			(s) =>
-				s.status === SessionStatus.active || s.status === SessionStatus.created,
-		),
-		finishedSessions: allSessions.filter(
-			(s) => s.status === SessionStatus.finished,
-		),
-	};
+	return null;
 }
 
 export async function action({ request }: Route.ActionArgs) {
@@ -99,22 +63,5 @@ export async function action({ request }: Route.ActionArgs) {
 }
 
 export default function Login() {
-	const { inProgressSessions, finishedSessions } =
-		useLoaderData<typeof loader>();
-
-	return (
-		<>
-			<LoginForm />
-
-			<Divider my="xl" opacity={0.5} />
-
-			<Card shadow="lg" padding="lg" radius="md">
-				<SessionTabs
-					inProgressSessions={inProgressSessions}
-					finishedSessions={finishedSessions}
-					readOnly
-				/>
-			</Card>
-		</>
-	);
+	return <LoginForm />;
 }

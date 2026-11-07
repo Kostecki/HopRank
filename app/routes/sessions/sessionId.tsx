@@ -6,7 +6,6 @@ import { SessionMode, SessionStatus } from "~/types/session";
 import type { SocketEvent } from "~/types/websocket";
 import type { Route } from "./+types/sessionId";
 
-import { userSessionGet } from "~/auth/users.server";
 import { BeerCard } from "~/components/BeerCard";
 import { BeerCardDetails } from "~/components/BeerCardDetails";
 import EmptySession from "~/components/EmptySession";
@@ -17,7 +16,10 @@ import UpNext from "~/components/UpNext";
 import { db } from "~/database/config.server";
 import { beers, sessionBeers, sessionCriteria } from "~/database/schema.server";
 import type { SelectBeers } from "~/database/schema.types";
-import { isActiveSessionParticipant } from "~/database/utils/assertSessionAccess.server";
+import {
+	isActiveSessionParticipant,
+	requireSessionViewer,
+} from "~/database/utils/assertSessionAccess.server";
 import { getSessionProgress } from "~/database/utils/getSessionProgress.server";
 import {
 	getOneBeerRanking,
@@ -38,10 +40,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 
 	const sessionId = extractSessionId(params.sessionId);
 
-	const user = await userSessionGet(request);
-	if (!user) {
-		return redirect("/auth/login");
-	}
+	const user = await requireSessionViewer(request, sessionId);
 
 	const sessionProgress = await getSessionProgress({ request, sessionId });
 	// Handle not-found shape without assuming the property exists on the success type

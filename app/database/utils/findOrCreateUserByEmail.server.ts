@@ -42,16 +42,26 @@ export const findOrCreateUserByEmail = async (
 		.where(eq(users.email, userEmail))
 		.limit(1);
 
-	if (avatar && existingUser && existingUser.avatarURL !== avatar) {
+	if (!existingUser) {
+		throw new Error("User not found after insert conflict");
+	}
+
+	// Only promotes: admins granted directly in the database stay admins even
+	// when their email isn't in ADMIN_USER_EMAILS.
+	if (isAdmin && !existingUser.admin) {
+		await db
+			.update(users)
+			.set({ admin: true })
+			.where(eq(users.id, existingUser.id));
+		existingUser.admin = true;
+	}
+
+	if (avatar && existingUser.avatarURL !== avatar) {
 		await db
 			.update(users)
 			.set({ avatarURL: avatar })
 			.where(eq(users.id, existingUser.id));
 		existingUser.avatarURL = avatar;
-	}
-
-	if (!existingUser) {
-		throw new Error("User not found after insert conflict");
 	}
 
 	return existingUser;

@@ -31,8 +31,16 @@ const placements = await import("./placements");
 const remove = await import("./remove");
 const start = await import("./start");
 const vote = await import("./vote");
-const { beers, sessionBars, sessionState, sessions, sessionUsers, users } =
-	await import("~/database/schema.server");
+const {
+	beers,
+	criteria,
+	sessionBars,
+	sessionCriteria,
+	sessionState,
+	sessions,
+	sessionUsers,
+	users,
+} = await import("~/database/schema.server");
 
 type Action = { action: (args: never) => Promise<unknown> };
 
@@ -87,6 +95,7 @@ let participant: TestUser;
 let outsider: TestUser;
 let admin: TestUser;
 let openBarId: number;
+let beerId: number;
 
 const setMode = (mode: SessionMode) =>
 	testDb.update(sessions).set({ mode }).where(eq(sessions.id, sessionId));
@@ -131,6 +140,7 @@ beforeEach(async () => {
 			label: "label.png",
 		})
 		.returning();
+	beerId = beer.id;
 
 	const [session] = await testDb
 		.insert(sessions)
@@ -313,6 +323,80 @@ describe("session API permissions", () => {
 
 			expect(await statusOf(start)).toBe(200);
 			expect(await statusInDb()).toBe(SessionStatus.active);
+		});
+
+		it.each([
+			SessionStatus.active,
+			SessionStatus.finished,
+		])("isn't possible once it's %s", async (status) => {
+			await setStatus(status);
+
+			expect(await statusOf(start)).toBe(400);
+			expect(await statusInDb()).toBe(status);
+		});
+	});
+
+	describe("removing a beer", () => {
+		it("isn't allowed for someone outside the session", async () => {
+			await setMode(SessionMode.normal);
+			currentUser = outsider;
+
+			expect(await statusOf(remove, { params: { beerId: "1" } })).toBe(403);
+		});
+	});
+
+	describe("voting", () => {
+		let criterionId: number;
+		let otherCriterionId: number;
+
+		beforeEach(async () => {
+			await setMode(SessionMode.normal);
+			await testDb
+				.update(sessionState)
+				.set({ currentBeerId: beerId })
+				.where(eq(sessionState.sessionId, sessionId));
+
+			const [inSession, notInSession] = await testDb
+				.insert(criteria)
+				.values([
+					{ name: "Smag", description: "", weight: 1 },
+					{ name: "Duft", description: "", weight: 1 },
+				])
+				.returning();
+			criterionId = inSession.id;
+			otherCriterionId = notInSession.id;
+
+			await testDb.insert(sessionCriteria).values({ sessionId, criterionId });
+		});
+
+		const voteWith = (ids: number[]) =>
+			respond(vote, {
+				form: {
+					vote: JSON.stringify({
+						sessionId,
+						userId: owner.id,
+						beerId,
+						ratings: ids.map((id) => ({ criterionId: id, score: 5 })),
+					}),
+				},
+			});
+
+		const savedRatings = () => testDb.query.ratings.findMany();
+
+		it("accepts ratings for the session's criteria", async () => {
+			expect((await voteWith([criterionId])).status).toBe(200);
+			expect(await savedRatings()).toHaveLength(1);
+		});
+
+		it("rejects a criterion that isn't part of the session, saving nothing", async () => {
+			const { status, message } = await voteWith([
+				criterionId,
+				otherCriterionId,
+			]);
+
+			expect(status).toBe(400);
+			expect(message).toBe("Invalid criterion in vote");
+			expect(await savedRatings()).toHaveLength(0);
 		});
 	});
 
