@@ -139,7 +139,7 @@ export async function action({ request }: Route.ActionArgs) {
 			await addBeersToSession(session.id, beersInput, userId);
 		}
 
-		emitGlobalEvent("sessions:created");
+		emitGlobalEvent("sessions:created", { sessionId: session.id });
 
 		return redirect(`/sessions/${session.id}`);
 	} catch (error) {

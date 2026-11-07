@@ -73,12 +73,7 @@ export default function SessionView() {
 	const { revalidate } = useRevalidator();
 
 	const socketEvents = useMemo<SocketEvent[]>(
-		() => [
-			"sessions:created",
-			"session:users-changed",
-			"session:beer-changed",
-			"session:vote",
-		],
+		() => ["session:users-changed", "session:beer-changed", "session:vote"],
 		[],
 	);
 

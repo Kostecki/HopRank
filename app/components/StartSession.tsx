@@ -9,14 +9,15 @@ import {
 	Tooltip,
 } from "@mantine/core";
 import { AnimatePresence, motion } from "motion/react";
-import { type ReactNode, useEffect } from "react";
+import type { ReactNode } from "react";
 import { useFetcher } from "react-router";
 
 import { SessionMode, type SessionProgress } from "~/types/session";
 import type { SessionUser } from "~/types/user";
 
+import { useFetcherResult } from "~/hooks/useFetcherResult";
 import dayjs from "~/utils/dayjs";
-import { showDangerToast, showSuccessToast } from "~/utils/toasts";
+import { showSuccessToast } from "~/utils/toasts";
 import { capitalizeFirstLetter } from "~/utils/utils";
 
 type InputProps = {
@@ -35,26 +36,10 @@ export function StartSession({ user, session, children }: InputProps) {
 		});
 	};
 
-	useEffect(() => {
-		if (startFetcher.state !== "idle" || !startFetcher.data) {
-			return;
-		}
-
-		const result = startFetcher.data as
-			| { success: true }
-			| { message?: string };
-
-		if ("success" in result && result.success) {
-			showSuccessToast("Smagning startet");
-			return;
-		}
-
-		const errorMessage =
-			"message" in result
-				? (result.message ?? "Der skete en fejl")
-				: "Der skete en fejl";
-		showDangerToast(errorMessage);
-	}, [startFetcher.state, startFetcher.data]);
+	useFetcherResult(startFetcher, {
+		errorMessage: "Der skete en fejl",
+		onSuccess: () => showSuccessToast("Smagning startet"),
+	});
 
 	const isSubmitting = startFetcher.state !== "idle";
 	const isOneBeer = session.mode === SessionMode.oneBeer;

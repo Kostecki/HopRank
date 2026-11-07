@@ -5,13 +5,11 @@ import SessionsTable, { type Session } from "./SessionsTable";
 type InputProps = {
 	inProgressSessions: Session[];
 	finishedSessions: Session[];
-	readOnly: boolean;
 };
 
 export function SessionTabs({
 	inProgressSessions,
 	finishedSessions,
-	readOnly,
 }: InputProps) {
 	return (
 		<Tabs defaultValue="active" color="slateIndigo">
@@ -25,19 +23,11 @@ export function SessionTabs({
 			</Tabs.List>
 
 			<Tabs.Panel value="active">
-				<SessionsTable
-					sessions={inProgressSessions}
-					mode="active"
-					readOnly={readOnly}
-				/>
+				<SessionsTable sessions={inProgressSessions} mode="active" />
 			</Tabs.Panel>
 
 			<Tabs.Panel value="finished">
-				<SessionsTable
-					sessions={finishedSessions}
-					mode="finished"
-					readOnly={readOnly}
-				/>
+				<SessionsTable sessions={finishedSessions} mode="finished" />
 			</Tabs.Panel>
 		</Tabs>
 	);

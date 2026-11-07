@@ -108,17 +108,22 @@ export const SessionStatus = {
 	active: "active",
 	finished: "finished",
 } as const;
+export type SessionStatus = (typeof SessionStatus)[keyof typeof SessionStatus];
 
 export const SessionBeerStatus = {
 	waiting: "waiting",
 	rating: "rating",
 	rated: "rated",
 } as const;
+export type SessionBeerStatus =
+	(typeof SessionBeerStatus)[keyof typeof SessionBeerStatus];
 
 export const SessionUserExitReason = {
 	left: "left",
 	kicked: "kicked",
 } as const;
+export type SessionUserExitReason =
+	(typeof SessionUserExitReason)[keyof typeof SessionUserExitReason];
 
 type Rater = { userId: number; name: string | null; avgScore: number };
 export type SessionStats = {

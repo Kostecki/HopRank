@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 import { data } from "react-router";
 
+import { toClientUser } from "~/types/user";
 import type { Route } from "./+types/update";
 
 import { requireUser } from "~/auth/requireUser.server";
@@ -29,7 +30,7 @@ export async function action({ request }: Route.ActionArgs) {
 	session.set("user", updatedSessionUser);
 
 	return data(
-		{ success: true, user: updatedSessionUser },
+		{ success: true, user: toClientUser(updatedSessionUser) },
 		{ headers: { "Set-Cookie": await commitSession(session) } },
 	);
 }

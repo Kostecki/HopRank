@@ -55,6 +55,7 @@ export default [
 			route("beer/:beerId", "routes/api/untappd/$beerId.ts"),
 			route("beers", "routes/api/untappd/search.ts"),
 			route("check-in", "routes/api/untappd/check-in.ts"),
+			route("venues", "routes/api/untappd/venues.ts"),
 		]),
 		...prefix("user", [route("update", "routes/api/user/update.ts")]),
 	]),

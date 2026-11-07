@@ -29,9 +29,6 @@ const showSuccessToast = (
 ) => {
 	showToast(title, message, "success", false, autoClose);
 };
-const showWarningToast = (message: string, autoClose?: number) => {
-	showToast("Warning", message, "warning", false, autoClose);
-};
 const showDangerToast = (
 	message: string,
 	title = "Noget gik galt!",
@@ -40,4 +37,4 @@ const showDangerToast = (
 	showToast(title, message, "danger", false, autoClose);
 };
 
-export { showDangerToast, showSuccessToast, showWarningToast };
+export { showDangerToast, showSuccessToast };

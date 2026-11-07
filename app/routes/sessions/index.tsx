@@ -93,16 +93,10 @@ export default function Sessions() {
 		.map((s) => s.id);
 
 	const socketEvents = useMemo<
-		(
-			| "sessions:created"
-			| "sessions:deleted"
-			| "sessions:users-changed"
-			| "sessions:beer-changed"
-		)[]
+		("sessions:created" | "sessions:users-changed" | "sessions:beer-changed")[]
 	>(
 		() => [
 			"sessions:created",
-			"sessions:deleted",
 			"sessions:users-changed",
 			"sessions:beer-changed",
 		],
@@ -131,7 +125,6 @@ export default function Sessions() {
 			<SessionTabs
 				inProgressSessions={inProgressSessions}
 				finishedSessions={finishedSessions}
-				readOnly={false}
 			/>
 
 			<NewSession criteria={criteria} />

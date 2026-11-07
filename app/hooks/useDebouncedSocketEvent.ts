@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef } from "react";
 
 import type { SocketEvent, SocketEventMap } from "~/types/websocket";
 
+import { joinSessionRoom, leaveSessionRoom } from "~/utils/socketRooms";
 import { onSessionEvent } from "~/utils/websocket";
 
 import { useSocket } from "./useSocket";
@@ -38,39 +39,20 @@ export const useDebouncedSocketEvent = <K extends SocketEvent>(
 
 		if (!socket || (needsSession && !sessionId)) return;
 
-		const joinSession = () => {
-			if (needsSession && sessionId) {
-				socket.emit("join-session", sessionId);
-			}
-		};
-
-		// Join immediately (covers the case where the socket is already
-		// connected) and rejoin on every future "connect" event. The server
-		// treats a reconnect as a brand-new connection with no rooms, so
-		// without this, live updates silently stop after e.g. a phone being
-		// backgrounded and later reconnecting, even though the socket itself
-		// shows as connected again.
-		joinSession();
-		socket.on("connect", joinSession);
+		const roomId = needsSession ? Number(sessionId) : undefined;
+		if (roomId) joinSessionRoom(socket, roomId);
 
 		const cleanups = events.map((e) =>
-			onSessionEvent(socket, e, (payload) =>
-				debouncedHandler(e, payload as SocketEventMap[K]),
-			),
+			onSessionEvent(socket, e, (payload) => debouncedHandler(e, payload)),
 		);
 
 		return () => {
-			socket.off("connect", joinSession);
-
 			// Remove listeners
 			for (const fn of cleanups) {
 				fn();
 			}
 
-			// Leave session if needed
-			if (needsSession && sessionId) {
-				socket.emit("leave-session", sessionId);
-			}
+			if (roomId) leaveSessionRoom(socket, roomId);
 
 			// Clear any pending timers
 			Object.values(timers.current).forEach(clearTimeout);

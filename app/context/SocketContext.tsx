@@ -1,13 +1,14 @@
-import { createContext, useContext, useEffect, useState } from "react";
-import { io, type Socket } from "socket.io-client";
+import { createContext, useEffect, useState } from "react";
+import { io } from "socket.io-client";
 
 import { invariant } from "~/utils/invariant";
+import type { AppSocket } from "~/utils/socketRooms";
 import { resolveSocketUrl } from "~/utils/utils";
 
-export const SocketContext = createContext<Socket | null>(null);
+export const SocketContext = createContext<AppSocket | null>(null);
 
 export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
-	const [socket, setSocket] = useState<Socket | null>(null);
+	const [socket, setSocket] = useState<AppSocket | null>(null);
 
 	useEffect(() => {
 		const CONFIGURED_WS_URL = import.meta.env.VITE_WS_URL;
@@ -18,7 +19,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
 			window.location.hostname,
 		);
 
-		const s = io(WS_URL, {
+		const s: AppSocket = io(WS_URL, {
 			path: "/ws",
 			transports: ["websocket"],
 			autoConnect: true,
@@ -71,11 +72,4 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
 	return (
 		<SocketContext.Provider value={socket}>{children}</SocketContext.Provider>
 	);
-};
-
-// Hook to consume socket
-export const useSocket = () => {
-	const socket = useContext(SocketContext);
-	invariant(socket, "SocketProvider must wrap your component tree");
-	return socket;
 };

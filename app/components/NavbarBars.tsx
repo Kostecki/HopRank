@@ -21,8 +21,8 @@ import {
 } from "~/types/session";
 import type { SessionUser } from "~/types/user";
 
+import { useFetcherResult } from "~/hooks/useFetcherResult";
 import { useRemoveBar } from "~/hooks/useRemoveBar";
-import { showDangerToast } from "~/utils/toasts";
 
 import BarDragHandle, { noTextSelection } from "./BarDragHandle";
 import { ModalAddBar, ModalCorrectBar } from "./modals/ModalBar";
@@ -151,7 +151,7 @@ export default function NavbarBars({
 	const { removeBar } = useRemoveBar(sessionId);
 
 	const isRunning = session.status === SessionStatus.active;
-	const hasToken = !!user.untappd?.accessToken;
+	const hasToken = !!user.untappd;
 	const isOwner = user.admin || session.createdBy === user.id;
 
 	const finishedBars = bars.filter(
@@ -182,24 +182,13 @@ export default function NavbarBars({
 		if (!isDragging.current) setOrder(serverOrder);
 	}, [serverOrder]);
 
-	const { data, state } = fetcher;
-
-	useEffect(() => {
-		if (state !== "idle" || !data) return;
-
-		const result = data as { success?: boolean; message?: string };
-		const fetcherWithReset = fetcher as typeof fetcher & {
-			reset?: () => void;
-		};
-
-		if (!result.success) {
-			showDangerToast(result.message ?? "Kunne ikke flytte baren");
+	useFetcherResult(fetcher, {
+		errorMessage: "Kunne ikke flytte baren",
+		onError: () => {
 			setOrder(serverOrder);
 			revalidate();
-		}
-
-		fetcherWithReset.reset?.();
-	}, [state, data, fetcher, serverOrder, revalidate]);
+		},
+	});
 
 	const handleDragEnd = () => {
 		isDragging.current = false;

@@ -1,15 +1,18 @@
-import type { Socket } from "socket.io-client";
+import type { SocketEvent, SocketEventMap } from "~/types/websocket";
 
-import type { SocketEvent } from "~/types/websocket";
+import type { AppSocket } from "./socketRooms";
 
-export const onSessionEvent = (
-	socket: Socket,
-	event: SocketEvent,
-	handler: (...args: unknown[]) => void,
+/** Listens for an app event. Returns a function that stops listening. */
+export const onSessionEvent = <K extends SocketEvent>(
+	socket: AppSocket,
+	event: K,
+	handler: (payload: SocketEventMap[K]) => void,
 ) => {
-	socket.on(event, handler);
+	// socket.io's typed overloads can't follow a generic event name.
+	const listener = handler as (...args: unknown[]) => void;
+	socket.on(event as SocketEvent, listener as never);
 
 	return () => {
-		socket.off(event, handler);
+		socket.off(event as SocketEvent, listener as never);
 	};
 };

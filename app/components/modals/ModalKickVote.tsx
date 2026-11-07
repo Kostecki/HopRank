@@ -8,6 +8,7 @@ import type { SessionUser } from "~/types/user";
 import type { KickVotePublicState } from "~/types/websocket";
 
 import { useSocket } from "~/hooks/useSocket";
+import { joinSessionRoom, leaveSessionRoom } from "~/utils/socketRooms";
 import { showDangerToast, showSuccessToast } from "~/utils/toasts";
 
 type InputProps = {
@@ -25,19 +26,13 @@ export function ModalKickVote({ user, sessionProgress }: InputProps) {
 
 	const sessionId = sessionProgress.sessionId;
 
-	// Defensive: this modal shouldn't strictly depend on some other
-	// component's mount order having already joined the room. A repeat
-	// socket.join server-side is a harmless no-op.
+	// Joins the room itself rather than relying on another component having
+	// joined it. The rooms are counted, so this doesn't send a second join.
 	useEffect(() => {
 		if (!socket) return;
 
-		const join = () => socket.emit("join-session", sessionId);
-		join();
-		socket.on("connect", join);
-
-		return () => {
-			socket.off("connect", join);
-		};
+		joinSessionRoom(socket, sessionId);
+		return () => leaveSessionRoom(socket, sessionId);
 	}, [socket, sessionId]);
 
 	useEffect(() => {

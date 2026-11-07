@@ -3,6 +3,7 @@ import { useMemo } from "react";
 import { redirect, useLoaderData, useRevalidator } from "react-router";
 
 import { SessionMode, SessionStatus } from "~/types/session";
+import { toClientUser } from "~/types/user";
 import type { SocketEvent } from "~/types/websocket";
 import type { Route } from "./+types/sessionId";
 
@@ -95,7 +96,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 		}));
 
 	return {
-		user,
+		user: toClientUser(user),
 		sessionProgress,
 		criteria,
 		sessionBeers: sessionBeersList,
@@ -111,7 +112,6 @@ export default function Session() {
 
 	const socketEvents = useMemo<SocketEvent[]>(
 		() => [
-			"sessions:created",
 			"session:started",
 			"session:users-changed",
 			"session:beer-changed",

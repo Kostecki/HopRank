@@ -1,5 +1,7 @@
 import type { SelectBeers } from "~/database/schema.types";
 
+import type { SessionBeerStatus } from "./session";
+
 export type VenueDetails = {
 	address: string | null;
 	city: string | null;
@@ -14,7 +16,7 @@ export type SessionBar = VenueDetails & {
 	// Null for a bar typed by hand rather than found through venue search.
 	foursquareId: string | null;
 	addedByUserId: number;
-	status: string;
+	status: SessionBeerStatus;
 	placementCount: number;
 	// The bar's place in the crawl, counting from 1.
 	stopNumber: number;

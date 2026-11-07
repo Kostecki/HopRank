@@ -17,7 +17,7 @@ import type { BeerOption } from "~/types/misc";
 import { SessionMode } from "~/types/session";
 
 import type { SelectCriteria } from "~/database/schema.types";
-import { useFetcherErrorToast } from "~/hooks/useFetcherErrorToast";
+import { useFetcherResult } from "~/hooks/useFetcherResult";
 
 import BeerMultiSelect from "./BeerMultiSelect";
 import BeerSelect from "./BeerSelect";
@@ -71,7 +71,9 @@ export default function NewSession({ criteria, ...props }: InputProps) {
 
 	const newSessionFetcher = useFetcher();
 	const uniqueNameFetcher = useFetcher();
-	useFetcherErrorToast(newSessionFetcher, "Smagningen kunne ikke oprettes");
+	useFetcherResult(newSessionFetcher, {
+		errorMessage: "Smagningen kunne ikke oprettes",
+	});
 
 	const newSessionLoader = newSessionFetcher.state !== "idle";
 
@@ -178,6 +180,7 @@ export default function NewSession({ criteria, ...props }: InputProps) {
 								variant="light"
 								color="slateIndigo"
 								onClick={() => fetchName()}
+								aria-label="Find på et nyt navn"
 							>
 								<IconRefresh size={14} />
 							</ActionIcon>

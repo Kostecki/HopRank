@@ -65,17 +65,16 @@ export function UserMenu({ user }: InputProps) {
 		socket.on("connect", handleConnect);
 		socket.on("disconnect", handleDisconnect);
 		socket.on("connect_error", handleConnectError);
-		socket.on("reconnect_attempt", handleReconnectAttempt);
-
-		socket.on("clients-count", (count: number) => {
-			setClientsCount(count);
-		});
+		socket.on("clients-count", setClientsCount);
+		// Reconnection is the Manager's job, so its events are on socket.io.
+		socket.io.on("reconnect_attempt", handleReconnectAttempt);
 
 		return () => {
 			socket.off("connect", handleConnect);
 			socket.off("disconnect", handleDisconnect);
 			socket.off("connect_error", handleConnectError);
-			socket.off("reconnect_attempt", handleReconnectAttempt);
+			socket.off("clients-count", setClientsCount);
+			socket.io.off("reconnect_attempt", handleReconnectAttempt);
 		};
 	}, [socket]);
 

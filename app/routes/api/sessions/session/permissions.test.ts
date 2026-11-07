@@ -101,7 +101,7 @@ let beerId: number;
 const setMode = (mode: SessionMode) =>
 	testDb.update(sessions).set({ mode }).where(eq(sessions.id, sessionId));
 
-const setStatus = (status: string) =>
+const setStatus = (status: SessionStatus) =>
 	testDb
 		.update(sessionState)
 		.set({ status })

@@ -72,7 +72,10 @@ export const sessionUsers = sqliteTable(
 			.references(() => users.id),
 		// Null while active, or if this user has never left/been kicked.
 		exitReason: text("exit_reason", {
-			enum: Object.values(SessionUserExitReason) as [string, ...string[]],
+			enum: Object.values(SessionUserExitReason) as [
+				SessionUserExitReason,
+				...SessionUserExitReason[],
+			],
 		}),
 	},
 	(table) => [
@@ -112,7 +115,10 @@ export const sessionBeers = sqliteTable(
 		// Set by shuffleBeersInSession right after the beer is added.
 		order: integer("order"),
 		status: text({
-			enum: Object.values(SessionBeerStatus) as [string, ...string[]],
+			enum: Object.values(SessionBeerStatus) as [
+				SessionBeerStatus,
+				...SessionBeerStatus[],
+			],
 		})
 			.notNull()
 			.default(SessionBeerStatus.waiting),
@@ -142,7 +148,10 @@ export const sessionBars = sqliteTable(
 			.references(() => users.id),
 		order: integer("order").notNull(),
 		status: text({
-			enum: Object.values(SessionBeerStatus) as [string, ...string[]],
+			enum: Object.values(SessionBeerStatus) as [
+				SessionBeerStatus,
+				...SessionBeerStatus[],
+			],
 		})
 			.notNull()
 			.default(SessionBeerStatus.waiting),
@@ -238,7 +247,7 @@ export const sessionState = sqliteTable(
 		currentBeerId: integer("current_beer_id").references(() => beers.id),
 		currentBeerOrder: integer("current_beer_order"),
 		status: text({
-			enum: Object.values(SessionStatus) as [string, ...string[]],
+			enum: Object.values(SessionStatus) as [SessionStatus, ...SessionStatus[]],
 		})
 			.notNull()
 			.default(SessionStatus.created),

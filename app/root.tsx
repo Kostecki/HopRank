@@ -9,7 +9,6 @@ import {
 	Title,
 } from "@mantine/core";
 import { Notifications } from "@mantine/notifications";
-import { useEffect } from "react";
 import {
 	data,
 	Link,
@@ -22,21 +21,16 @@ import {
 	useLoaderData,
 	useRouteLoaderData,
 } from "react-router";
-import { getToast } from "remix-toast";
 import { theme } from "theme";
 
 import { userSessionGet } from "./auth/users.server";
 import { useUmamiIdentify } from "./hooks/umami";
-import {
-	showDangerToast,
-	showSuccessToast,
-	showWarningToast,
-} from "./utils/toasts";
 import "@mantine/core/styles.css";
 import "@mantine/notifications/styles.css";
 import "@mantine/carousel/styles.css";
 import "./app.css";
 
+import { toClientUser } from "~/types/user";
 import type { Route } from "./+types/root";
 
 import { startCron } from "~/utils/cron.server";
@@ -87,9 +81,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	}
 
 	const user = await userSessionGet(request);
-	const { toast, headers } = await getToast(request);
 
-	return data({ user, toast }, { headers });
+	return data({ user: user && toClientUser(user) });
 }
 
 function UmamiScript() {
@@ -102,29 +95,8 @@ function UmamiScript() {
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
-	const loaderData = useLoaderData<typeof loader>();
-	const toast = loaderData?.toast;
-
-	useEffect(() => {
-		if (toast) {
-			const { message, type, description, duration } = toast;
-
-			if (type === "success") {
-				showSuccessToast(message, description, duration);
-			}
-
-			if (type === "warning") {
-				showWarningToast(message, duration);
-			}
-
-			if (type === "error") {
-				showDangerToast(message, description, duration);
-			}
-		}
-	}, [toast]);
-
 	return (
-		<html lang="en" style={{ height: "100%", margin: 0 }} {...mantineHtmlProps}>
+		<html lang="da" style={{ height: "100%", margin: 0 }} {...mantineHtmlProps}>
 			<head>
 				<meta charSet="utf-8" />
 				<meta
@@ -176,15 +148,13 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
 
 			{norm.devStack && (
 				<pre style={{ padding: "16px", overflowX: "auto" }}>
-					+ <Code block>{norm.devStack}</Code>
+					<Code block>{norm.devStack}</Code>
 				</pre>
 			)}
 
-			<Link to="/">
-				<Button tt="uppercase" mt="md" variant="gradient">
-					Tilbage til forsiden
-				</Button>
-			</Link>
+			<Button component={Link} to="/" tt="uppercase" mt="md" variant="gradient">
+				Tilbage til forsiden
+			</Button>
 		</Container>
 	);
 }

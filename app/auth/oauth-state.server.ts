@@ -11,7 +11,6 @@ const maxAge = 60 * 10; // 10 minutes
 export const {
 	getSession: getOAuthStateSession,
 	commitSession: commitOAuthStateSession,
-	destroySession: destroyOAuthStateSession,
 } = createCookieSessionStorage({
 	cookie: {
 		name: "_oauth_state",

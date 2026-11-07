@@ -2,7 +2,7 @@ import { Button, Flex, Pagination, Table } from "@mantine/core";
 import { useState } from "react";
 import { useFetcher, useNavigate } from "react-router";
 
-import { useFetcherErrorToast } from "~/hooks/useFetcherErrorToast";
+import { useFetcherResult } from "~/hooks/useFetcherResult";
 import dayjs from "~/utils/dayjs";
 
 export type Session = {
@@ -18,20 +18,17 @@ export type Session = {
 type InputProps = {
 	sessions: Session[];
 	mode: "active" | "finished";
-	readOnly?: boolean;
 };
 
 const perPage = 10;
 
-export default function SessionsTable({
-	sessions,
-	mode,
-	readOnly,
-}: InputProps) {
+export default function SessionsTable({ sessions, mode }: InputProps) {
 	const [page, setPage] = useState(1);
 
 	const fetcher = useFetcher();
-	useFetcherErrorToast(fetcher, "Kunne ikke deltage i smagningen");
+	useFetcherResult(fetcher, {
+		errorMessage: "Kunne ikke deltage i smagningen",
+	});
 	const navigate = useNavigate();
 
 	const total = sessions.length;
@@ -94,10 +91,10 @@ export default function SessionsTable({
 				<Table.Td ta="center">{formatDate(session.createdAt)}</Table.Td>
 			)}
 
-			{!readOnly && <Table.Td ta="center">{session.beers}</Table.Td>}
+			<Table.Td ta="center">{session.beers}</Table.Td>
 
 			<Table.Td ta="right">
-				{stateActive && !readOnly ? (
+				{stateActive ? (
 					<Button
 						variant="filled"
 						size="xs"
@@ -110,12 +107,8 @@ export default function SessionsTable({
 						Deltag
 					</Button>
 				) : (
-					<Button
-						variant="filled"
-						size="xs"
-						color="slateIndigo"
-						onClick={() => handleFinishedClick(session.id)}
-					>
+					// The row's click opens the session; a click here would open it twice.
+					<Button variant="filled" size="xs" color="slateIndigo">
 						Vis
 					</Button>
 				)}
@@ -142,7 +135,7 @@ export default function SessionsTable({
 						<Table.Th ta="center">
 							{stateActive ? "Deltagere" : "Oprettet"}
 						</Table.Th>
-						{!readOnly && <Table.Th ta="center">Øl</Table.Th>}
+						<Table.Th ta="center">Øl</Table.Th>
 						<Table.Th ta="center" />
 					</Table.Tr>
 				</Table.Thead>

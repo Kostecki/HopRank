@@ -2,7 +2,7 @@ import { redirect } from "react-router";
 import { Authenticator } from "remix-auth";
 import { TOTPStrategy } from "remix-auth-totp";
 
-import type { SessionUser } from "~/types/user";
+import type { StoredSessionUser } from "~/types/user";
 
 import type { SelectUsers } from "~/database/schema.types";
 import { findOrCreateUserByEmail } from "~/database/utils/findOrCreateUserByEmail.server";
@@ -14,11 +14,7 @@ import { consumePendingRedirect } from "./pending-redirect.server";
 import { commitSession, getSession } from "./session.server";
 import { UntappdStrategy } from "./untappd-strategy.server";
 
-export const authenticator = new Authenticator<SessionUser>();
-
-export const isUntappdUser = (user: SessionUser) => {
-	return !!user.untappd;
-};
+export const authenticator = new Authenticator<StoredSessionUser>();
 
 const toSessionUserBase = (user: SelectUsers) => ({
 	id: user.id,
@@ -32,7 +28,7 @@ const toSessionUserBase = (user: SelectUsers) => ({
 	lastUpdatedAt: user.lastUpdatedAt,
 });
 
-const commitSessionUser = async (request: Request, user: SessionUser) => {
+const commitSessionUser = async (request: Request, user: StoredSessionUser) => {
 	const session = await getSession(request.headers.get("Cookie"));
 	session.set("user", user);
 
@@ -53,7 +49,7 @@ const commitSessionUser = async (request: Request, user: SessionUser) => {
 };
 
 authenticator.use(
-	new TOTPStrategy<SessionUser>(
+	new TOTPStrategy<StoredSessionUser>(
 		{
 			secret: env.TOTP_SECRET,
 			totpGeneration: {
@@ -94,7 +90,7 @@ authenticator.use(
 // untappd-strategy.server.ts for how dev gets relayed through it.
 
 authenticator.use(
-	new UntappdStrategy<SessionUser>(
+	new UntappdStrategy<StoredSessionUser>(
 		{
 			clientID: env.UNTAPPD_CLIENT_ID,
 			clientSecret: env.UNTAPPD_CLIENT_SECRET,

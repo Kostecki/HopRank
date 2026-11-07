@@ -1,11 +1,12 @@
 import { Button, Modal, Stack } from "@mantine/core";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useFetcher } from "react-router";
 
 import type { BarSelection, SessionBar } from "~/types/oneBeer";
 import type { SessionUser } from "~/types/user";
 
-import { showDangerToast, showSuccessToast } from "~/utils/toasts";
+import { useFetcherResult } from "~/hooks/useFetcherResult";
+import { showSuccessToast } from "~/utils/toasts";
 
 import AddBarForm from "../AddBarForm";
 import BarPicker from "../BarPicker";
@@ -71,25 +72,15 @@ export function ModalCorrectBar({
 		});
 	};
 
-	const { data, state } = fetcher;
+	const { state } = fetcher;
 
-	useEffect(() => {
-		if (state !== "idle" || !data) return;
-
-		const result = data as { success?: boolean; message?: string };
-		const fetcherWithReset = fetcher as typeof fetcher & {
-			reset?: () => void;
-		};
-
-		if (result.success) {
+	useFetcherResult(fetcher, {
+		errorMessage: "Kunne ikke rette baren",
+		onSuccess: () => {
 			showSuccessToast("Baren er rettet");
 			onClose();
-		} else {
-			showDangerToast(result.message ?? "Kunne ikke rette baren");
-		}
-
-		fetcherWithReset.reset?.();
-	}, [state, data, fetcher, onClose]);
+		},
+	});
 
 	return (
 		<Modal.Root opened={opened} onClose={onClose}>

@@ -20,7 +20,7 @@ export default function BarActions({ user, session, bar }: InputProps) {
 		useDisclosure(false);
 	const { removeBar, isRemoving } = useRemoveBar(session.sessionId);
 
-	const canCorrect = !bar.foursquareId && !!user.untappd?.accessToken;
+	const canCorrect = !bar.foursquareId && !!user.untappd;
 	const canRemove =
 		bar.status !== SessionBeerStatus.rated &&
 		(user.admin ||

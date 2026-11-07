@@ -1,11 +1,11 @@
 import { Button, Paper, Text } from "@mantine/core";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useFetcher, useParams } from "react-router";
 
 import type { BeerOption } from "~/types/misc";
 
 import type { SelectBeers } from "~/database/schema.types";
-import { showDangerToast } from "~/utils/toasts";
+import { useFetcherResult } from "~/hooks/useFetcherResult";
 
 import BeerMultiSelect from "./BeerMultiSelect";
 
@@ -37,29 +37,15 @@ export default function EmptySession({
 		});
 	};
 
-	const { data, state } = fetcher;
+	const { state } = fetcher;
 
-	useEffect(() => {
-		if (state !== "idle" || !data) {
-			return;
-		}
-
-		const result = data as { success?: boolean; message?: string };
-		const fetcherWithReset = fetcher as typeof fetcher & {
-			reset?: () => void;
-		};
-		if (result.success) {
+	useFetcherResult(fetcher, {
+		errorMessage: "Kunne ikke tilføje øl",
+		onSuccess: () => {
 			setSelectedBeers([]);
 			onBeersUpdated?.();
-			fetcherWithReset.reset?.();
-			return;
-		}
-
-		if (result.message) {
-			showDangerToast(result.message);
-		}
-		fetcherWithReset.reset?.();
-	}, [state, data, fetcher, onBeersUpdated]);
+		},
+	});
 
 	return (
 		<Paper p="md" radius="md" withBorder mt={64}>

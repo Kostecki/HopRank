@@ -42,10 +42,8 @@ export function BeerCardDetails({ beer }: InputProps) {
 			return;
 		}
 
-		setTimeout(() => {
-			setBeerDetails(beerFetcher.data as ScrapedBeer);
-			setFetching(false);
-		}, 2000);
+		setBeerDetails(beerFetcher.data as ScrapedBeer);
+		setFetching(false);
 	}, [beerFetcher.state, beerFetcher.data]);
 
 	return (

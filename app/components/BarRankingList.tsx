@@ -5,6 +5,7 @@ import { useFetcher, useRevalidator } from "react-router";
 
 import type { SessionBar } from "~/types/oneBeer";
 
+import { useFetcherResult } from "~/hooks/useFetcherResult";
 import {
 	getRankedBarIds,
 	getRowPlacements,
@@ -13,7 +14,6 @@ import {
 	RANKING_START,
 	withWaitingArea,
 } from "~/utils/oneBeerRanking";
-import { showDangerToast } from "~/utils/toasts";
 
 import BarDragHandle, { noTextSelection } from "./BarDragHandle";
 
@@ -120,26 +120,16 @@ export default function BarRankingList({
 		});
 	}, [serverOrder, hasUnsavedChanges, hasWaitingArea, newBarId]);
 
-	const { data, state } = fetcher;
+	const { state } = fetcher;
 
-	useEffect(() => {
-		if (state !== "idle" || !data) return;
-
-		const result = data as { success?: boolean; message?: string };
-		const fetcherWithReset = fetcher as typeof fetcher & {
-			reset?: () => void;
-		};
-
-		if (result.success) {
+	useFetcherResult(fetcher, {
+		errorMessage: "Kunne ikke gemme rangeringen",
+		onSuccess: () => {
 			setHasUnsavedChanges(false);
 			onSaved?.();
-		} else {
-			showDangerToast(result.message ?? "Kunne ikke gemme rangeringen");
-			revalidate();
-		}
-
-		fetcherWithReset.reset?.();
-	}, [state, data, fetcher, revalidate, onSaved]);
+		},
+		onError: () => revalidate(),
+	});
 
 	const handleSave = () => {
 		const formData = new FormData();
