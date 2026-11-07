@@ -108,6 +108,18 @@ describe("addBeersToSession", () => {
 		expect(newBeerIndex).not.toBe(3);
 	});
 
+	it("adds a 0% ABV beer", async () => {
+		await addBeersToSession(
+			sessionId,
+			[{ ...beerInput(1, "Brewery A", "Non-Alcoholic"), abv: 0 }],
+			userAId,
+		);
+
+		const rows = await waitingOrder();
+		expect(rows).toHaveLength(1);
+		expect(rows[0].beer.abv).toBe(0);
+	});
+
 	it("still adds the other new beers in a batch when one of them is already in the session", async () => {
 		// Beer 1 is already in the session (e.g. added by someone else moments
 		// ago, racing a stale client-side "already in session" check).

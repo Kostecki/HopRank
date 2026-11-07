@@ -22,7 +22,15 @@ export const addBeersToSession = async (
 	for (const beerData of beerInputs) {
 		const { untappdBeerId, name, breweryName, abv, style, label } = beerData;
 
-		if (!untappdBeerId || !name || !breweryName || !abv || !style || !label) {
+		// abv is checked with isFinite rather than truthiness so 0% beers pass.
+		if (
+			!untappdBeerId ||
+			!name ||
+			!breweryName ||
+			!Number.isFinite(abv) ||
+			!style ||
+			!label
+		) {
 			continue;
 		}
 
