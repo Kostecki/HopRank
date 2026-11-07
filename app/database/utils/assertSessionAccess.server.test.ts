@@ -1,7 +1,7 @@
 import { and, eq } from "drizzle-orm";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { SessionUserExitReason } from "~/types/session";
-import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
 	createTestDb,
@@ -300,9 +300,7 @@ describe("assertSessionAccess.server", () => {
 		it("returns 404 to a logged-in outsider", async () => {
 			currentUser = { id: outsiderId, admin: false };
 
-			expect(await outcome(requireResultsViewer(request, sessionId))).toBe(
-				404,
-			);
+			expect(await outcome(requireResultsViewer(request, sessionId))).toBe(404);
 		});
 	});
 });

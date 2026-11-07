@@ -325,15 +325,15 @@ describe("session API permissions", () => {
 			expect(await statusInDb()).toBe(SessionStatus.active);
 		});
 
-		it.each([
-			SessionStatus.active,
-			SessionStatus.finished,
-		])("isn't possible once it's %s", async (status) => {
-			await setStatus(status);
+		it.each([SessionStatus.active, SessionStatus.finished])(
+			"isn't possible once it's %s",
+			async (status) => {
+				await setStatus(status);
 
-			expect(await statusOf(start)).toBe(400);
-			expect(await statusInDb()).toBe(status);
-		});
+				expect(await statusOf(start)).toBe(400);
+				expect(await statusInDb()).toBe(status);
+			},
+		);
 	});
 
 	describe("removing a beer", () => {

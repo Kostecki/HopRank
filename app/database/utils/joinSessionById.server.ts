@@ -18,9 +18,7 @@ export async function joinSessionById({
 	await db
 		.update(sessionUsers)
 		.set({ active: false, exitReason: SessionUserExitReason.left })
-		.where(
-			and(eq(sessionUsers.userId, userId), eq(sessionUsers.active, true)),
-		);
+		.where(and(eq(sessionUsers.userId, userId), eq(sessionUsers.active, true)));
 
 	// Insert or update the session user to be active in the specified session
 	await db

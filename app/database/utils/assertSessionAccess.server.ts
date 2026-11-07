@@ -115,9 +115,7 @@ export async function canViewSession(
 		columns: { exitReason: true },
 	});
 
-	return (
-		!!membership && membership.exitReason !== SessionUserExitReason.kicked
-	);
+	return !!membership && membership.exitReason !== SessionUserExitReason.kicked;
 }
 
 /**
@@ -146,7 +144,10 @@ export async function requireSessionViewer(
  * it unlocked the session with its join code (the /v/:joinCode screen link),
  * so results can run on a big screen. Only for read-only views.
  */
-export async function requireResultsViewer(request: Request, sessionId: number) {
+export async function requireResultsViewer(
+	request: Request,
+	sessionId: number,
+) {
 	const user = await userSessionGet(request);
 	if (!user && (await getViewGrants(request)).includes(sessionId)) {
 		return;

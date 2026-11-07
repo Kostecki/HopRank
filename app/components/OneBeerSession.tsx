@@ -5,8 +5,8 @@ import type { OneBeerRanking, SessionBarList } from "~/types/oneBeer";
 import { type SessionProgress, SessionStatus } from "~/types/session";
 import type { SessionUser } from "~/types/user";
 
-import { groupByAverageScore } from "~/utils/podium";
 import { formatBarAddress, getBarMapUrl } from "~/utils/oneBeerRanking";
+import { groupByAverageScore } from "~/utils/podium";
 
 import AddBarForm from "./AddBarForm";
 import AddNextBarButton from "./AddNextBarButton";
@@ -14,8 +14,8 @@ import BarActions from "./BarActions";
 import BarDetails from "./BarDetails";
 import BeerHeader from "./BeerHeader";
 import { RankCard } from "./RankCard";
-import RankingButton from "./RankingButton";
 import RankedAccordion from "./RankedAccordion";
+import RankingButton from "./RankingButton";
 import { StartSession } from "./StartSession";
 import VoteProgress from "./VoteProgress";
 
