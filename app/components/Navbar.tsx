@@ -391,6 +391,16 @@ export default function Navbar({
 						)}
 					</CopyButton>
 
+					<CopyButton value={`${origin}/v/${sessionProgress.joinCode}`}>
+						{({ copied, copy }) => (
+							<Button c="slateIndigo" variant="white" size="xs" onClick={copy}>
+								<Text size="sm" fs="italic">
+									{copied ? "Link kopieret" : "Kopiér link til storskærm"}
+								</Text>
+							</Button>
+						)}
+					</CopyButton>
+
 					<Divider my="sm" mb="lg" opacity={0.5} />
 
 					<Button

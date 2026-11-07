@@ -140,3 +140,17 @@ export async function requireSessionViewer(
 
 	return user;
 }
+
+/**
+ * Like requireSessionViewer, but also lets a logged-out device through when
+ * it unlocked the session with its join code (the /v/:joinCode screen link),
+ * so results can run on a big screen. Only for read-only views.
+ */
+export async function requireResultsViewer(request: Request, sessionId: number) {
+	const user = await userSessionGet(request);
+	if (!user && (await getViewGrants(request)).includes(sessionId)) {
+		return;
+	}
+
+	await requireSessionViewer(request, sessionId);
+}

@@ -10,7 +10,7 @@ import MedalPodium from "~/components/MedalPodium";
 import OneBeerResults from "~/components/OneBeerResults";
 import ResultsSection from "~/components/ResultsSection";
 import SessionStatsCard from "~/components/SessionStatsCard";
-import { requireSessionViewer } from "~/database/utils/assertSessionAccess.server";
+import { requireResultsViewer } from "~/database/utils/assertSessionAccess.server";
 import { getSessionProgress } from "~/database/utils/getSessionProgress.server";
 import { getSessionStats } from "~/database/utils/getStats.server";
 import { getOneBeerRanking } from "~/database/utils/oneBeer.server";
@@ -29,7 +29,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 	}
 
 	const sessionId = extractSessionId(params.sessionId);
-	await requireSessionViewer(request, sessionId);
+	await requireResultsViewer(request, sessionId);
 
 	const sessionProgressResult = await getSessionProgress({
 		request,

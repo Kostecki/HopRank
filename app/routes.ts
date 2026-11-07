@@ -10,6 +10,7 @@ export default [
 	layout("routes/layout.tsx", [
 		index("routes/home.tsx"),
 		route("j/:joinCode", "routes/directJoin.tsx"),
+		route("v/:joinCode", "routes/screenLink.tsx"),
 		...prefix("sessions", [
 			index("routes/sessions/index.tsx"),
 			...prefix(":sessionId", [
