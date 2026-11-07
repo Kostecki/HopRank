@@ -202,7 +202,7 @@ describe("assertSessionAccess.server", () => {
 	describe("canViewSession", () => {
 		const setMembership = (
 			userId: number,
-			values: { active: boolean; exitReason: string | null },
+			values: { active: boolean; exitReason: SessionUserExitReason | null },
 		) =>
 			db
 				.update(sessionUsers)

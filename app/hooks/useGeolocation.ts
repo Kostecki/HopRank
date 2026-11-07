@@ -14,9 +14,12 @@ function roundTo4Decimals(value: number): number {
 	return Math.round(value * 10000) / 10000;
 }
 
+// Copenhagen. A module constant, so the default doesn't change identity on every
+// render and make requestLocation (which depends on it) change too.
+const DEFAULT_FALLBACK: Location = { lat: 55.6761, lng: 12.5683 };
+
 export function useGeolocation(options?: GeolocationOptions) {
-	const { fallback = { lat: 55.6761, lng: 12.5683 }, highAccuracy = false } =
-		options || {};
+	const { fallback = DEFAULT_FALLBACK, highAccuracy = false } = options || {};
 
 	const [location, setLocation] = useState<Location>({
 		lat: roundTo4Decimals(fallback.lat),

@@ -1,13 +1,13 @@
-import { Button, Divider, LoadingOverlay, Paper, Stack } from "@mantine/core";
+import { Button, Divider, Paper, Stack } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useDebouncedValue } from "@mantine/hooks";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useFetcher, useParams } from "react-router";
 
 import type { Criterion, SessionProgress } from "~/types/session";
 import type { SessionUser } from "~/types/user";
 
-import { useFetcherErrorToast } from "~/hooks/useFetcherErrorToast";
+import { useFetcherResult } from "~/hooks/useFetcherResult";
 import { useUntappdCheckin } from "~/hooks/useUntappdCheckin";
 import { calculateVoteScore } from "~/utils/score";
 import { sliderConf } from "~/utils/utils";
@@ -25,11 +25,12 @@ type InputProps = {
 export default function NewVote({ user, session, criteria }: InputProps) {
 	const voteFetcher = useFetcher();
 	const untappdFetcher = useFetcher();
-	useFetcherErrorToast(voteFetcher, "Din stemme kunne ikke gemmes");
+	useFetcherResult(voteFetcher, {
+		errorMessage: "Din stemme kunne ikke gemmes",
+	});
 
 	const { sessionId } = useParams();
 
-	const [isSubmitting, setIsSubmitting] = useState(false);
 	const previousBeerIdRef = useRef(session.currentBeer?.beerId ?? null);
 
 	const { defaultValue } = sliderConf();
@@ -60,32 +61,26 @@ export default function NewVote({ user, session, criteria }: InputProps) {
 		untappdFetcher,
 	});
 
-	const handleSubmit = async (values: typeof ratingsForm.values) => {
-		setIsSubmitting(true);
+	const handleSubmit = (values: typeof ratingsForm.values) => {
+		untappd.submitCheckin(calculatedTotalScore);
 
-		try {
-			untappd.submitCheckin(calculatedTotalScore);
+		const vote = {
+			sessionId: Number(sessionId),
+			userId: user.id,
+			beerId: session.currentBeer?.beerId,
+			ratings: Object.entries(values).map(([name, score]) => ({
+				criterionId: criteria.find((r) => r.name === name)?.id,
+				score,
+			})),
+		};
 
-			const vote = {
-				sessionId: Number(sessionId),
-				userId: user.id,
-				beerId: session.currentBeer?.beerId,
-				ratings: Object.entries(values).map(([name, score]) => ({
-					criterionId: criteria.find((r) => r.name === name)?.id as number,
-					score,
-				})),
-			};
+		const formData = new FormData();
+		formData.append("vote", JSON.stringify(vote));
 
-			const formData = new FormData();
-			formData.append("vote", JSON.stringify(vote));
-
-			voteFetcher.submit(formData, {
-				method: "POST",
-				action: `/api/sessions/${sessionId}/vote`,
-			});
-		} finally {
-			setIsSubmitting(false);
-		}
+		voteFetcher.submit(formData, {
+			method: "POST",
+			action: `/api/sessions/${sessionId}/vote`,
+		});
 	};
 
 	const calculatedTotalScore = useMemo(() => {
@@ -119,7 +114,7 @@ export default function NewVote({ user, session, criteria }: InputProps) {
 
 				<Divider my="lg" opacity={0.75} />
 
-				{!userHasRated && user.untappd?.id && user.untappd.accessToken && (
+				{!userHasRated && user.untappd?.id && (
 					<UntappdCheckinSection
 						isEnabled={untappd.isEnabled}
 						onEnabledChange={untappd.setIsEnabled}
@@ -133,7 +128,6 @@ export default function NewVote({ user, session, criteria }: InputProps) {
 						onSelectedVenueChange={untappd.setSelectedVenue}
 						comment={untappd.comment}
 						onCommentChange={untappd.setComment}
-						accessToken={user.untappd.accessToken}
 						location={untappd.location}
 					/>
 				)}
@@ -146,9 +140,7 @@ export default function NewVote({ user, session, criteria }: InputProps) {
 					fullWidth
 					type="submit"
 					loading={
-						isSubmitting ||
-						voteFetcher.state !== "idle" ||
-						untappdFetcher.state !== "idle"
+						voteFetcher.state !== "idle" || untappdFetcher.state !== "idle"
 					}
 					mb="lg"
 				>
@@ -160,17 +152,7 @@ export default function NewVote({ user, session, criteria }: InputProps) {
 						<SavedCard
 							title="Din bedømmelse er gemt!"
 							description="Så længe der stadig bliver stemt kan du altid ændre din score ved at gemme bedømmelsen igen."
-						>
-							<LoadingOverlay
-								visible={
-									!userHasRated &&
-									(isSubmitting || voteFetcher.state !== "idle")
-								}
-								zIndex={1000}
-								overlayProps={{ radius: "sm", blur: 2 }}
-								loaderProps={{ color: "slateIndigo" }}
-							/>
-						</SavedCard>
+						/>
 
 						{untappd.checkinId && (
 							<SavedCard

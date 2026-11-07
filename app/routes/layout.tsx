@@ -6,7 +6,8 @@ import { Outlet, useLoaderData } from "react-router";
 import type { SessionBar } from "~/types/oneBeer";
 import type { SessionProgress } from "~/types/session";
 import { SessionMode, SessionStatus } from "~/types/session";
-import type { Route } from "../+types/root";
+import { toClientUser } from "~/types/user";
+import type { Route } from "./+types/layout";
 
 import { userSessionGet } from "~/auth/users.server";
 import { Header } from "~/components/Header";
@@ -63,7 +64,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 	}
 
 	return {
-		user,
+		user: user ? toClientUser(user) : null,
 		sessionProgress,
 		sessionBeers: sessionBeersList,
 		sessionBars,

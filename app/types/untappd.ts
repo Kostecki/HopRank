@@ -81,27 +81,6 @@ export type ScrapedBeer = {
 	};
 };
 
-export type UntappdFriend = {
-	uid: number;
-	user_name: string;
-	location: string;
-	bio: string;
-	is_supporter: number;
-	first_name: string;
-	last_name: string;
-	relationship: string;
-	user_avatar: string;
-};
-
-export type UntappdFriendsResponse = {
-	response: {
-		items: { user: UntappdFriend }[];
-		pagination: {
-			next_url: string | null;
-		};
-	};
-};
-
 export type UntappdVenue = {
 	recent_date: string;
 	venue_id: number;

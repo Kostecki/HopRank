@@ -1,7 +1,7 @@
 import { Text } from "@mantine/core";
 import { type MetaFunction, redirect } from "react-router";
 
-import type { Route } from "../+types/root";
+import type { Route } from "./+types/home";
 
 import { userSessionGet } from "~/auth/users.server";
 import { getPageTitle } from "~/utils/utils";

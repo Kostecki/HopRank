@@ -26,7 +26,6 @@ export type SocketEventMap = {
 
 	// Global events
 	"sessions:created": { sessionId: number };
-	"sessions:deleted": { sessionId: number };
 	"sessions:users-changed": { sessionId: number };
 	"sessions:beer-changed": { sessionId: number };
 };
@@ -38,3 +37,20 @@ export type SessionEvent = Extract<SocketEvent, `session:${string}`>;
 
 // Global events (everything else)
 export type GlobalEvent = Exclude<SocketEvent, SessionEvent>;
+
+/** What the server sends: every app event, plus the connected-clients count. */
+export type ServerToClientEvents = {
+	[K in SocketEvent]: (payload: SocketEventMap[K]) => void;
+} & {
+	"clients-count": (count: number) => void;
+};
+
+/** What the client sends: joining and leaving a session's room. */
+export type ClientToServerEvents = {
+	"join-session": (sessionId: number) => void;
+	"leave-session": (sessionId: number) => void;
+};
+
+/** An event's payload as emit arguments: none when it has no payload. */
+export type EventArgs<K extends SocketEvent> =
+	SocketEventMap[K] extends undefined ? [] : [SocketEventMap[K]];

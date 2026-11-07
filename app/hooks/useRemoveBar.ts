@@ -1,9 +1,9 @@
-import { useCallback, useEffect } from "react";
+import { useCallback } from "react";
 import { useFetcher } from "react-router";
 
 import type { SessionBar } from "~/types/oneBeer";
 
-import { showDangerToast } from "~/utils/toasts";
+import { useFetcherResult } from "~/hooks/useFetcherResult";
 
 export function useRemoveBar(sessionId: number) {
 	const fetcher = useFetcher();
@@ -26,15 +26,7 @@ export function useRemoveBar(sessionId: number) {
 		[fetcher.submit, sessionId],
 	);
 
-	useEffect(() => {
-		if (fetcher.state !== "idle" || !fetcher.data) return;
-
-		const result = fetcher.data as { success?: boolean; message?: string };
-
-		if (!result.success) {
-			showDangerToast(result.message ?? "Kunne ikke fjerne baren");
-		}
-	}, [fetcher.state, fetcher.data]);
+	useFetcherResult(fetcher, { errorMessage: "Kunne ikke fjerne baren" });
 
 	return { removeBar, isRemoving: fetcher.state !== "idle" };
 }

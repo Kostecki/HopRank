@@ -1,6 +1,6 @@
 import { Box, Button, Modal, Stack } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useContext, useMemo, useState } from "react";
 import { useFetcher } from "react-router";
 
 import type { BeerOption } from "~/types/misc";
@@ -10,7 +10,8 @@ import type {
 	SelectBeers,
 	SelectSessionBeersWithBeer,
 } from "~/database/schema.types";
-import { showDangerToast, showSuccessToast } from "~/utils/toasts";
+import { useFetcherResult } from "~/hooks/useFetcherResult";
+import { showSuccessToast } from "~/utils/toasts";
 
 import BeerMultiSelect from "../BeerMultiSelect";
 
@@ -74,28 +75,17 @@ export default function ModalAddBeers({
 		});
 	};
 
-	const { data, state } = submitFetcher;
+	const { state } = submitFetcher;
 
-	useEffect(() => {
-		if (state !== "idle" || !data) return;
-
-		const result = data as { success?: boolean; message?: string };
-		const fetcherWithReset = submitFetcher as typeof submitFetcher & {
-			reset?: () => void;
-		};
-
-		if (result.success) {
+	useFetcherResult(submitFetcher, {
+		errorMessage: "Kunne ikke tilføje øl",
+		onSuccess: () => {
 			setSelectedBeers([]);
 			close();
 			showSuccessToast("Øl tilføjet til smagningen");
 			onBeersUpdated?.();
-			fetcherWithReset.reset?.();
-			return;
-		}
-
-		showDangerToast(result.message ? result.message : "Kunne ikke tilføje øl");
-		fetcherWithReset.reset?.();
-	}, [state, data, submitFetcher, onBeersUpdated, close]);
+		},
+	});
 
 	return (
 		<ModalAddBeersContext.Provider value={open}>

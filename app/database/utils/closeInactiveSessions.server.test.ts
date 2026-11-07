@@ -18,7 +18,7 @@ const { users, sessions, sessionState, sessionUsers } = await import(
 async function seedActiveSession(
 	createdAt: string,
 	lastUpdatedAt: string,
-	status: string = SessionStatus.active,
+	status: SessionStatus = SessionStatus.active,
 ) {
 	const [user] = await testDb
 		.insert(users)

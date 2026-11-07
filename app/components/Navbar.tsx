@@ -41,7 +41,7 @@ import {
 import type { SessionUser } from "~/types/user";
 
 import type { SelectSessionBeersWithBeer } from "~/database/schema.types";
-import { useFetcherErrorToast } from "~/hooks/useFetcherErrorToast";
+import { useFetcherResult } from "~/hooks/useFetcherResult";
 import { showDangerToast } from "~/utils/toasts";
 import { createBeerLink, createProfileLink } from "~/utils/untappd";
 import { sortByDisplayName } from "~/utils/utils";
@@ -51,7 +51,7 @@ import ModalAddBeers, { ModalAddBeersTrigger } from "./modals/ModalAddBeers";
 import NavbarBars from "./NavbarBars";
 
 type InputProps = {
-	user: SessionUser;
+	user: SessionUser | null;
 	sessionProgress: SessionProgress | null;
 	sessionBeers: SelectSessionBeersWithBeer[];
 	sessionBars: SessionBar[];
@@ -125,6 +125,7 @@ function ParticipantRow({
 							color="slateIndigo"
 							to={createProfileLink(rowUser.username)}
 							target="_blank"
+							aria-label="Se profil på Untappd"
 						>
 							<IconExternalLink size={16} stroke={1.5} />
 						</ActionIcon>
@@ -137,6 +138,7 @@ function ParticipantRow({
 							variant="subtle"
 							color="red"
 							onClick={() => onKick(rowUser.id)}
+							aria-label="Start afstemning om at kicke"
 						>
 							<IconUserX size={16} stroke={1.5} />
 						</ActionIcon>
@@ -187,6 +189,7 @@ function UserBeerRow({
 				color="slateIndigo"
 				onClick={() => onRemove(id)}
 				disabled={isDisabled}
+				aria-label="Fjern øl"
 			>
 				<IconTrash style={{ width: "70%", height: "70%" }} stroke={1.5} />
 			</ActionIcon>
@@ -319,35 +322,18 @@ export default function Navbar({
 		showDangerToast(result.message ?? "Øllen kunne ikke fjernes");
 	}, [removeFetcher.state, removeFetcher.data, pendingBeersSnapshot]);
 
-	useFetcherErrorToast(leaveFetcher, "Kunne ikke forlade smagningen");
+	useFetcherResult(leaveFetcher, {
+		errorMessage: "Kunne ikke forlade smagningen",
+		onSuccess: () => navigate("/sessions"),
+	});
 
-	useEffect(() => {
-		if (leaveFetcher.state !== "idle") return;
-		const result = leaveFetcher.data as { success?: boolean } | undefined;
-		if (result?.success) {
-			navigate("/sessions");
-		}
-	}, [leaveFetcher.state, leaveFetcher.data, navigate]);
+	useFetcherResult(finishFetcher, {
+		errorMessage: "Kunne ikke afslutte smagningen",
+	});
 
-	useEffect(() => {
-		if (finishFetcher.state !== "idle" || !finishFetcher.data) return;
-
-		const result = finishFetcher.data as { success?: true; message?: string };
-
-		if (!result.success) {
-			showDangerToast(result.message ?? "Kunne ikke afslutte smagningen");
-		}
-	}, [finishFetcher.state, finishFetcher.data]);
-
-	useEffect(() => {
-		if (kickFetcher.state !== "idle" || !kickFetcher.data) return;
-
-		const result = kickFetcher.data as { success: true } | { message?: string };
-
-		if (!("success" in result)) {
-			showDangerToast(result.message ?? "Kunne ikke starte afstemning");
-		}
-	}, [kickFetcher.state, kickFetcher.data]);
+	useFetcherResult(kickFetcher, {
+		errorMessage: "Kunne ikke starte afstemning",
+	});
 
 	const viewerIsActive =
 		sessionProgress?.users.find((u) => u.id === user?.id)?.status === "active";
@@ -369,13 +355,7 @@ export default function Navbar({
 					<CopyButton value={sessionProgress.joinCode}>
 						{({ copied, copy }) => (
 							<Button c="slateIndigo" variant="white" size="xs" onClick={copy}>
-								<Text
-									ta="center"
-									c="dimmed"
-									size="sm"
-									onClick={copy}
-									style={{ cursor: "pointer" }}
-								>
+								<Text ta="center" c="dimmed" size="sm">
 									{copied
 										? "Pin kopieret"
 										: `Pinkode: ${sessionProgress.joinCode}`}
@@ -452,7 +432,7 @@ export default function Navbar({
 											!readOnly &&
 											rowUser.status === "active" &&
 											viewerIsActive &&
-											rowUser.id !== user.id
+											rowUser.id !== user?.id
 										}
 										onKick={handleKick}
 									/>
@@ -461,7 +441,8 @@ export default function Navbar({
 						</>
 					)}
 
-					{inProgressSession &&
+					{user &&
+						inProgressSession &&
 						!readOnly &&
 						viewerIsActive &&
 						sessionProgress.mode === SessionMode.oneBeer && (
@@ -483,7 +464,11 @@ export default function Navbar({
 									</Text>
 
 									<ModalAddBeersTrigger>
-										<ActionIcon variant="subtle" color="slateIndigo">
+										<ActionIcon
+											variant="subtle"
+											color="slateIndigo"
+											aria-label="Tilføj øl"
+										>
 											<IconPlus size={14} />
 										</ActionIcon>
 									</ModalAddBeersTrigger>

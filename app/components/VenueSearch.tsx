@@ -6,11 +6,9 @@ import {
 	TextInput,
 	useCombobox,
 } from "@mantine/core";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import type { VenueDetails } from "~/types/oneBeer";
-
-import { getVenues } from "~/utils/untappd";
 
 interface InputProps extends BoxProps {
 	selectedVenue: string;
@@ -26,7 +24,6 @@ interface InputProps extends BoxProps {
 	isVenueDisabled?: (venue: { value: string; label: string }) => boolean;
 	lat: number;
 	lng: number;
-	untappdAccessToken: string;
 	priorityVenueIds: number[];
 }
 
@@ -50,7 +47,7 @@ const normalizeQuery = (query: string) =>
 		.normalize("NFD")
 		.replace(/[\p{Diacritic}]/gu, "");
 
-const venuesCache = new Map<string, Awaited<ReturnType<typeof getVenues>>>();
+const venuesCache = new Map<string, VenuesResponse>();
 
 export default function VenueSearch({
 	selectedVenue,
@@ -63,7 +60,6 @@ export default function VenueSearch({
 	isVenueDisabled,
 	lat,
 	lng,
-	untappdAccessToken,
 	priorityVenueIds,
 	...props
 }: InputProps) {
@@ -78,6 +74,15 @@ export default function VenueSearch({
 
 	const abortController = useRef<AbortController | null>(null);
 	const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
+
+	// Stop a pending search when the picker goes away.
+	useEffect(
+		() => () => {
+			abortController.current?.abort();
+			if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
+		},
+		[],
+	);
 
 	const fetchOptions = (query: string) => {
 		const key = `${lat},${lng},${normalizeQuery(query)}`;
@@ -99,16 +104,35 @@ export default function VenueSearch({
 		abortController.current = new AbortController();
 		setLoading(true);
 
-		getVenues(untappdAccessToken, lat, lng, query)
+		const { signal } = abortController.current;
+		const params = new URLSearchParams({
+			lat: String(lat),
+			lng: String(lng),
+			...(query ? { q: query } : {}),
+		});
+
+		fetch(`/api/untappd/venues?${params}`, { signal })
+			.then((response) => {
+				if (!response.ok) throw new Error(`Venue search ${response.status}`);
+				return response.json() as Promise<VenuesResponse>;
+			})
 			.then((result) => {
 				venuesCache.set(key, result);
 				onVenuesLoaded?.(result.flatMap((group) => group.items));
 				setData(result);
-				setLoading(false);
 				setEmpty(result[0].items.length === 0 || result[1].items.length === 0);
-				abortController.current = null;
 			})
-			.catch(() => {});
+			.catch(() => {
+				// A newer search replaced this one; that search sets the state.
+				if (signal.aborted) return;
+				setData(null);
+				setEmpty(true);
+			})
+			.finally(() => {
+				if (signal.aborted) return;
+				setLoading(false);
+				abortController.current = null;
+			});
 	};
 
 	const fetchOptionsDebounced = (query: string) => {

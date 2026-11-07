@@ -27,7 +27,6 @@ type UntappdCheckinSectionProps = {
 	onSelectedVenueChange: (value: string) => void;
 	comment: string;
 	onCommentChange: (value: string) => void;
-	accessToken: string;
 	location: Location;
 };
 
@@ -44,7 +43,6 @@ export function UntappdCheckinSection({
 	onSelectedVenueChange,
 	comment,
 	onCommentChange,
-	accessToken,
 	location,
 }: UntappdCheckinSectionProps) {
 	return (
@@ -119,7 +117,6 @@ export function UntappdCheckinSection({
 					mt="sm"
 					selectedVenue={selectedVenue}
 					onChange={onSelectedVenueChange}
-					untappdAccessToken={accessToken}
 					lat={location.lat}
 					lng={location.lng}
 					priorityVenueIds={[]}

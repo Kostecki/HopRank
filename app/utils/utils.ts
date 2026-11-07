@@ -169,17 +169,6 @@ export const isMobileOrTablet = (): boolean => {
 };
 
 /**
- * Pluralizes a word based on the count.
- *
- * @param count - The count to determine singular or plural.
- * @param word - The base form of the word.
- * @returns The appropriate form of the word based on the count.
- */
-export const pluralize = (count: number, word: string) => {
-	return count === 1 ? word : `${word}s`;
-};
-
-/**
  * Formats a count value for display.
  *
  * @param value - The count value to format (e.g., 1234).

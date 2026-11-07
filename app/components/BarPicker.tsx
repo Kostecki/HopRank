@@ -57,22 +57,22 @@ export default function BarPicker({
 	allowTyped = true,
 	...props
 }: InputProps) {
-	const accessToken = user.untappd?.accessToken;
+	const hasUntappd = !!user.untappd;
 	const sessionBars =
 		useRouteLoaderData<typeof layoutLoader>("routes/layout")?.sessionBars ?? [];
 
-	const [isTyping, setIsTyping] = useState(!accessToken);
+	const [isTyping, setIsTyping] = useState(!hasUntappd);
 	const [typedName, setTypedName] = useState("");
 
 	const { location, requestLocation } = useGeolocation();
 	const hasRequestedLocation = useRef(false);
 
 	useEffect(() => {
-		if (accessToken && !hasRequestedLocation.current) {
+		if (hasUntappd && !hasRequestedLocation.current) {
 			hasRequestedLocation.current = true;
 			requestLocation();
 		}
-	}, [accessToken, requestLocation]);
+	}, [hasUntappd, requestLocation]);
 
 	const switchInput = (typing: boolean) => {
 		setIsTyping(typing);
@@ -95,7 +95,7 @@ export default function BarPicker({
 					}}
 				/>
 
-				{accessToken && (
+				{hasUntappd && (
 					<Anchor
 						component="button"
 						type="button"
@@ -111,7 +111,7 @@ export default function BarPicker({
 		);
 	}
 
-	if (!accessToken) {
+	if (!hasUntappd) {
 		return (
 			<Text size="sm" c="dimmed" {...props}>
 				Du skal være logget ind med Untappd for at søge efter barer.
@@ -138,7 +138,6 @@ export default function BarPicker({
 				onChange={(foursquareId, name, details) =>
 					onChange(name ? { name, foursquareId, ...details } : null)
 				}
-				untappdAccessToken={accessToken}
 				lat={location.lat}
 				lng={location.lng}
 				priorityVenueIds={[]}

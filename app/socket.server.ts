@@ -1,6 +1,11 @@
 import { createServer } from "node:http";
 import { Server } from "socket.io";
 
+import type {
+	ClientToServerEvents,
+	ServerToClientEvents,
+} from "~/types/websocket";
+
 import { env } from "~/utils/env.server";
 import { computeTally, getActiveKickVote } from "~/utils/kickVoteState.server";
 
@@ -12,15 +17,17 @@ const WS_URL = import.meta.env.VITE_WS_URL;
 // previous instance is still bound to the port -- so the server is stashed
 // on globalThis (which survives module-graph invalidation, unlike normal
 // module-scope state) and only ever created once per process.
+type AppServer = Server<ClientToServerEvents, ServerToClientEvents>;
+
 declare global {
 	var __hopRankSocket:
-		| { httpServer: ReturnType<typeof createServer>; io: Server }
+		| { httpServer: ReturnType<typeof createServer>; io: AppServer }
 		| undefined;
 }
 
 function createSocketServer() {
 	const httpServer = createServer();
-	const io = new Server(httpServer, {
+	const io: AppServer = new Server(httpServer, {
 		path: "/ws",
 		cors: { origin: env.APP_URL },
 		transports: ["websocket"],
@@ -63,6 +70,8 @@ function createSocketServer() {
 			console.log(" - Reason:", reason);
 			console.log(" - Total Clients:", io.engine.clientsCount);
 			console.log();
+
+			io.emit("clients-count", io.engine.clientsCount);
 		});
 
 		socket.on("error", (err) => {
