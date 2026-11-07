@@ -43,6 +43,13 @@
       "when": 1794057791623,
       "tag": "0005_mute_morlocks",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1794059957282,
+      "tag": "0006_glamorous_earthquake",
+      "breakpoints": true
     }
   ]
 }

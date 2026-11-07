@@ -224,7 +224,8 @@ export const ratings = sqliteTable(
 		criterionId: integer("criterion_id")
 			.notNull()
 			.references(() => criteria.id),
-		score: integer("score").notNull(),
+		// Scores step by 0.25 (see sliderConf), so they need a real column.
+		score: real("score").notNull(),
 		createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 	},
 	(table) => [
