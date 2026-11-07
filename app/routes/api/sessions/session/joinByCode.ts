@@ -3,6 +3,7 @@ import { data, redirect } from "react-router";
 import type { Route } from "./+types/joinByCode";
 
 import { userSessionGet } from "~/auth/users.server";
+import { addViewGrant } from "~/auth/viewGrants.server";
 import {
 	joinSessionByCode,
 	SessionNotFoundError,
@@ -37,7 +38,9 @@ export async function action({ request, params }: Route.ActionArgs) {
 		const sessionId = result.session.id;
 
 		if (result.readOnly) {
-			return redirect(`/sessions/${sessionId}/view`);
+			return redirect(`/sessions/${sessionId}/view`, {
+				headers: { "Set-Cookie": await addViewGrant(request, sessionId) },
+			});
 		}
 
 		return redirect(`/sessions/${sessionId}`);

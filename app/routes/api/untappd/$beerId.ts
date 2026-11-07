@@ -1,8 +1,10 @@
 import * as cheerio from "cheerio";
+import { data } from "react-router";
 
 import type { ScrapedBeer } from "~/types/untappd";
 import type { Route } from "./+types/$beerId";
 
+import { userSessionGet } from "~/auth/users.server";
 import { createBeerLink } from "~/utils/untappd";
 
 const cachedData = new Map<string, { data: ScrapedBeer; timestamp: number }>();
@@ -18,9 +20,16 @@ function purgeExpiredCache() {
 	}
 }
 
-export async function loader({ params }: Route.LoaderArgs) {
+export async function loader({ params, request }: Route.LoaderArgs) {
+	const user = await userSessionGet(request);
+	if (!user) {
+		throw data({ message: "User not authenticated" }, { status: 401 });
+	}
+
 	const beerId = params.beerId;
-	if (!beerId) throw new Error("Beer ID is required");
+	if (!beerId || !/^\d+$/.test(beerId)) {
+		throw data({ message: "Invalid beer ID" }, { status: 400 });
+	}
 
 	purgeExpiredCache();
 

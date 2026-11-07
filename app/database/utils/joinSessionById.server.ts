@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 
 import { SessionUserExitReason } from "~/types/session";
 
@@ -12,12 +12,15 @@ export async function joinSessionById({
 	sessionId: number;
 	userId: number;
 }) {
-	// Set all other sessions for this user to inactive
-	// This ensures the user is only active in one session at a time
+	// Leave whatever session the user is currently active in, so they're only
+	// active in one at a time. Inactive rows are left alone: they keep their
+	// exit reason (kicked, left, or none for a session that finished).
 	await db
 		.update(sessionUsers)
 		.set({ active: false, exitReason: SessionUserExitReason.left })
-		.where(eq(sessionUsers.userId, userId));
+		.where(
+			and(eq(sessionUsers.userId, userId), eq(sessionUsers.active, true)),
+		);
 
 	// Insert or update the session user to be active in the specified session
 	await db

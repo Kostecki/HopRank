@@ -106,17 +106,18 @@ export const displayABV = (
 };
 
 /**
- * Extracts and validates a numeric session ID from a string input.
- * Throws a 400 response if the input is missing or not a valid number.
- *
- * @param inputParam - The input string to parse as a session ID.
- * @returns The parsed session ID as a number.
- * @throws A 400 Remix response if the input is invalid.
+ * Parses a session ID route param, which must be a positive integer written
+ * in plain digits. Throws a 400 response otherwise.
  */
-export const extractSessionId = (inputParam: string) => {
+export const extractSessionId = (inputParam: string | undefined) => {
 	const sessionId = Number(inputParam);
 
-	if (!inputParam || Number.isNaN(sessionId)) {
+	if (
+		!inputParam ||
+		!/^\d+$/.test(inputParam) ||
+		!Number.isSafeInteger(sessionId) ||
+		sessionId <= 0
+	) {
 		throw data({ message: "Invalid session ID" }, { status: 400 });
 	}
 

@@ -1,4 +1,6 @@
 import { and, eq } from "drizzle-orm";
+
+import { SessionUserExitReason } from "~/types/session";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
@@ -10,7 +12,19 @@ import {
 const testDb = createTestDb();
 vi.mock("~/database/config.server", () => ({ db: testDb }));
 
+let currentUser: { id: number; admin: boolean } | null = null;
+let currentGrants: number[] = [];
+vi.mock("~/auth/users.server", () => ({
+	userSessionGet: async () => currentUser,
+}));
+vi.mock("~/auth/viewGrants.server", () => ({
+	getViewGrants: async () => currentGrants,
+}));
+
 const {
+	canViewSession,
+	requireResultsViewer,
+	requireSessionViewer,
 	isActiveSessionParticipant,
 	requireSessionParticipant,
 	requireSessionOwnerOrAdmin,
@@ -181,6 +195,113 @@ describe("assertSessionAccess.server", () => {
 					outsiderId,
 					sessionId,
 				),
+			);
+		});
+	});
+
+	describe("canViewSession", () => {
+		const setMembership = (
+			userId: number,
+			values: { active: boolean; exitReason: string | null },
+		) =>
+			db
+				.update(sessionUsers)
+				.set(values)
+				.where(
+					and(
+						eq(sessionUsers.sessionId, sessionId),
+						eq(sessionUsers.userId, userId),
+					),
+				);
+
+		const viewer = (id: number, admin = false) => ({ id, admin });
+
+		it("is true for the creator and an active participant", async () => {
+			expect(await canViewSession(sessionId, viewer(ownerId))).toBe(true);
+			expect(await canViewSession(sessionId, viewer(memberId))).toBe(true);
+		});
+
+		it("is true for a participant who left or whose session finished", async () => {
+			await setMembership(memberId, {
+				active: false,
+				exitReason: SessionUserExitReason.left,
+			});
+			expect(await canViewSession(sessionId, viewer(memberId))).toBe(true);
+
+			await setMembership(memberId, { active: false, exitReason: null });
+			expect(await canViewSession(sessionId, viewer(memberId))).toBe(true);
+		});
+
+		it("is false for a kicked participant", async () => {
+			await setMembership(memberId, {
+				active: false,
+				exitReason: SessionUserExitReason.kicked,
+			});
+
+			expect(await canViewSession(sessionId, viewer(memberId))).toBe(false);
+		});
+
+		it("is false for an outsider, unless they unlocked it with the join code", async () => {
+			expect(await canViewSession(sessionId, viewer(outsiderId))).toBe(false);
+			expect(
+				await canViewSession(sessionId, viewer(outsiderId), [sessionId]),
+			).toBe(true);
+		});
+
+		it("is true for an admin", async () => {
+			expect(
+				await canViewSession(sessionId, viewer(adminOutsiderId, true)),
+			).toBe(true);
+		});
+
+		it("is false for a session that doesn't exist", async () => {
+			expect(await canViewSession(999_999, viewer(ownerId, true))).toBe(false);
+		});
+	});
+
+	describe("requireSessionViewer / requireResultsViewer", () => {
+		const request = new Request("http://test.local/");
+
+		const outcome = async (promise: Promise<unknown>) => {
+			try {
+				await promise;
+				return "allowed";
+			} catch (thrown) {
+				const response = thrown as Response;
+				return response.status === 302 ? "login" : response.status;
+			}
+		};
+
+		beforeEach(() => {
+			currentUser = null;
+			currentGrants = [];
+		});
+
+		it("sends a logged-out device to login", async () => {
+			expect(await outcome(requireSessionViewer(request, sessionId))).toBe(
+				"login",
+			);
+			expect(await outcome(requireResultsViewer(request, sessionId))).toBe(
+				"login",
+			);
+		});
+
+		it("lets a logged-out device with the screen link see results only", async () => {
+			currentGrants = [sessionId];
+
+			expect(await outcome(requireResultsViewer(request, sessionId))).toBe(
+				"allowed",
+			);
+			expect(await outcome(requireSessionViewer(request, sessionId))).toBe(
+				"login",
+			);
+		});
+
+		it("returns 404 to a logged-in outsider", async () => {
+			currentUser = { id: outsiderId, admin: false };
+
+			expect(await outcome(requireResultsViewer(request, sessionId))).toBe(
+				404,
 			);
 		});
 	});

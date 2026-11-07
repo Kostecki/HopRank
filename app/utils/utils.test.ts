@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+	extractSessionId,
 	isSafeRedirect,
 	isValidVoteScore,
 	resolveSocketUrl,
@@ -116,5 +117,31 @@ describe("resolveSocketUrl", () => {
 		expect(resolveSocketUrl("wss://example.com", "example.com")).toBe(
 			"wss://example.com",
 		);
+	});
+});
+
+describe("extractSessionId", () => {
+	it("parses a positive integer", () => {
+		expect(extractSessionId("42")).toBe(42);
+	});
+
+	it.each([
+		undefined,
+		"",
+		"0",
+		"-1",
+		"1.5",
+		"0x10",
+		"1e3",
+		"Infinity",
+		"abc",
+		"99999999999999999999",
+	])("rejects %s with a 400", (input) => {
+		try {
+			extractSessionId(input);
+			expect.fail("expected a 400 to be thrown");
+		} catch (error) {
+			expect((error as { init?: { status?: number } }).init?.status).toBe(400);
+		}
 	});
 });

@@ -5,6 +5,7 @@ import type { Route } from "./+types/directJoin";
 
 import { commitSession, getSession } from "~/auth/session.server";
 import { userSessionGet } from "~/auth/users.server";
+import { addViewGrant } from "~/auth/viewGrants.server";
 import {
 	joinSessionByCode,
 	SessionNotFoundError,
@@ -49,7 +50,11 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 	try {
 		const result = await joinSessionByCode({ joinCode, userId: user.id });
 		if (result.readOnly) {
-			return redirect(`/sessions/${result.session.id}/view`);
+			return redirect(`/sessions/${result.session.id}/view`, {
+				headers: {
+					"Set-Cookie": await addViewGrant(request, result.session.id),
+				},
+			});
 		}
 
 		return redirect(`/sessions/${result.session.id}`);

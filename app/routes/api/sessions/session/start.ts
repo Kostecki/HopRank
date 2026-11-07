@@ -31,12 +31,37 @@ export async function action({ request, params }: Route.ActionArgs) {
 
 	requireSessionOwnerOrAdmin(session, user);
 
+	const currentState = await db.query.sessionState.findFirst({
+		where: eq(sessionState.sessionId, sessionId),
+		columns: { status: true },
+	});
+	if (currentState?.status !== SessionStatus.created) {
+		return data(
+			{ message: "Smagningen er allerede startet eller afsluttet" },
+			{ status: 400 },
+		);
+	}
+
 	try {
 		if (session.mode === SessionMode.oneBeer) {
 			startOneBeerSession(sessionId);
 
 			emitSessionEvent(sessionId, "session:started");
 			return data({ success: true });
+		}
+
+		const anyWaiting = await db.query.sessionBeers.findFirst({
+			where: and(
+				eq(sessionBeers.sessionId, sessionId),
+				eq(sessionBeers.status, SessionBeerStatus.waiting),
+			),
+			columns: { id: true },
+		});
+		if (!anyWaiting) {
+			return data(
+				{ message: "Der er ingen øl at starte med" },
+				{ status: 400 },
+			);
 		}
 
 		// Shuffle beers in session
@@ -67,7 +92,10 @@ export async function action({ request, params }: Route.ActionArgs) {
 			orderBy: (sb, { asc }) => asc(sb.order),
 		});
 		if (!first) {
-			return data({ success: false });
+			return data(
+				{ message: "Der er ingen øl at starte med" },
+				{ status: 400 },
+			);
 		}
 
 		// Update session state with the first beer
