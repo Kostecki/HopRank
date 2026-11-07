@@ -3,7 +3,7 @@ import { data } from "react-router";
 import type { Route } from "./+types/check-in";
 
 import { userSessionGet } from "~/auth/users.server";
-import { invariant } from "~/utils/invariant";
+import { env } from "~/utils/env.server";
 import { checkinBeer } from "~/utils/untappd";
 
 export async function action({ request }: Route.ActionArgs) {
@@ -20,8 +20,7 @@ export async function action({ request }: Route.ActionArgs) {
 		);
 	}
 
-	const clientId = process.env.UNTAPPD_CLIENT_ID;
-	invariant(clientId, "UNTAPPD_CLIENT_ID is not set in environment variables");
+	const clientId = env.UNTAPPD_CLIENT_ID;
 
 	const accessToken = user.untappd.accessToken;
 

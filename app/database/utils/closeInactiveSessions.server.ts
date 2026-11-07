@@ -3,14 +3,13 @@ import { lt } from "drizzle-orm";
 import { SessionStatus } from "~/types/session";
 
 import dayjs from "~/utils/dayjs";
+import { env } from "~/utils/env.server";
 
 import { db } from "../config.server";
 import { sessions } from "../schema.server";
 import { finishSessions } from "./finishSessions.server";
 
-const MAX_SESSION_AGE_HOURS = Number(process.env.MAX_SESSION_AGE_HOURS) || 24;
-const MAX_SESSION_IDLE_TIME_HOURS =
-	Number(process.env.MAX_SESSION_IDLE_TIME_HOURS) || 6;
+const { MAX_SESSION_AGE_HOURS, MAX_SESSION_IDLE_TIME_HOURS } = env;
 
 // Same format as SQLite's CURRENT_TIMESTAMP (UTC), because the timestamps are
 // compared as strings. With an ISO cutoff, a value on the cutoff's date always

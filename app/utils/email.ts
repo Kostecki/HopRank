@@ -1,7 +1,5 @@
 import mjml2htmlUntyped from "mjml";
 
-import { invariant } from "./invariant";
-
 // The installed mjml@5 package is async at runtime (mjml2html is an `async
 // function`), but @types/mjml@5 still describes the older sync v4 signature.
 // Re-type it to match actual behavior instead of suppressing the mismatch.
@@ -14,12 +12,14 @@ const mjml2html = mjml2htmlUntyped as unknown as (
  *
  * @param code - The one-time passcode to display in the email.
  * @param magicLink - The full magic link URL that allows the user to log in directly.
+ * @param appUrl - The app's base URL, for the logo.
  * @returns The compiled HTML string to be sent as an email.
  */
-export const getMagicLinkEmail = async (code: string, magicLink: string) => {
-	const APP_URL = process.env.APP_URL;
-	invariant(APP_URL, "APP_URL is not defined");
-
+export const getMagicLinkEmail = async (
+	code: string,
+	magicLink: string,
+	appUrl: string,
+) => {
 	const mjml = `<mjml>
   <mj-head>
     <mj-attributes>
@@ -34,7 +34,7 @@ export const getMagicLinkEmail = async (code: string, magicLink: string) => {
   <mj-body background-color="#f2f3f6" width="480px">
     <mj-section padding="32px 16px 16px">
       <mj-column>
-        <mj-image width="72px" src="${APP_URL}/logo.png" padding="0"></mj-image>
+        <mj-image width="72px" src="${appUrl}/logo.png" padding="0"></mj-image>
       </mj-column>
     </mj-section>
 

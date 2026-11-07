@@ -1,10 +1,7 @@
 import nodemailer, { type Transporter } from "nodemailer";
 
 import { getMagicLinkEmail } from "~/utils/email";
-import { invariant } from "~/utils/invariant";
-
-const SMTP_FROM = process.env.SMTP_FROM;
-invariant(SMTP_FROM, "SMTP_FROM must be set in .env");
+import { env } from "~/utils/env.server";
 
 export const sendMagicLinkEmail = async ({
 	email,
@@ -17,7 +14,7 @@ export const sendMagicLinkEmail = async ({
 }) => {
 	let transporter: Transporter;
 
-	if (process.env.NODE_ENV !== "production") {
+	if (env.NODE_ENV !== "production") {
 		const etherealAccount = await nodemailer.createTestAccount();
 
 		transporter = nodemailer.createTransport({
@@ -30,36 +27,28 @@ export const sendMagicLinkEmail = async ({
 			},
 		});
 	} else {
-		const SMTP_HOST = process.env.SMTP_HOST;
-		const SMTP_PORT = process.env.SMTP_PORT;
-		const SMTP_USER = process.env.SMTP_USER;
-		const SMTP_PASS = process.env.SMTP_PASS;
-		invariant(SMTP_HOST, "SMTP_HOST must be set in .env");
-		invariant(SMTP_PORT, "SMTP_PORT must be set in .env");
-		invariant(SMTP_USER, "SMTP_USER must be set in .env");
-		invariant(SMTP_PASS, "SMTP_PASS must be set in .env");
-
+		// Checked at startup: all four are required in production.
 		transporter = nodemailer.createTransport({
-			host: SMTP_HOST,
-			port: Number(SMTP_PORT),
-			secure: Number(SMTP_PORT) === 465,
+			host: env.SMTP_HOST,
+			port: env.SMTP_PORT,
+			secure: env.SMTP_PORT === 465,
 			auth: {
-				user: SMTP_USER,
-				pass: SMTP_PASS,
+				user: env.SMTP_USER,
+				pass: env.SMTP_PASS,
 			},
 		});
 	}
 
 	try {
 		const info = await transporter.sendMail({
-			from: SMTP_FROM,
+			from: env.SMTP_FROM,
 			to: email,
 			subject: "🍻 Din HopRank login-kode 🍻",
 			text: `Din login-kode er: ${code}\nMagic Link: ${magicLink}`,
-			html: await getMagicLinkEmail(code, magicLink),
+			html: await getMagicLinkEmail(code, magicLink, env.APP_URL),
 		});
 
-		if (process.env.NODE_ENV !== "production") {
+		if (env.NODE_ENV !== "production") {
 			console.log();
 			console.log("[Email] Code:", code);
 			console.log("[Email] URL:", nodemailer.getTestMessageUrl(info));

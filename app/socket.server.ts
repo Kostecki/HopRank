@@ -1,13 +1,10 @@
 import { createServer } from "node:http";
 import { Server } from "socket.io";
 
-import { invariant } from "~/utils/invariant";
+import { env } from "~/utils/env.server";
 import { computeTally, getActiveKickVote } from "~/utils/kickVoteState.server";
 
 const WS_URL = import.meta.env.VITE_WS_URL;
-
-const APP_URL = process.env.APP_URL;
-invariant(APP_URL, "APP_URL must be set in .env");
 
 // Vite's dev server re-evaluates this module from scratch on some edits (a
 // full SSR "program reload" rather than a targeted HMR swap). Recreating and
@@ -25,7 +22,7 @@ function createSocketServer() {
 	const httpServer = createServer();
 	const io = new Server(httpServer, {
 		path: "/ws",
-		cors: { origin: APP_URL },
+		cors: { origin: env.APP_URL },
 		transports: ["websocket"],
 	});
 

@@ -2,13 +2,15 @@ import { and, eq } from "drizzle-orm";
 
 import { SessionBeerStatus, SessionStatus } from "~/types/session";
 
+import type { BeerInput } from "~/schemas/beer";
 import { shuffleBeersInSession } from "~/utils/shuffle";
 
 import { db } from "../config.server";
 import { sessionBeers, sessionState } from "../schema.server";
 import { bumpLastUpdatedAt } from "./bumpLastUpdatedAt.server";
-import { type BeerInput, upsertBeer } from "./upsertBeer.server";
+import { upsertBeer } from "./upsertBeer.server";
 
+/** Adds beers to a session. The beers must already be validated (beerInputSchema). */
 export const addBeersToSession = async (
 	sessionId: number,
 	beerInputs: BeerInput[],
@@ -20,20 +22,6 @@ export const addBeersToSession = async (
 
 	const sessionBeersToInsert = [];
 	for (const beerData of beerInputs) {
-		const { untappdBeerId, name, breweryName, abv, style, label } = beerData;
-
-		// abv is checked with isFinite rather than truthiness so 0% beers pass.
-		if (
-			!untappdBeerId ||
-			!name ||
-			!breweryName ||
-			!Number.isFinite(abv) ||
-			!style ||
-			!label
-		) {
-			continue;
-		}
-
 		const beerId = await upsertBeer(beerData);
 
 		// No explicit order: shuffleBeersInSession below always assigns it,
@@ -97,7 +85,6 @@ export const addBeersToSession = async (
 					.where(eq(sessionBeers.id, firstBeer.id));
 			}
 		} else {
-			//
 			await bumpLastUpdatedAt(sessionId);
 		}
 	}

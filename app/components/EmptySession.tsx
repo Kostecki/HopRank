@@ -35,8 +35,6 @@ export default function EmptySession({
 			method: "POST",
 			action: `/api/sessions/${sessionId}/add`,
 		});
-
-		setSelectedBeers([]);
 	};
 
 	const { data, state } = fetcher;
@@ -51,6 +49,7 @@ export default function EmptySession({
 			reset?: () => void;
 		};
 		if (result.success) {
+			setSelectedBeers([]);
 			onBeersUpdated?.();
 			fetcherWithReset.reset?.();
 			return;

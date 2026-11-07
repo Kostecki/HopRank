@@ -262,6 +262,9 @@ importers:
       socket.io-client:
         specifier: 4.8.4
         version: 4.8.4
+      zod:
+        specifier: 4.6.7
+        version: 4.6.7
     devDependencies:
       '@biomejs/biome':
         specifier: 2.6.4
@@ -3337,8 +3340,8 @@ packages:
     resolution: {integrity: sha512-7dSzzRQ++CKnNI/krKnYRV7JKKPUXMEh61soaHKg9mrWEhzFWhFnxPxGl+69cD1Ou63C13NUPCnmIcrvqCuM6w==}
     engines: {node: '>=12'}
 
-  zod@4.4.3:
-    resolution: {integrity: sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ==}
+  zod@4.6.7:
+    resolution: {integrity: sha512-g8W2D2kU6a8untc053fX1uVBKzM7yqAxW/3zwk83+6RyF2+SKOuV+c0wBDhUwzV1PaGapmZH+rmcUzPf+3CGwg==}
 
 snapshots:
 
@@ -5937,7 +5940,7 @@ snapshots:
   remix-toast@4.0.0(react-router@8.5.1(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)):
     dependencies:
       react-router: 8.5.1(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
-      zod: 4.4.3
+      zod: 4.6.7
 
   require-directory@2.1.1: {}
 
@@ -6321,4 +6324,4 @@ snapshots:
       y18n: 5.0.8
       yargs-parser: 21.1.1
 
-  zod@4.4.3: {}
+  zod@4.6.7: {}

@@ -1,12 +1,9 @@
 import { createCookieSessionStorage } from "react-router";
 
-import { invariant } from "~/utils/invariant";
+import { env } from "~/utils/env.server";
 
 const VIEW_GRANTS_KEY = "viewableSessionIds";
 const MAX_GRANTS = 50;
-
-const SESSION_SECRET = process.env.SESSION_SECRET;
-invariant(SESSION_SECRET, "SESSION_SECRET must be set in .env");
 
 // Its own cookie, separate from the login session, so a big screen stays
 // unlocked longer than a login lasts.
@@ -17,8 +14,8 @@ const { getSession, commitSession } = createCookieSessionStorage({
 		sameSite: "lax",
 		path: "/",
 		httpOnly: true,
-		secrets: [SESSION_SECRET],
-		secure: process.env.NODE_ENV === "production",
+		secrets: [env.SESSION_SECRET],
+		secure: env.NODE_ENV === "production",
 	},
 });
 
