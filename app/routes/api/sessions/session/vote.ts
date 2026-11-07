@@ -69,42 +69,38 @@ export async function action({ request, params }: Route.ActionArgs) {
 		}
 	}
 
-	for (const { criterionId, score } of vote.ratings) {
-		const { beerId } = vote;
-
-		try {
-			await db
-				.insert(ratings)
-				.values({
-					sessionId,
-					beerId,
-					userId: user.id,
-					criterionId: criterionId,
-					score: score,
-				})
-				.onConflictDoUpdate({
-					target: [
-						ratings.sessionId,
-						ratings.beerId,
-						ratings.userId,
-						ratings.criterionId,
-					],
-					set: {
+	try {
+		// Saving the vote and advancing are one transaction, so a vote can't be
+		// half-saved, and two last votes can't both advance the session.
+		db.transaction((tx) => {
+			for (const { criterionId, score } of vote.ratings) {
+				tx.insert(ratings)
+					.values({
+						sessionId,
+						beerId: vote.beerId,
+						userId: user.id,
+						criterionId,
 						score,
-					},
-				});
-		} catch (error) {
-			console.error("Error inserting/updating rating:", error);
+					})
+					.onConflictDoUpdate({
+						target: [
+							ratings.sessionId,
+							ratings.beerId,
+							ratings.userId,
+							ratings.criterionId,
+						],
+						set: { score },
+					})
+					.run();
+			}
 
-			return data(
-				{ message: "Error inserting/updating rating" },
-				{ status: 500 },
-			);
-		}
+			bumpLastUpdatedAt(sessionId, tx);
+			tryAdvanceSession(sessionId, tx);
+		});
+	} catch (error) {
+		console.error("Error saving vote:", error);
+		return data({ message: "Din stemme kunne ikke gemmes" }, { status: 500 });
 	}
-
-	await bumpLastUpdatedAt(sessionId);
-	await tryAdvanceSession(sessionId);
 
 	emitSessionEvent(sessionId, "session:vote");
 

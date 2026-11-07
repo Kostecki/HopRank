@@ -144,15 +144,9 @@ export async function getSessionProgress({
 		.map((su) => su.userId)
 		.filter((id): id is number => id !== null);
 
-	const ratingsForSession = await db.query.ratings.findMany({
-		where: eq(ratings.sessionId, sessionId),
-		columns: { userId: true },
-	});
 	const uniqueUserIds = Array.from(
 		new Set(
-			ratingsForSession
-				.map((r) => r.userId)
-				.filter((id): id is number => id != null),
+			allRatings.map((r) => r.userId).filter((id): id is number => id != null),
 		),
 	);
 

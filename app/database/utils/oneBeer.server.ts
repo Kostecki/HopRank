@@ -1,4 +1,4 @@
-import { and, asc, eq, sql } from "drizzle-orm";
+import { and, asc, eq } from "drizzle-orm";
 
 import type {
 	BarSelection,
@@ -16,7 +16,7 @@ import {
 	rankBars,
 } from "~/utils/oneBeerRanking";
 
-import { db } from "../config.server";
+import { db, type Transaction } from "../config.server";
 import {
 	barPlacements,
 	beers,
@@ -26,12 +26,11 @@ import {
 	sessionUsers,
 } from "../schema.server";
 import type { SelectSessionBars } from "../schema.types";
+import { bumpLastUpdatedAt } from "./bumpLastUpdatedAt.server";
 
 type Result =
 	| { ok: true }
 	| { ok: false; status: 400 | 403 | 404 | 409; message: string };
-
-type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
 const MAX_BAR_NAME_LENGTH = 100;
 
@@ -119,13 +118,6 @@ const checkUnfinishedSession = (tx: Transaction, sessionId: number) =>
 
 const hasStarted = (tx: Transaction, sessionId: number) =>
 	getSessionWithState(tx, sessionId)?.status === SessionStatus.active;
-
-const bumpLastUpdated = (tx: Transaction, sessionId: number) => {
-	tx.update(sessionState)
-		.set({ lastUpdatedAt: sql`CURRENT_TIMESTAMP` })
-		.where(eq(sessionState.sessionId, sessionId))
-		.run();
-};
 
 /** Opens the next bar in the queue, unless one is already open. */
 const openNextBar = (tx: Transaction, sessionId: number) => {
@@ -245,11 +237,14 @@ export function syncVenueDetails(sessionId: number, venues: BarSelection[]) {
 }
 
 /** Finishes the current bar once every active participant has placed it. */
-export function advanceBars(sessionId: number) {
-	db.transaction((tx) => {
-		if (checkActiveSession(tx, sessionId)) return;
-		advance(tx, sessionId);
-	});
+export function advanceBars(sessionId: number, tx?: Transaction) {
+	if (!tx) {
+		db.transaction((t) => advanceBars(sessionId, t));
+		return;
+	}
+
+	if (checkActiveSession(tx, sessionId)) return;
+	advance(tx, sessionId);
 }
 
 /** Starts the session and opens the first bar, if one was added up front. */
@@ -302,7 +297,7 @@ export function addBar(
 			.run();
 
 		if (started) openNextBar(tx, sessionId);
-		bumpLastUpdated(tx, sessionId);
+		bumpLastUpdatedAt(sessionId, tx);
 
 		return { ok: true };
 	});
@@ -333,7 +328,7 @@ export function correctBar(
 		}
 
 		tx.update(sessionBars).set(bar).where(eq(sessionBars.id, barId)).run();
-		bumpLastUpdated(tx, sessionId);
+		bumpLastUpdatedAt(sessionId, tx);
 
 		return { ok: true };
 	});
@@ -384,7 +379,7 @@ export function removeBar(
 		tx.delete(sessionBars).where(eq(sessionBars.id, barId)).run();
 
 		if (hasStarted(tx, sessionId)) openNextBar(tx, sessionId);
-		bumpLastUpdated(tx, sessionId);
+		bumpLastUpdatedAt(sessionId, tx);
 
 		return { ok: true };
 	});
@@ -427,7 +422,7 @@ export function reorderQueue(
 				.run();
 		});
 
-		bumpLastUpdated(tx, sessionId);
+		bumpLastUpdatedAt(sessionId, tx);
 
 		return { ok: true };
 	});
@@ -503,7 +498,7 @@ export function savePlacements(
 			.run();
 
 		advance(tx, sessionId);
-		bumpLastUpdated(tx, sessionId);
+		bumpLastUpdatedAt(sessionId, tx);
 
 		return { ok: true };
 	});

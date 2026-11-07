@@ -60,17 +60,20 @@ export async function action({ request, params }: Route.ActionArgs) {
 	const kicked = outcome === "passed";
 
 	if (kicked) {
-		await db
-			.update(sessionUsers)
-			.set({ active: false, exitReason: SessionUserExitReason.kicked })
-			.where(
-				and(
-					eq(sessionUsers.sessionId, sessionId),
-					eq(sessionUsers.userId, state.targetUserId),
-				),
-			);
+		db.transaction((tx) => {
+			tx.update(sessionUsers)
+				.set({ active: false, exitReason: SessionUserExitReason.kicked })
+				.where(
+					and(
+						eq(sessionUsers.sessionId, sessionId),
+						eq(sessionUsers.userId, state.targetUserId),
+					),
+				)
+				.run();
 
-		await tryAdvanceSession(sessionId);
+			// The kicked user no longer counts, so everyone else may have voted.
+			tryAdvanceSession(sessionId, tx);
+		});
 
 		emitSessionEvent(sessionId, "session:users-changed");
 		emitGlobalEvent("sessions:users-changed", { sessionId });

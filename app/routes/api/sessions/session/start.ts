@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, asc, eq } from "drizzle-orm";
 import { data } from "react-router";
 
 import { SessionBeerStatus, SessionMode, SessionStatus } from "~/types/session";
@@ -9,7 +9,7 @@ import { db } from "~/database/config.server";
 import { sessionBeers, sessionState, sessions } from "~/database/schema.server";
 import { requireSessionOwnerOrAdmin } from "~/database/utils/assertSessionAccess.server";
 import { startOneBeerSession } from "~/database/utils/oneBeer.server";
-import { shuffleBeersInSession } from "~/utils/shuffle";
+import { shuffleBeersInSession } from "~/database/utils/shuffleBeersInSession.server";
 import { extractSessionId } from "~/utils/utils";
 import { emitSessionEvent } from "~/utils/websocket.server";
 
@@ -46,68 +46,57 @@ export async function action({ request, params }: Route.ActionArgs) {
 			return data({ success: true });
 		}
 
-		const anyWaiting = await db.query.sessionBeers.findFirst({
-			where: and(
-				eq(sessionBeers.sessionId, sessionId),
-				eq(sessionBeers.status, SessionBeerStatus.waiting),
-			),
-			columns: { id: true },
+		const started = db.transaction((tx) => {
+			const anyWaiting = tx
+				.select({ id: sessionBeers.id })
+				.from(sessionBeers)
+				.where(
+					and(
+						eq(sessionBeers.sessionId, sessionId),
+						eq(sessionBeers.status, SessionBeerStatus.waiting),
+					),
+				)
+				.get();
+			if (!anyWaiting) return false;
+
+			shuffleBeersInSession(sessionId, tx);
+
+			const first = tx
+				.select()
+				.from(sessionBeers)
+				.where(
+					and(
+						eq(sessionBeers.sessionId, sessionId),
+						eq(sessionBeers.status, SessionBeerStatus.waiting),
+					),
+				)
+				.orderBy(asc(sessionBeers.order))
+				.get();
+			if (!first) return false;
+
+			tx.update(sessionState)
+				.set({
+					status: SessionStatus.active,
+					currentBeerId: first.beerId,
+					currentBeerOrder: first.order,
+				})
+				.where(eq(sessionState.sessionId, sessionId))
+				.run();
+
+			tx.update(sessionBeers)
+				.set({ status: SessionBeerStatus.rating })
+				.where(eq(sessionBeers.id, first.id))
+				.run();
+
+			return true;
 		});
-		if (!anyWaiting) {
+
+		if (!started) {
 			return data(
 				{ message: "Der er ingen øl at starte med" },
 				{ status: 400 },
 			);
 		}
-
-		// Shuffle beers in session
-		await shuffleBeersInSession(sessionId);
-
-		// Set session status to active
-		await db
-			.update(sessionState)
-			.set({ status: SessionStatus.active })
-			.where(eq(sessionState.sessionId, sessionId));
-
-		// If there is a current beer, emit started event and return
-		const state = await db.query.sessionState.findFirst({
-			where: eq(sessionState.sessionId, sessionId),
-			columns: { currentBeerId: true },
-		});
-		if (state?.currentBeerId) {
-			emitSessionEvent(sessionId, "session:started");
-			return data({ success: true });
-		}
-
-		// Set the first waiting beer as the current beer
-		const first = await db.query.sessionBeers.findFirst({
-			where: and(
-				eq(sessionBeers.sessionId, sessionId),
-				eq(sessionBeers.status, SessionBeerStatus.waiting),
-			),
-			orderBy: (sb, { asc }) => asc(sb.order),
-		});
-		if (!first) {
-			return data(
-				{ message: "Der er ingen øl at starte med" },
-				{ status: 400 },
-			);
-		}
-
-		// Update session state with the first beer
-		await db
-			.update(sessionState)
-			.set({
-				currentBeerId: first.beerId,
-				currentBeerOrder: first.order,
-			})
-			.where(eq(sessionState.sessionId, sessionId));
-
-		// Update the first beer status to "rating"
-		await db
-			.update(sessionBeers)
-			.set({ status: SessionBeerStatus.rating })
-			.where(eq(sessionBeers.id, first.id));
 
 		emitSessionEvent(sessionId, "session:started");
 

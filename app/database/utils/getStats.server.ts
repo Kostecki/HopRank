@@ -72,9 +72,10 @@ export async function getSessionStats(
 	invariant(sessionRecord, `Session ${sessionId} not found`);
 
 	// Calculate average ABV of beers in session
-	const averageABV =
-		sessionBeerRows.reduce((sum, row) => sum + row.abv, 0) /
-		sessionBeerRows.length;
+	const averageABV = sessionBeerRows.length
+		? sessionBeerRows.reduce((sum, row) => sum + row.abv, 0) /
+			sessionBeerRows.length
+		: 0;
 
 	// Calculate average rating in session
 	const averageRating = ratingRows.length

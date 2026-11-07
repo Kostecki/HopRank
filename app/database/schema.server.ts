@@ -1,6 +1,7 @@
 import { relations, type SQL, sql } from "drizzle-orm";
 import {
 	type AnySQLiteColumn,
+	index,
 	integer,
 	real,
 	sqliteTable,
@@ -52,7 +53,10 @@ export const sessions = sqliteTable(
 		// The beer every bar is ranked on; only set in One Beer mode.
 		beerId: integer("beer_id").references(() => beers.id),
 	},
-	(table) => [uniqueIndex("unique_session_name").on(lower(table.name))],
+	(table) => [
+		uniqueIndex("unique_session_name").on(lower(table.name)),
+		index("sessions_created_by_idx").on(table.createdBy),
+	],
 );
 
 export const sessionUsers = sqliteTable(
@@ -71,7 +75,10 @@ export const sessionUsers = sqliteTable(
 			enum: Object.values(SessionUserExitReason) as [string, ...string[]],
 		}),
 	},
-	(table) => [unique("custom_name").on(table.sessionId, table.userId)],
+	(table) => [
+		unique("custom_name").on(table.sessionId, table.userId),
+		index("session_users_user_id_idx").on(table.userId),
+	],
 );
 
 export const beers = sqliteTable("beers", {
@@ -102,7 +109,8 @@ export const sessionBeers = sqliteTable(
 		addedByUserId: integer("added_by_user_id")
 			.notNull()
 			.references(() => users.id),
-		order: integer("order"), // Not null?
+		// Set by shuffleBeersInSession right after the beer is added.
+		order: integer("order"),
 		status: text({
 			enum: Object.values(SessionBeerStatus) as [string, ...string[]],
 		})
@@ -144,6 +152,7 @@ export const sessionBars = sqliteTable(
 		uniqueIndex("unique_session_bar_venue")
 			.on(table.sessionId, table.foursquareId)
 			.where(sql`${table.foursquareId} IS NOT NULL`),
+		index("session_bars_session_id_idx").on(table.sessionId),
 	],
 );
 
@@ -162,7 +171,10 @@ export const barPlacements = sqliteTable(
 			.references(() => users.id),
 		position: integer("position").notNull(),
 	},
-	(table) => [unique("unique_bar_placement").on(table.barId, table.userId)],
+	(table) => [
+		unique("unique_bar_placement").on(table.barId, table.userId),
+		index("bar_placements_session_id_idx").on(table.sessionId),
+	],
 );
 
 export const criteria = sqliteTable("criteria", {
@@ -173,15 +185,19 @@ export const criteria = sqliteTable("criteria", {
 	enabled: integer({ mode: "boolean" }).notNull().default(true),
 });
 
-export const sessionCriteria = sqliteTable("session_criteria", {
-	id: integer("id").primaryKey({ autoIncrement: true }),
-	sessionId: integer("session_id")
-		.notNull()
-		.references(() => sessions.id),
-	criterionId: integer("criterion_id")
-		.notNull()
-		.references(() => criteria.id),
-});
+export const sessionCriteria = sqliteTable(
+	"session_criteria",
+	{
+		id: integer("id").primaryKey({ autoIncrement: true }),
+		sessionId: integer("session_id")
+			.notNull()
+			.references(() => sessions.id),
+		criterionId: integer("criterion_id")
+			.notNull()
+			.references(() => criteria.id),
+	},
+	(table) => [index("session_criteria_session_id_idx").on(table.sessionId)],
+);
 
 export const ratings = sqliteTable(
 	"ratings",
@@ -212,24 +228,30 @@ export const ratings = sqliteTable(
 	],
 );
 
-export const sessionState = sqliteTable("session_state", {
-	sessionId: integer("session_id")
-		.primaryKey()
-		.notNull()
-		.references(() => sessions.id),
-	currentBeerId: integer("current_beer_id").references(() => beers.id),
-	currentBeerOrder: integer("current_beer_order"),
-	status: text({ enum: Object.values(SessionStatus) as [string, ...string[]] })
-		.notNull()
-		.default(SessionStatus.created),
-	lastUpdatedAt: text("last_updated_at")
-		.notNull()
-		.default(sql`CURRENT_TIMESTAMP`),
-});
+export const sessionState = sqliteTable(
+	"session_state",
+	{
+		sessionId: integer("session_id")
+			.primaryKey()
+			.notNull()
+			.references(() => sessions.id),
+		currentBeerId: integer("current_beer_id").references(() => beers.id),
+		currentBeerOrder: integer("current_beer_order"),
+		status: text({
+			enum: Object.values(SessionStatus) as [string, ...string[]],
+		})
+			.notNull()
+			.default(SessionStatus.created),
+		lastUpdatedAt: text("last_updated_at")
+			.notNull()
+			.default(sql`CURRENT_TIMESTAMP`),
+	},
+	(table) => [index("session_state_status_idx").on(table.status)],
+);
 
 export const pendingRedirects = sqliteTable("pending_redirects", {
 	email: text("email").primaryKey(),
-	redirectTo: text("redirect_to").notNull().notNull(),
+	redirectTo: text("redirect_to").notNull(),
 	createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 	expiresAt: integer("expires_at").notNull(),
 });

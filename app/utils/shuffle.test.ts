@@ -1,11 +1,6 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 
-// scoreBeerOrder/shuffle are pure, but shuffle.ts also imports the real db
-// singleton at module scope (which has disk I/O side effects on import) —
-// stub it out so this stays a pure, fast unit test.
-vi.mock("~/database/config.server", () => ({ db: {} }));
-
-const { scoreBeerOrder, shuffle } = await import("./shuffle");
+import { scoreBeerOrder, shuffle } from "./shuffle";
 
 describe("scoreBeerOrder", () => {
 	const beer = (

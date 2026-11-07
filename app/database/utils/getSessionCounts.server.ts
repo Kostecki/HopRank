@@ -1,4 +1,4 @@
-import { and, count, eq } from "drizzle-orm";
+import { and, count, eq, inArray } from "drizzle-orm";
 
 import { SessionMode } from "~/types/session";
 
@@ -11,55 +11,79 @@ import {
 	sessionUsers,
 } from "../schema.server";
 
-export const getSessionCounts = async (sessionId: number) => {
-	try {
-		const session = await db.query.sessions.findFirst({
-			where: eq(sessions.id, sessionId),
-			columns: { mode: true },
-		});
-		// In One Beer mode, each bar is one beer drunk.
-		const countedTable =
-			session?.mode === SessionMode.oneBeer ? sessionBars : sessionBeers;
+export type SessionCounts = {
+	status: string | undefined;
+	participantCount: number;
+	// Beers in normal mode, bars in One Beer mode (each bar is one beer drunk).
+	beerCount: number;
+};
 
-		const [state, participantCount, beerCount] = await Promise.all([
-			db.query.sessionState.findFirst({
-				where: eq(sessionState.sessionId, sessionId),
-			}),
-			db
-				.select({ count: count() })
-				.from(sessionUsers)
-				.where(
-					and(
-						eq(sessionUsers.sessionId, sessionId),
-						eq(sessionUsers.active, true),
-					),
+const countBySession = (rows: { sessionId: number; count: number }[]) =>
+	new Map(rows.map((row) => [row.sessionId, row.count]));
+
+/**
+ * Status, active participants and beers for each session, with one query per
+ * kind of count instead of several per session.
+ */
+export const getSessionCounts = (
+	sessionIds: number[],
+): Map<number, SessionCounts> => {
+	if (sessionIds.length === 0) return new Map();
+
+	const rows = db
+		.select({
+			id: sessions.id,
+			mode: sessions.mode,
+			status: sessionState.status,
+		})
+		.from(sessions)
+		.leftJoin(sessionState, eq(sessionState.sessionId, sessions.id))
+		.where(inArray(sessions.id, sessionIds))
+		.all();
+
+	const participants = countBySession(
+		db
+			.select({ sessionId: sessionUsers.sessionId, count: count() })
+			.from(sessionUsers)
+			.where(
+				and(
+					inArray(sessionUsers.sessionId, sessionIds),
+					eq(sessionUsers.active, true),
 				),
-			db
-				.select({ count: count() })
-				.from(countedTable)
-				.where(eq(countedTable.sessionId, sessionId)),
-		]);
+			)
+			.groupBy(sessionUsers.sessionId)
+			.all(),
+	);
 
-		return {
-			state,
-			participantCount: participantCount[0].count ?? 0,
-			beerCount: beerCount[0].count ?? 0,
-		};
-	} catch (error) {
-		console.error(
-			"Error getting session counts for sessionId",
-			sessionId,
-			error,
-		);
+	const beerCounts = countBySession(
+		db
+			.select({ sessionId: sessionBeers.sessionId, count: count() })
+			.from(sessionBeers)
+			.where(inArray(sessionBeers.sessionId, sessionIds))
+			.groupBy(sessionBeers.sessionId)
+			.all(),
+	);
 
-		// Distinguishes a genuine DB failure from a session that legitimately
-		// has zero participants/beers (which returns this same zeroed shape
-		// via the try branch above, without this flag).
-		return {
-			state: null,
-			participantCount: 0,
-			beerCount: 0,
-			error: true as const,
-		};
-	}
+	const barCounts = countBySession(
+		db
+			.select({ sessionId: sessionBars.sessionId, count: count() })
+			.from(sessionBars)
+			.where(inArray(sessionBars.sessionId, sessionIds))
+			.groupBy(sessionBars.sessionId)
+			.all(),
+	);
+
+	return new Map(
+		rows.map((row) => [
+			row.id,
+			{
+				status: row.status ?? undefined,
+				participantCount: participants.get(row.id) ?? 0,
+				beerCount:
+					(row.mode === SessionMode.oneBeer ? barCounts : beerCounts).get(
+						row.id,
+					) ?? 0,
+			},
+		]),
+	);
 };

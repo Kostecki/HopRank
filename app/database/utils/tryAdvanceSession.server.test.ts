@@ -268,4 +268,55 @@ describe("tryAdvanceSession", () => {
 			.get();
 		expect(beer1Row?.status).toBe(SessionBeerStatus.rating);
 	});
+
+	it("advances only once when two last votes arrive together", async () => {
+		const { userA, userB, userC, criterion, session, beer1, beer2 } =
+			await seedInProgressSession(db);
+
+		const [beer3] = await db
+			.insert(beers)
+			.values({
+				untappdBeerId: 3,
+				name: "Beer Three",
+				breweryName: "Other",
+				style: "Lager",
+				label: "label.png",
+			})
+			.returning();
+		await db.insert(sessionBeers).values({
+			sessionId: session.id,
+			beerId: beer3.id,
+			addedByUserId: userA.id,
+			order: 2,
+			status: SessionBeerStatus.waiting,
+		});
+
+		for (const user of [userA, userB, userC]) {
+			await vote(db, session.id, beer1.id, user.id, criterion.id);
+		}
+
+		// Both requests that saw the last vote try to advance at once.
+		await Promise.all([
+			tryAdvanceSession(session.id),
+			tryAdvanceSession(session.id),
+		]);
+
+		const statusOf = (beerId: number) =>
+			db
+				.select()
+				.from(sessionBeers)
+				.where(eq(sessionBeers.beerId, beerId))
+				.get()?.status;
+
+		expect(statusOf(beer1.id)).toBe(SessionBeerStatus.rated);
+		expect(statusOf(beer2.id)).toBe(SessionBeerStatus.rating);
+		expect(statusOf(beer3.id)).toBe(SessionBeerStatus.waiting);
+
+		const state = db
+			.select()
+			.from(sessionState)
+			.where(eq(sessionState.sessionId, session.id))
+			.get();
+		expect(state?.currentBeerId).toBe(beer2.id);
+	});
 });
