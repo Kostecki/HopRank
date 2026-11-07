@@ -7,7 +7,6 @@ import { addViewGrant } from "~/auth/viewGrants.server";
 import { db } from "~/database/config.server";
 import { sessions } from "~/database/schema.server";
 import { JOIN_CODE_PATTERN, normalizeJoinCode } from "~/utils/join";
-import { joinCodeLimiter } from "~/utils/rateLimit.server";
 
 /**
  * Opens a session's results view on this device without logging in or
@@ -20,20 +19,11 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 		throw new Response("Pinkoden er ugyldig", { status: 400 });
 	}
 
-	const forwardedFor = request.headers.get("x-forwarded-for");
-	const limiterKey = `ip:${forwardedFor?.split(",")[0]?.trim() || "unknown"}`;
-	if (joinCodeLimiter.isLimited(limiterKey)) {
-		throw new Response("For mange forkerte pinkoder. Prøv igen om lidt.", {
-			status: 429,
-		});
-	}
-
 	const session = await db.query.sessions.findFirst({
 		where: eq(sessions.joinCode, joinCode),
 		columns: { id: true },
 	});
 	if (!session) {
-		joinCodeLimiter.recordFailure(limiterKey);
 		throw new Response("Pinkoden er ikke gyldig", { status: 404 });
 	}
 

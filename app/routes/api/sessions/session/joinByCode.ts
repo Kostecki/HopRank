@@ -10,7 +10,6 @@ import {
 	SessionStateNotFoundError,
 } from "~/database/utils/joinSessionByCode.server";
 import { JOIN_CODE_PATTERN, normalizeJoinCode } from "~/utils/join";
-import { joinCodeLimiter } from "~/utils/rateLimit.server";
 
 export async function action({ request, params }: Route.ActionArgs) {
 	const rawCode = params.joinCode;
@@ -34,14 +33,6 @@ export async function action({ request, params }: Route.ActionArgs) {
 		);
 	}
 
-	const limiterKey = `user:${user.id}`;
-	if (joinCodeLimiter.isLimited(limiterKey)) {
-		return data(
-			{ message: "For mange forkerte pinkoder. Prøv igen om lidt." },
-			{ status: 429 },
-		);
-	}
-
 	try {
 		const result = await joinSessionByCode({ joinCode, userId: user.id });
 		const sessionId = result.session.id;
@@ -55,7 +46,6 @@ export async function action({ request, params }: Route.ActionArgs) {
 		return redirect(`/sessions/${sessionId}`);
 	} catch (error) {
 		if (error instanceof SessionNotFoundError) {
-			joinCodeLimiter.recordFailure(limiterKey);
 			return data({ message: "Pinkoden er ikke gyldig" }, { status: 404 });
 		}
 		if (error instanceof SessionStateNotFoundError) {
