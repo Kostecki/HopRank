@@ -25,7 +25,13 @@ export async function action({ request, params }: Route.ActionArgs) {
 	await requireNormalSession(sessionId);
 
 	try {
-		await removeBeersFromSession(sessionId, [beerId], user.id);
+		const removedCount = removeBeersFromSession(sessionId, [beerId], user.id);
+		if (removedCount === 0) {
+			return data(
+				{ message: "Kun dine egne øl, der ikke er smagt endnu, kan fjernes" },
+				{ status: 400 },
+			);
+		}
 
 		emitSessionEvent(sessionId, "session:beer-changed");
 		emitGlobalEvent("sessions:beer-changed", {

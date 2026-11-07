@@ -1,4 +1,4 @@
-import { lt } from "drizzle-orm";
+import { and, eq, inArray, lt } from "drizzle-orm";
 
 import { SessionStatus } from "~/types/session";
 
@@ -6,7 +6,7 @@ import dayjs from "~/utils/dayjs";
 import { env } from "~/utils/env.server";
 
 import { db } from "../config.server";
-import { sessions } from "../schema.server";
+import { sessionState, sessions } from "../schema.server";
 import { finishSessions } from "./finishSessions.server";
 
 const { MAX_SESSION_AGE_HOURS, MAX_SESSION_IDLE_TIME_HOURS } = env;
@@ -18,8 +18,9 @@ const hoursAgoAsSqliteTimestamp = (hours: number) =>
 	dayjs().subtract(hours, "hour").toISOString().slice(0, 19).replace("T", " ");
 
 /**
- * Closes sessions that are more than 24 hours old and have had no activity in the last 6 hours,
- * regardless of whether a beer is still being rated or the session was ever started.
+ * Closes unfinished sessions older than MAX_SESSION_AGE_HOURS (default 24) with
+ * no activity in the last MAX_SESSION_IDLE_TIME_HOURS (default 6), whether or
+ * not a beer is still being rated or the session was ever started.
  */
 export const closeInactiveSessions = async () => {
 	const sessionAgeCutoff = hoursAgoAsSqliteTimestamp(MAX_SESSION_AGE_HOURS);
@@ -27,22 +28,21 @@ export const closeInactiveSessions = async () => {
 		MAX_SESSION_IDLE_TIME_HOURS,
 	);
 
-	// Get all active sessions older than 24 hours
-	const oldActiveSessions = await db.query.sessions.findMany({
-		where: lt(sessions.createdAt, sessionAgeCutoff),
-		with: {
-			state: true, // Just fetch the full relation
-		},
-	});
-
-	const staleSessions = oldActiveSessions
-		.filter(
-			(s) =>
-				(s.state?.status === SessionStatus.active ||
-					s.state?.status === SessionStatus.created) &&
-				s.state.lastUpdatedAt &&
-				s.state.lastUpdatedAt < recentActivityCutoff,
+	const staleSessions = db
+		.select({ id: sessions.id })
+		.from(sessions)
+		.innerJoin(sessionState, eq(sessionState.sessionId, sessions.id))
+		.where(
+			and(
+				lt(sessions.createdAt, sessionAgeCutoff),
+				lt(sessionState.lastUpdatedAt, recentActivityCutoff),
+				inArray(sessionState.status, [
+					SessionStatus.active,
+					SessionStatus.created,
+				]),
+			),
 		)
+		.all()
 		.map((s) => s.id);
 
 	if (staleSessions.length === 0) return;

@@ -54,6 +54,16 @@ export const db = drizzle(new Database(fullDatabasePath), {
 	},
 });
 
+/** A transaction, as passed to db.transaction's callback. */
+export type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
+
+/**
+ * Either the database or a transaction. better-sqlite3 transactions must be
+ * synchronous, so helpers that take one use the sync finalizers
+ * (.run()/.get()/.all()) and can run inside or outside a transaction.
+ */
+export type Executor = typeof db | Transaction;
+
 const setupDatabase = async () => {
 	await seedDatabase();
 };

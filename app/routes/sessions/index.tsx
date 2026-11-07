@@ -57,24 +57,22 @@ export async function loader({ request }: Route.LoaderArgs) {
 	}
 	const allSessions = Array.from(sessionMap.values());
 
-	const sessionSummaries = await Promise.all(
-		allSessions.map(async (session) => {
-			const { state, participantCount, beerCount } = await getSessionCounts(
-				session.id,
-			);
+	const counts = getSessionCounts(allSessions.map((session) => session.id));
 
-			return {
-				id: session.id,
-				name: session.name,
-				joinCode: session.joinCode,
-				participants: participantCount,
-				beers: beerCount,
-				status: state?.status,
-				createdAt: session.createdAt,
-				createdBy: session.createdBy,
-			};
-		}),
-	);
+	const sessionSummaries = allSessions.map((session) => {
+		const sessionCounts = counts.get(session.id);
+
+		return {
+			id: session.id,
+			name: session.name,
+			joinCode: session.joinCode,
+			participants: sessionCounts?.participantCount ?? 0,
+			beers: sessionCounts?.beerCount ?? 0,
+			status: sessionCounts?.status,
+			createdAt: session.createdAt,
+			createdBy: session.createdBy,
+		};
+	});
 
 	return {
 		criteria: allCriteria,

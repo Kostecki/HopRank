@@ -2,38 +2,45 @@ import { and, eq, inArray } from "drizzle-orm";
 
 import { SessionBeerStatus } from "~/types/session";
 
-import { shuffleBeersInSession } from "~/utils/shuffle";
-
 import { db } from "../config.server";
 import { sessionBeers } from "../schema.server";
+import { shuffleBeersInSession } from "./shuffleBeersInSession.server";
 
-export const removeBeersFromSession = async (
+/**
+ * Removes the user's own waiting beers from the session, in one transaction.
+ * Returns how many were removed.
+ */
+export const removeBeersFromSession = (
 	sessionId: number,
 	beerInputs: number[],
 	userId: number,
 ) => {
 	if (beerInputs.length === 0) {
-		return;
+		return 0;
 	}
 
-	// Only "waiting" beers are removable, matching the UI's own disabled-button
-	// rule (Navbar.tsx). The previous ne(status, rated) check also allowed
-	// deleting the current "rating" beer, which left sessionState.currentBeerId
-	// pointing at a now-nonexistent row -- current beer would show as null with
-	// no way to vote or recover, permanently stalling the session.
-	const beersToDelete = await db.query.sessionBeers.findMany({
-		where: and(
-			eq(sessionBeers.sessionId, sessionId),
-			inArray(sessionBeers.beerId, beerInputs),
-			eq(sessionBeers.addedByUserId, userId),
-			eq(sessionBeers.status, SessionBeerStatus.waiting),
-		),
+	return db.transaction((tx) => {
+		// Only "waiting" beers are removable, matching the UI's own
+		// disabled-button rule (Navbar.tsx). Removing the current "rating" beer
+		// would leave sessionState.currentBeerId pointing at a missing row, with
+		// no way to vote or recover.
+		const removed = tx
+			.delete(sessionBeers)
+			.where(
+				and(
+					eq(sessionBeers.sessionId, sessionId),
+					inArray(sessionBeers.beerId, beerInputs),
+					eq(sessionBeers.addedByUserId, userId),
+					eq(sessionBeers.status, SessionBeerStatus.waiting),
+				),
+			)
+			.returning({ id: sessionBeers.id })
+			.all();
+
+		if (removed.length > 0) {
+			shuffleBeersInSession(sessionId, tx);
+		}
+
+		return removed.length;
 	});
-
-	const idsToDelete = beersToDelete.map((beer) => beer.id);
-
-	if (idsToDelete.length > 0) {
-		await db.delete(sessionBeers).where(inArray(sessionBeers.id, idsToDelete));
-		await shuffleBeersInSession(sessionId);
-	}
 };

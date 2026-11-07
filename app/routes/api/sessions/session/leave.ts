@@ -20,17 +20,20 @@ export async function action({ request, params }: Route.ActionArgs) {
 	await requireSessionParticipant(sessionId, user.id);
 
 	try {
-		await db
-			.update(sessionUsers)
-			.set({ active: false, exitReason: SessionUserExitReason.left })
-			.where(
-				and(
-					eq(sessionUsers.sessionId, sessionId),
-					eq(sessionUsers.userId, user.id),
-				),
-			);
+		db.transaction((tx) => {
+			tx.update(sessionUsers)
+				.set({ active: false, exitReason: SessionUserExitReason.left })
+				.where(
+					and(
+						eq(sessionUsers.sessionId, sessionId),
+						eq(sessionUsers.userId, user.id),
+					),
+				)
+				.run();
 
-		await tryAdvanceSession(sessionId);
+			// The leaver no longer counts, so everyone else may have voted.
+			tryAdvanceSession(sessionId, tx);
+		});
 
 		// If this user was the target of an in-progress kick vote, clear it and
 		// let everyone's modal close cleanly instead of voting on someone who's
