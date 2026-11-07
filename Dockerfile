@@ -1,7 +1,7 @@
 # Base for dev/build
 FROM node:26-alpine AS base
 RUN apk add --no-cache python3 make g++
-RUN npm install -g pnpm@11.17.0
+RUN npm install -g pnpm@12.17.0
 WORKDIR /hop-rank
 
 # Install all (dev) deps
@@ -46,7 +46,7 @@ RUN pnpm prune --prod
 # Final runtime image
 FROM node:26-alpine AS runner
 RUN apk add --no-cache tzdata tini ca-certificates
-RUN npm install -g pnpm@11.17.0
+RUN npm install -g pnpm@12.17.0
 
 WORKDIR /hop-rank
 
