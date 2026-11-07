@@ -22,6 +22,7 @@ vi.mock("~/auth/viewGrants.server", () => ({
 }));
 
 const {
+	canFollowSession,
 	canViewSession,
 	requireResultsViewer,
 	requireSessionViewer,
@@ -301,6 +302,35 @@ describe("assertSessionAccess.server", () => {
 			currentUser = { id: outsiderId, admin: false };
 
 			expect(await outcome(requireResultsViewer(request, sessionId))).toBe(404);
+		});
+	});
+
+	describe("canFollowSession (websocket rooms)", () => {
+		const request = new Request("http://test.local/");
+
+		beforeEach(() => {
+			currentUser = null;
+			currentGrants = [];
+		});
+
+		it("lets a participant follow the session", async () => {
+			currentUser = { id: memberId, admin: false };
+
+			expect(await canFollowSession(request, sessionId)).toBe(true);
+		});
+
+		it("doesn't let an outsider follow it", async () => {
+			currentUser = { id: outsiderId, admin: false };
+
+			expect(await canFollowSession(request, sessionId)).toBe(false);
+		});
+
+		it("lets a logged-out big screen follow only the session it unlocked", async () => {
+			expect(await canFollowSession(request, sessionId)).toBe(false);
+
+			currentGrants = [sessionId];
+			expect(await canFollowSession(request, sessionId)).toBe(true);
+			expect(await canFollowSession(request, sessionId + 1)).toBe(false);
 		});
 	});
 });

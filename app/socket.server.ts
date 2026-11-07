@@ -6,6 +6,7 @@ import type {
 	ServerToClientEvents,
 } from "~/types/websocket";
 
+import { canFollowSession } from "~/database/utils/assertSessionAccess.server";
 import { env } from "~/utils/env.server";
 import { computeTally, getActiveKickVote } from "~/utils/kickVoteState.server";
 
@@ -42,17 +43,28 @@ function createSocketServer() {
 
 		io.emit("clients-count", io.engine.clientsCount);
 
-		socket.on("join-session", (id) => {
-			socket.join(`session:${id}`);
+		socket.on("join-session", async (id) => {
+			const sessionId = Number(id);
+			if (!Number.isSafeInteger(sessionId) || sessionId <= 0) return;
+
+			// The app and /ws share a host, so the handshake carries the same
+			// cookies as a page request: the login and any screen-link grant.
+			const request = new Request(env.APP_URL, {
+				headers: { cookie: socket.handshake.headers.cookie ?? "" },
+			});
+			if (!(await canFollowSession(request, sessionId))) {
+				console.log(`[WS] Client ${socket.id} denied session: ${sessionId}`);
+				return;
+			}
+
+			socket.join(`session:${sessionId}`);
 			console.log();
-			console.log(`[WS] Client ${socket.id} joined session: ${id}`);
+			console.log(`[WS] Client ${socket.id} joined session: ${sessionId}`);
 
 			// Catch up a (re)joining socket on an in-progress kick vote for this
-			// session -- the socket layer has no user identity, so this can't be
-			// targeted more precisely than "you're in this session's room now";
-			// the client applies the same eligibility checks to this replayed
-			// state as it would to a live-pushed event.
-			const activeVote = getActiveKickVote(Number(id));
+			// session. The client applies the same eligibility checks to this
+			// replayed state as it would to a live-pushed event.
+			const activeVote = getActiveKickVote(sessionId);
 			if (activeVote) {
 				socket.emit("session:kick-vote-started", computeTally(activeVote));
 			}
