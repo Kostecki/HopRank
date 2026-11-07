@@ -1,25 +1,28 @@
-# Base for dev/build
-FROM node:26-alpine AS base
-RUN apk add --no-cache python3 make g++
-RUN npm install -g pnpm@12.17.0
+# syntax=docker/dockerfile:1
+
+# Matches mise.toml.
+ARG NODE_VERSION=26.13.0
+
+# Install and build run on the build machine's own platform: the output is
+# platform-independent JS, and better-sqlite3 (the only native dependency)
+# ships prebuilds for every platform and picks one at runtime. Only the
+# runtime stage is built per target platform, so arm64 needs no emulation.
+FROM --platform=$BUILDPLATFORM node:${NODE_VERSION}-alpine AS base
 WORKDIR /hop-rank
+COPY package.json ./
+RUN npm install -g "pnpm@$(node -p "require('./package.json').packageManager.split('@')[1]")"
 
-# Install all (dev) deps
 FROM base AS deps
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY pnpm-lock.yaml pnpm-workspace.yaml ./
+RUN --mount=type=cache,target=/pnpm-store \
+	pnpm install --frozen-lockfile --store-dir /pnpm-store
 
-# Use a cache for the pnpm store to speed subsequent builds
-RUN --mount=type=cache,target=/root/.pnpm-store \
-  pnpm install --frozen-lockfile
-
-# Build the app (frontend + backend) with env injection
 FROM deps AS build
 COPY app/ ./app
 COPY public/ ./public
-COPY drizzle/ ./drizzle
-COPY vite.config.ts tsconfig.json drizzle.config.ts postcss.config.cjs react-router.config.ts theme.ts ./
+COPY vite.config.ts tsconfig.json postcss.config.cjs react-router.config.ts theme.ts ./
 
-# Build-time public env variables
+# Public values inlined into the bundle at build time
 ARG VITE_WS_URL
 ARG VITE_ALGOLIA_APP_ID
 ARG VITE_ALGOLIA_API_K
@@ -28,44 +31,36 @@ ARG VITE_UMAMI_WEBSITE_ID
 ARG VITE_LATEST_COMMIT_HASH
 ARG VITE_LATEST_COMMIT_MESSAGE
 
-# Export so Vite can read process.env.* during build
-ENV VITE_WS_URL=$VITE_WS_URL \
-  VITE_ALGOLIA_APP_ID=$VITE_ALGOLIA_APP_ID \
-  VITE_ALGOLIA_API_K=$VITE_ALGOLIA_API_K \
-  VITE_UMAMI_SRC_URL=$VITE_UMAMI_SRC_URL \
-  VITE_UMAMI_WEBSITE_ID=$VITE_UMAMI_WEBSITE_ID \
-  VITE_LATEST_COMMIT_HASH=$VITE_LATEST_COMMIT_HASH \
-  VITE_LATEST_COMMIT_MESSAGE=$VITE_LATEST_COMMIT_MESSAGE
-
 RUN pnpm run build
 
-# Prune dev deps to production-only
-FROM deps AS prod-deps
-RUN pnpm prune --prod
+# A fresh install, so no dev dependency is left behind.
+FROM base AS prod-deps
+COPY pnpm-lock.yaml pnpm-workspace.yaml ./
+RUN --mount=type=cache,target=/pnpm-store \
+	pnpm install --frozen-lockfile --prod --store-dir /pnpm-store
 
-# Final runtime image
-FROM node:26-alpine AS runner
-RUN apk add --no-cache tzdata tini ca-certificates
-RUN npm install -g pnpm@12.17.0
+FROM node:${NODE_VERSION}-alpine AS runner
+RUN apk add --no-cache tini
 
 WORKDIR /hop-rank
+ENV NODE_ENV=production
 
-# Ensure database folder exists
-RUN mkdir -p /hop-rank/app/database
-
-# Copy runtime artifacts
+# App files stay owned by root, so the server can't modify itself. Only the
+# database directory (a volume in production) is writable by the node user.
 COPY --from=prod-deps /hop-rank/node_modules ./node_modules
 COPY --from=build /hop-rank/build ./build
-COPY --from=build /hop-rank/public ./public
-COPY --from=build /hop-rank/drizzle ./drizzle
-COPY --from=build /hop-rank/drizzle.config.ts ./drizzle.config.ts
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY start.sh ./
-RUN chmod +x start.sh
+COPY drizzle/ ./drizzle
+COPY scripts/migrate.mjs ./scripts/
+COPY package.json ./
+COPY --chmod=755 start.sh ./
+RUN mkdir -p app/database && chown node:node app/database
 
-ENTRYPOINT ["/sbin/tini", "--"]
-ENV NODE_ENV=production
+USER node
 
 EXPOSE 3000 4000
 
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+	CMD wget -qO- http://127.0.0.1:3000/healthz >/dev/null || exit 1
+
+ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["./start.sh"]

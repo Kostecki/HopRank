@@ -8,10 +8,9 @@ if (!DATABASE_PATH) {
 }
 
 const fullDatabasePath = path.resolve(DATABASE_PATH, DATABASE_FILE_NAME);
-const schemaPath = path.resolve(DATABASE_PATH, "schema.server.ts");
 
 export default defineConfig({
-	schema: schemaPath,
+	schema: "./app/database/schema.server.ts",
 	dialect: "sqlite",
 	dbCredentials: {
 		url: fullDatabasePath,
