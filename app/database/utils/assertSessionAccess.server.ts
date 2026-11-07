@@ -155,3 +155,19 @@ export async function requireResultsViewer(
 
 	await requireSessionViewer(request, sessionId);
 }
+
+/**
+ * Whether a request may follow the session's live updates: the same people who
+ * may open its results (see requireResultsViewer), including a logged-out big
+ * screen unlocked with the screen link. Used for the websocket handshake.
+ */
+export async function canFollowSession(request: Request, sessionId: number) {
+	const [user, grants] = await Promise.all([
+		userSessionGet(request),
+		getViewGrants(request),
+	]);
+
+	if (!user) return grants.includes(sessionId);
+
+	return canViewSession(sessionId, user, grants);
+}
