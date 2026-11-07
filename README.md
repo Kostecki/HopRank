@@ -230,21 +230,21 @@ public/                # Favicons, robots.txt, etc.
 
 ### Docker Deployment
 
-Build and run with Docker:
+The `VITE_*` variables are inlined into the bundle, so they're build arguments:
 
 ```bash
-docker build -t hoprank .
-docker run -p 3000:3000 -p 4000:4000 hoprank
+docker build -t hoprank \
+  --build-arg VITE_WS_URL=wss://your-domain.example \
+  --build-arg VITE_ALGOLIA_APP_ID=... \
+  --build-arg VITE_ALGOLIA_API_K=... \
+  .
 ```
 
-### Environment Variables for Production
+Everything else is set at runtime (see `docker-compose.yml`). The container:
 
-The application supports the following production environment variables:
+- runs as the non-root `node` user (uid 1000), so the database volume mounted at `/hop-rank/app/database` must be owned by `1000:1000`
+- applies pending migrations on start, then serves the app on port 3000 and the WebSocket server on port 4000
+- reports its health via `/healthz`
+- uses `TZ` for its timezone (default in compose: `Europe/Copenhagen`)
 
-```env
-VITE_WS_URL=wss://your-domain.com
-VITE_ALGOLIA_APP_ID=production_algolia_app_id
-VITE_ALGOLIA_API_K=production_algolia_api_key
-VITE_UMAMI_SRC_URL=analytics_url
-VITE_UMAMI_WEBSITE_ID=analytics_id
-```
+Pushes to `main` run the checks, build the image for `linux/amd64` and `linux/arm64`, push it to GHCR and deploy it via Komodo.

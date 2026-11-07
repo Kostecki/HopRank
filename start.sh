@@ -1,15 +1,6 @@
 #!/bin/sh
-
-# Exit on any error
 set -e
 
-echo "Starting HopRank application..."
+node scripts/migrate.mjs
 
-# Run database migrations
-echo "Running database migrations..."
-pnpm db:migrate
-
-# Start the application
-printf "\n\n"
-echo "Starting the server..."
-exec pnpm start
+exec node node_modules/@react-router/serve/bin.cjs ./build/server/index.js

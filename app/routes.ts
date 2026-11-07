@@ -7,6 +7,7 @@ import {
 } from "@react-router/dev/routes";
 
 export default [
+	route("healthz", "routes/healthz.ts"),
 	layout("routes/layout.tsx", [
 		index("routes/home.tsx"),
 		route("j/:joinCode", "routes/directJoin.tsx"),

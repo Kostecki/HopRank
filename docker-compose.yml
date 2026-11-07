@@ -1,5 +1,5 @@
 services:
-  app:
+  hop-rank:
     image: ghcr.io/kostecki/hop-rank:latest
     restart: unless-stopped
     container_name: hop-rank
@@ -9,13 +9,13 @@ services:
       - "${WS_PORT:-4000}:4000"
     environment:
       APP_URL: ${APP_URL}
+      TZ: ${TZ:-Europe/Copenhagen}
       MAX_SESSION_AGE_HOURS: ${MAX_SESSION_AGE_HOURS}
       MAX_SESSION_IDLE_TIME_HOURS: ${MAX_SESSION_IDLE_TIME_HOURS}
       SESSION_SECRET: ${SESSION_SECRET}
       TOTP_SECRET: ${TOTP_SECRET}
       DATABASE_PATH: ${DATABASE_PATH}
       DATABASE_FILE_NAME: ${DATABASE_FILE_NAME}
-      DRIZZLE_GATEWAY_MASTERPASS: ${DRIZZLE_GATEWAY_MASTERPASS}
       ADMIN_USER_EMAILS: ${ADMIN_USER_EMAILS}
       SMTP_HOST: ${SMTP_HOST}
       SMTP_PORT: ${SMTP_PORT}
@@ -27,12 +27,11 @@ services:
       UNTAPPD_REDIRECT_URL: ${UNTAPPD_REDIRECT_URL}
     volumes:
       - ${DATA_DIR:-.}/app/data/database:/hop-rank/app/database
-      - /etc/localtime:/etc/localtime:ro
     labels:
       - "nautical-backup.group=hop-rank"
 
   drizzle-gateway:
-    image: ghcr.io/drizzle-team/gateway:latest
+    image: ghcr.io/drizzle-team/gateway:1.7.0
     container_name: hop-rank-drizzle-gateway
     hostname: hop-rank-drizzle-gateway
     restart: unless-stopped
