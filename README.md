@@ -69,6 +69,12 @@ A session runs in one of two modes, chosen when it's created. The mode can't be 
 - **Active**: Started by the owner. Rating beers, and stays active after the last beer is rated
 - **Finished**: Ended by the owner or an admin with "Afslut smagning" (also before it has started), or by a cleanup job once the session is both old and idle (see `MAX_SESSION_AGE_HOURS` and `MAX_SESSION_IDLE_TIME_HOURS`). This can't be undone
 
+### Who Can See a Session
+
+- A session is only visible to the people in it, and afterwards to the people who were in it (except anyone who was kicked)
+- Joining takes the join code, from someone in the session
+- **Big screen**: open `/v/<join code>` on a device to show the session's results view without logging in. The device stays unlocked for that session for 48 hours. Participants can copy the link from the session menu ("Kopiér link til storskærm")
+
 ### One Beer Mode
 
 The same beer, ranked at different bars. There are no scores or criteria.
@@ -84,10 +90,11 @@ The same beer, ranked at different bars. There are no scores or criteria.
 
 ### Installation
 
-Install dependencies:
+Node and pnpm versions are pinned: Node in `mise.toml`, pnpm in the `packageManager` field of `package.json`. With [mise](https://mise.jdx.dev) installed:
 
 ```bash
-pnpm install
+mise install  # installs the pinned Node version
+pnpm install  # pnpm switches itself to the pinned version
 ```
 
 ### Environment Setup
@@ -119,10 +126,11 @@ Create a `.env` file with the required environment variables. Below is a consoli
 | Variable | Purpose |
 |----------|---------|
 | `DATABASE_FILE_NAME` | Name of the database file (default: data.db) |
-| `ADMIN_USER_EMAILS` | Email addresses of admin users |
+| `ADMIN_USER_EMAILS` | Comma-separated email addresses that get admin on login |
 | `DRIZZLE_GATEWAY_MASTERPASS` | Master password for Drizzle Gateway |
 | `MAX_SESSION_AGE_HOURS` | Auto-close sessions older than this (default: 24) |
 | `MAX_SESSION_IDLE_TIME_HOURS` | Timeout for "idle" session (default: 6) |
+| `UNTAPPD_DEV_CALLBACK_URL` | Where the production callback relays Untappd logins started from a dev server (default: `http://localhost:5173/auth/untappd/callback`) |
 | `VITE_UMAMI_SRC_URL` | Umami analytics script URL (production only) |
 | `VITE_UMAMI_WEBSITE_ID` | Umami website/site ID |
 | `VITE_LATEST_COMMIT_HASH` | Injected at build time for UI display of current commit |
@@ -138,12 +146,13 @@ cp .env.example .env
 
 ### Database Setup
 
-Generate and run database migrations:
+Apply the migrations to create or update the database:
 
 ```bash
-pnpm db:generate  # Generate migration files
-pnpm db:migrate   # Apply migrations
+pnpm db:migrate
 ```
+
+After changing `app/database/schema.server.ts`, create a migration with `pnpm db:generate` and apply it with `pnpm db:migrate`.
 
 ### Development
 

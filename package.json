@@ -1,6 +1,7 @@
 {
   "name": "hop-rank",
   "private": true,
+  "packageManager": "pnpm@12.17.0",
   "type": "module",
   "scripts": {
     "build": "react-router build",
@@ -55,21 +56,13 @@
     "@types/better-sqlite3": "9.6.0",
     "@types/mjml": "5.4.2",
     "@types/node": "26.6.6",
-    "@types/node-cron": "3.0.11",
-    "@types/nodemailer": "8.0.2",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
     "postcss": "8.5.32",
     "postcss-preset-mantine": "1.18.0",
     "postcss-simple-vars": "7.0.1",
-    "react-router-devtools": "6.2.3",
-    "tsx": "4.23.15",
     "typescript": "7.0.2",
     "vite": "8.3.5",
     "vitest": "5.1.0"
-  },
-  "volta": {
-    "node": "26.13.0",
-    "pnpm": "12.17.0"
   }
 }
