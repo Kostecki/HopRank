@@ -1,11 +1,10 @@
 import { eq } from "drizzle-orm";
 import { data } from "react-router";
 
-import type { Vote } from "~/types/rating";
 import { SessionStatus } from "~/types/session";
 import type { Route } from "./+types/vote";
 
-import { userSessionGet } from "~/auth/users.server";
+import { requireUser } from "~/auth/requireUser.server";
 import { db } from "~/database/config.server";
 import {
 	ratings,
@@ -18,27 +17,20 @@ import {
 } from "~/database/utils/assertSessionAccess.server";
 import { bumpLastUpdatedAt } from "~/database/utils/bumpLastUpdatedAt.server";
 import { tryAdvanceSession } from "~/database/utils/tryAdvanceSession.server";
-import { extractSessionId, isValidVoteScore } from "~/utils/utils";
+import { voteSchema } from "~/schemas/vote";
+import { extractSessionId } from "~/utils/utils";
+import { parseFormJson } from "~/utils/validation.server";
 import { emitSessionEvent } from "~/utils/websocket.server";
 
 export async function action({ request, params }: Route.ActionArgs) {
 	const sessionId = extractSessionId(params.sessionId);
-	const user = await userSessionGet(request);
-
-	if (!user) {
-		return data({ message: "User not authenticated" }, { status: 401 });
-	}
+	const user = await requireUser(request);
 
 	await requireSessionParticipant(sessionId, user.id);
 	await requireNormalSession(sessionId);
 
 	const formData = await request.formData();
-	const voteJson = formData.get("vote");
-	const vote = JSON.parse(String(voteJson)) as Vote;
-
-	if (!vote) {
-		return data({ message: "Invalid vote data" }, { status: 400 });
-	}
+	const vote = parseFormJson(formData, "vote", voteSchema);
 
 	if (vote.sessionId !== sessionId) {
 		return data({ message: "Session ID does not match vote" }, { status: 400 });
@@ -63,28 +55,17 @@ export async function action({ request, params }: Route.ActionArgs) {
 		);
 	}
 
-	if (!Array.isArray(vote.ratings) || vote.ratings.length === 0) {
-		return data({ message: "Invalid vote data" }, { status: 400 });
-	}
-
 	const criteriaRows = await db.query.sessionCriteria.findMany({
 		where: eq(sessionCriteria.sessionId, sessionId),
 		columns: { criterionId: true },
 	});
 	const sessionCriterionIds = new Set(criteriaRows.map((c) => c.criterionId));
 
-	// Validate every rating before writing any, so a bad one can't leave the
-	// vote half-saved.
-	for (const { criterionId, score } of vote.ratings) {
-		if (
-			typeof criterionId !== "number" ||
-			!sessionCriterionIds.has(criterionId)
-		) {
+	// Check every rating before writing any, so a bad one can't leave the vote
+	// half-saved.
+	for (const { criterionId } of vote.ratings) {
+		if (!sessionCriterionIds.has(criterionId)) {
 			return data({ message: "Invalid criterion in vote" }, { status: 400 });
-		}
-
-		if (!isValidVoteScore(score)) {
-			return data({ message: "Invalid score in vote" }, { status: 400 });
 		}
 	}
 

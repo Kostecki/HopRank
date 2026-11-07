@@ -7,6 +7,7 @@ import type {
 } from "~/types/untappd";
 
 import { env } from "~/utils/env.server";
+import { EXTERNAL_TIMEOUT_MS } from "~/utils/http";
 
 import {
 	commitOAuthStateSession,
@@ -143,7 +144,9 @@ export class UntappdStrategy<User> extends OAuth2Strategy<User> {
 
 		const url = `${TOKEN_ENDPOINT}?${params.toString()}`;
 
-		const response = await fetch(url);
+		const response = await fetch(url, {
+			signal: AbortSignal.timeout(EXTERNAL_TIMEOUT_MS),
+		});
 		if (!response.ok) {
 			const error = await response.text();
 			throw new Error(`Untappd token request failed: ${error}`);
@@ -165,6 +168,7 @@ export class UntappdStrategy<User> extends OAuth2Strategy<User> {
 	/** Fetches user info from Untappd */
 	async userProfile(accessToken: string): Promise<UntappdStrategyProfile> {
 		const response = await fetch(`${PROFILE_ENDPOINT}`, {
+			signal: AbortSignal.timeout(EXTERNAL_TIMEOUT_MS),
 			headers: {
 				Authorization: `Bearer ${accessToken}`,
 			},

@@ -3,7 +3,7 @@ import { data, redirect } from "react-router";
 
 import type { Route } from "./+types/join";
 
-import { userSessionGet } from "~/auth/users.server";
+import { requireUser } from "~/auth/requireUser.server";
 import { db } from "~/database/config.server";
 import { sessions } from "~/database/schema.server";
 import { requireSessionRejoinEligible } from "~/database/utils/assertSessionAccess.server";
@@ -14,13 +14,7 @@ import { emitGlobalEvent, emitSessionEvent } from "~/utils/websocket.server";
 export async function action({ request, params }: Route.ActionArgs) {
 	const sessionId = extractSessionId(params.sessionId);
 
-	const user = await userSessionGet(request);
-	if (!user) {
-		return data(
-			{ message: "You must be logged in to join a session" },
-			{ status: 401 },
-		);
-	}
+	const user = await requireUser(request);
 
 	const session = await db.query.sessions.findFirst({
 		where: eq(sessions.id, sessionId),

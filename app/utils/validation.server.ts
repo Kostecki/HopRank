@@ -46,3 +46,22 @@ export function parseFormJson<T extends z.ZodType>(
 
 	return parseOrThrow(schema, value);
 }
+
+/**
+ * Reads plain (non-JSON) form fields and validates them as one object,
+ * throwing a 400 when they don't match. Missing fields are undefined.
+ */
+export function parseFormFields<T extends z.ZodType>(
+	form: FormData,
+	schema: T,
+	keys: string[],
+): z.infer<T> {
+	const value = Object.fromEntries(
+		keys.map((key) => {
+			const field = form.get(key);
+			return [key, typeof field === "string" ? field : undefined];
+		}),
+	);
+
+	return parseOrThrow(schema, value);
+}

@@ -2,7 +2,7 @@ import { data } from "react-router";
 
 import type { Route } from "./+types/remove";
 
-import { userSessionGet } from "~/auth/users.server";
+import { requireUser } from "~/auth/requireUser.server";
 import {
 	requireNormalSession,
 	requireSessionParticipant,
@@ -15,10 +15,7 @@ export async function action({ request, params }: Route.ActionArgs) {
 	const sessionId = extractSessionId(params.sessionId);
 	const beerId = Number(params.beerId);
 
-	const user = await userSessionGet(request);
-	if (!user) {
-		return data({ message: "User not authenticated" }, { status: 401 });
-	}
+	const user = await requireUser(request);
 
 	if (!sessionId || !beerId) {
 		return data({ message: "Invalid session or beer ID" }, { status: 400 });

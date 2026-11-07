@@ -1,26 +1,23 @@
 import { data } from "react-router";
 
-import type { BarSelection } from "~/types/oneBeer";
 import type { Route } from "./+types/barsSync";
 
-import { userSessionGet } from "~/auth/users.server";
+import { requireUser } from "~/auth/requireUser.server";
 import { requireSessionParticipant } from "~/database/utils/assertSessionAccess.server";
 import { syncVenueDetails } from "~/database/utils/oneBeer.server";
+import { venueListSchema } from "~/schemas/oneBeer";
 import { extractSessionId } from "~/utils/utils";
+import { parseFormJson } from "~/utils/validation.server";
 import { emitSessionEvent } from "~/utils/websocket.server";
 
 export async function action({ request, params }: Route.ActionArgs) {
 	const sessionId = extractSessionId(params.sessionId);
-	const user = await userSessionGet(request);
-
-	if (!user) {
-		return data({ message: "User not authenticated" }, { status: 401 });
-	}
+	const user = await requireUser(request);
 
 	await requireSessionParticipant(sessionId, user.id);
 
 	const form = await request.formData();
-	const venues = JSON.parse(String(form.get("venues"))) as BarSelection[];
+	const venues = parseFormJson(form, "venues", venueListSchema);
 
 	const changedCount = syncVenueDetails(sessionId, venues);
 

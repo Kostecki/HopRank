@@ -1,6 +1,7 @@
 import type { AlgoliaBeerResponse } from "~/types/untappd";
 import type { Route } from "./+types/search";
 
+import { EXTERNAL_TIMEOUT_MS } from "~/utils/http";
 import { invariant } from "~/utils/invariant";
 
 export async function loader({ request }: Route.LoaderArgs) {
@@ -17,6 +18,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 	const requestUrl = `https://${ALGOLIA_APP_ID}-dsn.algolia.net/1/indexes/beer/query?x-algolia-application-id=${ALGOLIA_APP_ID}&x-algolia-api-key=${ALGOLIA_API_K}`;
 
 	const response = await fetch(requestUrl, {
+		signal: AbortSignal.timeout(EXTERNAL_TIMEOUT_MS),
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify({

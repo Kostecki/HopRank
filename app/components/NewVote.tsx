@@ -7,6 +7,7 @@ import { useFetcher, useParams } from "react-router";
 import type { Criterion, SessionProgress } from "~/types/session";
 import type { SessionUser } from "~/types/user";
 
+import { useFetcherErrorToast } from "~/hooks/useFetcherErrorToast";
 import { useUntappdCheckin } from "~/hooks/useUntappdCheckin";
 import { calculateVoteScore } from "~/utils/score";
 import { sliderConf } from "~/utils/utils";
@@ -24,6 +25,7 @@ type InputProps = {
 export default function NewVote({ user, session, criteria }: InputProps) {
 	const voteFetcher = useFetcher();
 	const untappdFetcher = useFetcher();
+	useFetcherErrorToast(voteFetcher, "Din stemme kunne ikke gemmes");
 
 	const { sessionId } = useParams();
 

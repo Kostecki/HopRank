@@ -27,6 +27,7 @@ const bar = await import("./bar");
 const bars = await import("./bars");
 const barsSync = await import("./barsSync");
 const finish = await import("./finish");
+const kick = await import("./kick");
 const placements = await import("./placements");
 const remove = await import("./remove");
 const start = await import("./start");
@@ -482,6 +483,46 @@ describe("session API permissions", () => {
 			await setMode(SessionMode.normal);
 
 			expect(await statusOf(bars, { form: newBar })).toBe(400);
+		});
+	});
+
+	describe("invalid input", () => {
+		it.each([
+			[
+				"a bar id that isn't a number",
+				bar,
+				{ method: "DELETE", params: { barId: "abc" } },
+			],
+			["a new bar without a name", bars, { form: { bar: "{}" } }],
+			[
+				"a bar order that isn't a list",
+				bars,
+				{ method: "PATCH", form: { barIds: "{}" } },
+			],
+			["placements with a bad id", placements, { form: { barIds: '["x"]' } }],
+			["venues that aren't a list", barsSync, { form: { venues: "{}" } }],
+			["a kick without a target", kick, { form: {} }],
+			["a vote that isn't JSON", vote, { form: { vote: "{nope" } }],
+		] as const)("rejects %s with a 400", async (_, route, options) => {
+			await setMode(route === vote ? SessionMode.normal : SessionMode.oneBeer);
+
+			expect(await statusOf(route, options)).toBe(400);
+		});
+
+		it("rejects a bar correction that isn't JSON with a 400", async () => {
+			currentUser = { ...owner, untappd: { accessToken: "token" } };
+
+			expect(
+				await statusOf(bar, {
+					method: "PATCH",
+					params: { barId: String(openBarId) },
+					form: { bar: "{nope" },
+				}),
+			).toBe(400);
+		});
+
+		it("rejects an unsupported method on the bar list with a 405", async () => {
+			expect(await statusOf(bars, { method: "PUT", form: newBar })).toBe(405);
 		});
 	});
 });

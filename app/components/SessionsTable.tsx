@@ -2,6 +2,7 @@ import { Button, Flex, Pagination, Table } from "@mantine/core";
 import { useState } from "react";
 import { useFetcher, useNavigate } from "react-router";
 
+import { useFetcherErrorToast } from "~/hooks/useFetcherErrorToast";
 import dayjs from "~/utils/dayjs";
 
 export type Session = {
@@ -30,6 +31,7 @@ export default function SessionsTable({
 	const [page, setPage] = useState(1);
 
 	const fetcher = useFetcher();
+	useFetcherErrorToast(fetcher, "Kunne ikke deltage i smagningen");
 	const navigate = useNavigate();
 
 	const total = sessions.length;

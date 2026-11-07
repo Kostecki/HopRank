@@ -41,6 +41,7 @@ import {
 import type { SessionUser } from "~/types/user";
 
 import type { SelectSessionBeersWithBeer } from "~/database/schema.types";
+import { useFetcherErrorToast } from "~/hooks/useFetcherErrorToast";
 import { showDangerToast } from "~/utils/toasts";
 import { createBeerLink, createProfileLink } from "~/utils/untappd";
 import { sortByDisplayName } from "~/utils/utils";
@@ -315,8 +316,10 @@ export default function Navbar({
 
 		setLocalSessionBeers(pendingBeersSnapshot);
 		setPendingBeersSnapshot(null);
-		console.error("Failed to remove beer", result);
+		showDangerToast(result.message ?? "Øllen kunne ikke fjernes");
 	}, [removeFetcher.state, removeFetcher.data, pendingBeersSnapshot]);
+
+	useFetcherErrorToast(leaveFetcher, "Kunne ikke forlade smagningen");
 
 	useEffect(() => {
 		if (leaveFetcher.state !== "idle") return;

@@ -1,5 +1,7 @@
 import type { Checkin, VenuesResponse } from "~/types/untappd";
 
+import { EXTERNAL_TIMEOUT_MS } from "~/utils/http";
+
 type ApiVenue = {
 	venue_name: string;
 	foursquare: { foursquare_id: string };
@@ -58,6 +60,7 @@ export const getBeerInfo = async (beerId: number, accessToken: string) => {
 	try {
 		const response = await fetch(
 			`${API_URL}/beer/info/${beerId}?access_token=${accessToken}&compact=true`,
+			{ signal: AbortSignal.timeout(EXTERNAL_TIMEOUT_MS) },
 		);
 
 		if (!response.ok) {
@@ -91,6 +94,7 @@ export const checkinBeer = async (
 		const response = await fetch(
 			`${API_URL}/checkin/add?access_token=${accessToken}`,
 			{
+				signal: AbortSignal.timeout(EXTERNAL_TIMEOUT_MS),
 				method: "POST",
 				headers: {
 					Accept: "application/json; charset=utf-8",
@@ -137,7 +141,9 @@ export const getVenues = async (
 		request_url.searchParams.append("lng", lng.toString());
 		if (query) request_url.searchParams.append("q", query);
 
-		const response = await fetch(request_url.toString());
+		const response = await fetch(request_url.toString(), {
+			signal: AbortSignal.timeout(EXTERNAL_TIMEOUT_MS),
+		});
 
 		if (response.status === 429) {
 			console.error("Rate limit exceeded. Please try again later.");

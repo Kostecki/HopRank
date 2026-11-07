@@ -3,54 +3,33 @@ import { data } from "react-router";
 
 import type { Route } from "./+types/update";
 
+import { requireUser } from "~/auth/requireUser.server";
 import { commitSession, getSession } from "~/auth/session.server";
-import { userSessionGet } from "~/auth/users.server";
 import { db } from "~/database/config.server";
 import { users } from "~/database/schema.server";
+import { userNameSchema } from "~/schemas/user";
+import { parseOrThrow } from "~/utils/validation.server";
 
 export async function action({ request }: Route.ActionArgs) {
-	const user = await userSessionGet(request);
-	if (!user) {
-		return Response.json(
-			{ status: 401, message: "You must be logged in" },
-			{ status: 401 },
-		);
-	}
+	const user = await requireUser(request);
+
+	const formData = await request.formData();
+	const name = parseOrThrow(userNameSchema, formData.get("name") ?? undefined);
 
 	try {
-		const formData = await request.formData();
-		const name = formData.get("name");
-		if (typeof name !== "string" || name.trim() === "") {
-			return Response.json(
-				{ status: 400, message: "Name is required" },
-				{ status: 400 },
-			);
-		}
-
 		await db.update(users).set({ name }).where(eq(users.id, user.id));
-
-		const updatedSessionUser = {
-			...user,
-			name: name.trim(),
-		};
-
-		const session = await getSession(request.headers.get("Cookie"));
-		session.set("user", updatedSessionUser);
-		const sessionCookie = await commitSession(session);
-
-		return data(
-			{
-				status: 200,
-				message: "Profile updated successfully",
-				user: updatedSessionUser,
-			},
-			{
-				status: 200,
-				headers: { "Set-Cookie": sessionCookie },
-			},
-		);
 	} catch (error) {
 		console.error("Error updating name:", error);
-		return data({ status: 500, message: "An error occurred" }, { status: 500 });
+		return data({ message: "Navnet kunne ikke gemmes" }, { status: 500 });
 	}
+
+	const updatedSessionUser = { ...user, name };
+
+	const session = await getSession(request.headers.get("Cookie"));
+	session.set("user", updatedSessionUser);
+
+	return data(
+		{ success: true, user: updatedSessionUser },
+		{ headers: { "Set-Cookie": await commitSession(session) } },
+	);
 }

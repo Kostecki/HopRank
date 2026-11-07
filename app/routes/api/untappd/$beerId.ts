@@ -4,7 +4,8 @@ import { data } from "react-router";
 import type { ScrapedBeer } from "~/types/untappd";
 import type { Route } from "./+types/$beerId";
 
-import { userSessionGet } from "~/auth/users.server";
+import { requireUser } from "~/auth/requireUser.server";
+import { EXTERNAL_TIMEOUT_MS } from "~/utils/http";
 import { createBeerLink } from "~/utils/untappd";
 
 const cachedData = new Map<string, { data: ScrapedBeer; timestamp: number }>();
@@ -21,10 +22,7 @@ function purgeExpiredCache() {
 }
 
 export async function loader({ params, request }: Route.LoaderArgs) {
-	const user = await userSessionGet(request);
-	if (!user) {
-		throw data({ message: "User not authenticated" }, { status: 401 });
-	}
+	await requireUser(request);
 
 	const beerId = params.beerId;
 	if (!beerId || !/^\d+$/.test(beerId)) {
@@ -48,7 +46,9 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 
 	// Otherwise, start a new fetch
 	const fetchPromise = (async () => {
-		const res = await fetch(createBeerLink(beerId));
+		const res = await fetch(createBeerLink(beerId), {
+			signal: AbortSignal.timeout(EXTERNAL_TIMEOUT_MS),
+		});
 		if (!res.ok) {
 			throw new Error(
 				`Failed to fetch beer page: ${res.status} ${res.statusText}`,

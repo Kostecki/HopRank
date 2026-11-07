@@ -4,7 +4,7 @@ import { data } from "react-router";
 import { SessionUserExitReason } from "~/types/session";
 import type { Route } from "./+types/leave";
 
-import { userSessionGet } from "~/auth/users.server";
+import { requireUser } from "~/auth/requireUser.server";
 import { db } from "~/database/config.server";
 import { sessionUsers } from "~/database/schema.server";
 import { requireSessionParticipant } from "~/database/utils/assertSessionAccess.server";
@@ -15,11 +15,7 @@ import { emitGlobalEvent, emitSessionEvent } from "~/utils/websocket.server";
 
 export async function action({ request, params }: Route.ActionArgs) {
 	const sessionId = extractSessionId(params.sessionId);
-	const user = await userSessionGet(request);
-
-	if (!user) {
-		return data({ message: "User not authenticated" }, { status: 401 });
-	}
+	const user = await requireUser(request);
 
 	await requireSessionParticipant(sessionId, user.id);
 

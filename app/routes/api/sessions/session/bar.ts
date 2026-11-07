@@ -1,26 +1,20 @@
 import { data } from "react-router";
 
-import type { BarSelection } from "~/types/oneBeer";
 import type { Route } from "./+types/bar";
 
-import { userSessionGet } from "~/auth/users.server";
+import { requireUser } from "~/auth/requireUser.server";
 import { requireSessionParticipant } from "~/database/utils/assertSessionAccess.server";
 import { correctBar, removeBar } from "~/database/utils/oneBeer.server";
+import { idSchema } from "~/schemas/common";
+import { barSelectionSchema } from "~/schemas/oneBeer";
 import { extractSessionId } from "~/utils/utils";
+import { parseFormJson, parseOrThrow } from "~/utils/validation.server";
 import { emitGlobalEvent, emitSessionEvent } from "~/utils/websocket.server";
 
 export async function action({ request, params }: Route.ActionArgs) {
 	const sessionId = extractSessionId(params.sessionId);
-	const barId = Number(params.barId);
-	const user = await userSessionGet(request);
-
-	if (!user) {
-		return data({ message: "User not authenticated" }, { status: 401 });
-	}
-
-	if (!barId) {
-		return data({ message: "Invalid bar ID" }, { status: 400 });
-	}
+	const barId = parseOrThrow(idSchema, params.barId);
+	const user = await requireUser(request);
 
 	await requireSessionParticipant(sessionId, user.id);
 
@@ -37,13 +31,9 @@ export async function action({ request, params }: Route.ActionArgs) {
 		}
 
 		const form = await request.formData();
-		const bar = JSON.parse(String(form.get("bar"))) as BarSelection;
+		const bar = parseFormJson(form, "bar", barSelectionSchema);
 
-		result = correctBar(sessionId, barId, {
-			...bar,
-			name: String(bar?.name ?? ""),
-			foursquareId: bar?.foursquareId ?? null,
-		});
+		result = correctBar(sessionId, barId, bar);
 	} else {
 		return data({ message: "Method not allowed" }, { status: 405 });
 	}
