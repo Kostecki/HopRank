@@ -1,33 +1,30 @@
-import { eq } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import { data, redirect } from "react-router";
+import { z } from "zod";
 
 import { SessionMode } from "~/types/session";
 import type { Route } from "./+types/sessions";
 
 import { userSessionGet } from "~/auth/users.server";
 import { db } from "~/database/config.server";
-import { sessions } from "~/database/schema.server";
+import { criteria, sessions } from "~/database/schema.server";
 import type { SelectSessions } from "~/database/schema.types";
 import { addBeersToSession } from "~/database/utils/addBeersToSession.server";
 import { createSessionWithCriteria } from "~/database/utils/createSessionWithCriteria.server";
 import { joinSessionById } from "~/database/utils/joinSessionById.server";
-import { type BeerInput, upsertBeer } from "~/database/utils/upsertBeer.server";
+import { upsertBeer } from "~/database/utils/upsertBeer.server";
+import { beerInputSchema } from "~/schemas/beer";
+import {
+	criterionIdsSchema,
+	oneBeerSchema,
+	sessionModeSchema,
+	sessionNameSchema,
+} from "~/schemas/session";
 import { generateJoinCode } from "~/utils/utils";
+import { parseFormJson, parseOrThrow } from "~/utils/validation.server";
 import { emitGlobalEvent } from "~/utils/websocket.server";
 
-const isValidOneBeer = (beers: unknown): beers is [BeerInput] => {
-	if (!Array.isArray(beers) || beers.length !== 1) return false;
-
-	const { untappdBeerId, name, breweryName, style, label } = beers[0] ?? {};
-	return !!(untappdBeerId && name && breweryName && style && label);
-};
-
 export async function action({ request }: Route.ActionArgs) {
-	const formData = await request.formData();
-	const sessionName = formData.get("name");
-	const beersJson = formData.get("beers");
-	const criteriaJson = formData.get("criteria");
-
 	const user = await userSessionGet(request);
 	const userId = user?.id;
 
@@ -35,25 +32,51 @@ export async function action({ request }: Route.ActionArgs) {
 		return data({ message: "User not authenticated" }, { status: 401 });
 	}
 
-	const mode =
-		formData.get("mode") === SessionMode.oneBeer
-			? SessionMode.oneBeer
-			: SessionMode.normal;
+	const formData = await request.formData();
+
+	const name = parseOrThrow(sessionNameSchema, formData.get("name") ?? "");
+	const mode = parseOrThrow(
+		sessionModeSchema,
+		formData.get("mode") ?? undefined,
+	);
 	const isOneBeer = mode === SessionMode.oneBeer;
 
-	const criteriaInput = isOneBeer
+	// One Beer sessions have no criteria, and their one beer is required.
+	// Normal sessions need criteria; beers can also be added later.
+	const criterionIds = isOneBeer
 		? []
-		: (JSON.parse(String(criteriaJson)) ?? []);
-	if (!isOneBeer && criteriaInput.length === 0) {
-		return data(
-			{ message: "En smagning skal have mindst ét bedømmelseskriterie." },
-			{ status: 400 },
-		);
+		: parseFormJson(formData, "criteria", criterionIdsSchema);
+	const beersInput = isOneBeer
+		? parseFormJson(formData, "beers", oneBeerSchema)
+		: formData.has("beers")
+			? parseFormJson(formData, "beers", z.array(beerInputSchema))
+			: [];
+
+	if (criterionIds.length > 0) {
+		const enabledCriteria = await db.query.criteria.findMany({
+			where: and(
+				inArray(criteria.id, criterionIds),
+				eq(criteria.enabled, true),
+			),
+			columns: { id: true },
+		});
+		if (enabledCriteria.length !== criterionIds.length) {
+			return data(
+				{ message: "Et af de valgte kriterier findes ikke" },
+				{ status: 400 },
+			);
+		}
 	}
 
-	const beersInput = JSON.parse(String(beersJson)) ?? [];
-	if (isOneBeer && !isValidOneBeer(beersInput)) {
-		return data({ message: "Vælg øllen til smagningen." }, { status: 400 });
+	const nameTaken = await db.query.sessions.findFirst({
+		where: sql`lower(${sessions.name}) = lower(${name})`,
+		columns: { id: true },
+	});
+	if (nameTaken) {
+		return data(
+			{ message: "Der findes allerede en smagning med det navn" },
+			{ status: 400 },
+		);
 	}
 
 	const beerId = isOneBeer ? await upsertBeer(beersInput[0]) : undefined;
@@ -90,10 +113,10 @@ export async function action({ request }: Route.ActionArgs) {
 		const joinCode = await generateUniqueJoinCode();
 		try {
 			session = createSessionWithCriteria({
-				name: String(sessionName),
+				name,
 				createdBy: userId,
 				joinCode,
-				criterionIds: criteriaInput,
+				criterionIds,
 				mode,
 				beerId,
 			});
@@ -117,7 +140,7 @@ export async function action({ request }: Route.ActionArgs) {
 			userId,
 		});
 
-		if (!isOneBeer && Array.isArray(beersInput) && beersInput.length > 0) {
+		if (!isOneBeer && beersInput.length > 0) {
 			await addBeersToSession(session.id, beersInput, userId);
 		}
 

@@ -1,15 +1,12 @@
 import { createCookieSessionStorage } from "react-router";
 
-import { invariant } from "~/utils/invariant";
+import { env } from "~/utils/env.server";
 
 // Short-lived, single-purpose cookie for the Untappd OAuth CSRF `state`
 // value. Kept separate from the main user session cookie since it's only
 // needed for the few minutes between redirecting to Untappd and the
 // callback coming back.
 const maxAge = 60 * 10; // 10 minutes
-
-const SESSION_SECRET = process.env.SESSION_SECRET;
-invariant(SESSION_SECRET, "SESSION_SECRET must be set in .env");
 
 export const {
 	getSession: getOAuthStateSession,
@@ -22,7 +19,7 @@ export const {
 		sameSite: "lax",
 		path: "/",
 		httpOnly: true,
-		secrets: [SESSION_SECRET],
-		secure: process.env.NODE_ENV === "production",
+		secrets: [env.SESSION_SECRET],
+		secure: env.NODE_ENV === "production",
 	},
 });

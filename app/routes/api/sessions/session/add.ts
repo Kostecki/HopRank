@@ -8,7 +8,9 @@ import {
 	requireNormalSession,
 	requireSessionParticipant,
 } from "~/database/utils/assertSessionAccess.server";
+import { beersToAddSchema } from "~/schemas/session";
 import { extractSessionId } from "~/utils/utils";
+import { parseFormJson } from "~/utils/validation.server";
 import { emitGlobalEvent, emitSessionEvent } from "~/utils/websocket.server";
 
 export async function action({ request, params }: Route.ActionArgs) {
@@ -23,13 +25,7 @@ export async function action({ request, params }: Route.ActionArgs) {
 	await requireNormalSession(sessionId);
 
 	const form = await request.formData();
-	const beersJson = form.get("beers");
-	const beers = JSON.parse(String(beersJson)) as unknown;
-	const beerInputs = Array.isArray(beers) ? beers : [beers];
-
-	if (beerInputs.length === 0) {
-		return data({ message: "No beers provided" }, { status: 400 });
-	}
+	const beerInputs = parseFormJson(form, "beers", beersToAddSchema);
 
 	try {
 		await addBeersToSession(sessionId, beerInputs, user.id);

@@ -6,6 +6,8 @@ import type {
 	UntappdStrategyVerifyParams,
 } from "~/types/untappd";
 
+import { env } from "~/utils/env.server";
+
 import {
 	commitOAuthStateSession,
 	getOAuthStateSession,
@@ -23,9 +25,7 @@ const PROFILE_ENDPOINT = "https://api.untappd.com/v4/user/info?compact=true";
 // completes the exchange itself (still quoting the registered callback URL,
 // since that's what Untappd will validate against).
 const DEV_RELAY_STATE_PREFIX = "dev:";
-const DEV_CALLBACK_URL =
-	process.env.UNTAPPD_DEV_CALLBACK_URL ??
-	"http://localhost:5173/auth/untappd/callback";
+const DEV_CALLBACK_URL = env.UNTAPPD_DEV_CALLBACK_URL;
 
 export class UntappdStrategy<User> extends OAuth2Strategy<User> {
 	name = "untappd";

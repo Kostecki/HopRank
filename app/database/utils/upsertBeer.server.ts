@@ -1,17 +1,9 @@
 import { eq } from "drizzle-orm";
 
+import type { BeerInput } from "~/schemas/beer";
+
 import { db } from "../config.server";
 import { beers } from "../schema.server";
-
-export type BeerInput = {
-	untappdBeerId: number;
-	name: string;
-	breweryName: string;
-	abv: number;
-	style: string;
-	label: string;
-	label_hd?: string;
-};
 
 /** Returns the id of the beer, creating it the first time it's seen. */
 export const upsertBeer = async (beer: BeerInput) => {

@@ -473,7 +473,7 @@ describe("session API permissions", () => {
 			const added = await respond(add, { form: { beers: "[]" } });
 
 			expect(voted.message).toBe("Invalid vote data");
-			expect(added.message).toBe("No beers provided");
+			expect(added.message).toBe("Ingen øl valgt");
 		});
 	});
 

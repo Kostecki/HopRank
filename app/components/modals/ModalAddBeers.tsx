@@ -72,10 +72,6 @@ export default function ModalAddBeers({
 			method: "POST",
 			action: `/api/sessions/${sessionId}/add`,
 		});
-
-		// Clear selection and close modal
-		setSelectedBeers([]);
-		close();
 	};
 
 	const { data, state } = submitFetcher;
@@ -89,6 +85,8 @@ export default function ModalAddBeers({
 		};
 
 		if (result.success) {
+			setSelectedBeers([]);
+			close();
 			showSuccessToast("Øl tilføjet til smagningen");
 			onBeersUpdated?.();
 			fetcherWithReset.reset?.();
@@ -97,7 +95,7 @@ export default function ModalAddBeers({
 
 		showDangerToast(result.message ? result.message : "Kunne ikke tilføje øl");
 		fetcherWithReset.reset?.();
-	}, [state, data, submitFetcher, onBeersUpdated]);
+	}, [state, data, submitFetcher, onBeersUpdated, close]);
 
 	return (
 		<ModalAddBeersContext.Provider value={open}>

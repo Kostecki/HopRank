@@ -6,7 +6,7 @@ import type { SessionUser } from "~/types/user";
 
 import type { SelectUsers } from "~/database/schema.types";
 import { findOrCreateUserByEmail } from "~/database/utils/findOrCreateUserByEmail.server";
-import { invariant } from "~/utils/invariant";
+import { env } from "~/utils/env.server";
 import { isSafeRedirect } from "~/utils/utils";
 
 import { sendMagicLinkEmail } from "./email.server";
@@ -52,15 +52,10 @@ const commitSessionUser = async (request: Request, user: SessionUser) => {
 	});
 };
 
-const APP_URL = process.env.APP_URL;
-invariant(APP_URL, "APP_URL must be set in .env");
-
-const TOTP_SECRET = process.env.TOTP_SECRET;
-invariant(TOTP_SECRET, "TOTP_SECRET must be set in .env");
 authenticator.use(
 	new TOTPStrategy<SessionUser>(
 		{
-			secret: TOTP_SECRET || "",
+			secret: env.TOTP_SECRET,
 			totpGeneration: {
 				digits: 6,
 				charSet: "0123456789",
@@ -72,11 +67,11 @@ authenticator.use(
 			successRedirect: "/sessions",
 			failureRedirect: "/auth/totp",
 			cookieOptions: {
-				...(process.env.NODE_ENV === "production" ? { secure: true } : {}),
+				...(env.NODE_ENV === "production" ? { secure: true } : {}),
 			},
 			sendTOTP: async ({ email, code, magicLink }) => {
 				const redirectTo = await consumePendingRedirect(email);
-				const url = new URL(magicLink, APP_URL);
+				const url = new URL(magicLink, env.APP_URL);
 				if (redirectTo && isSafeRedirect(redirectTo)) {
 					url.searchParams.set("redirect_to", redirectTo);
 				}
@@ -94,24 +89,17 @@ authenticator.use(
 	"TOTP",
 );
 
-const UNTAPPD_CLIENT_ID = process.env.UNTAPPD_CLIENT_ID;
-const UNTAPPD_CLIENT_SECRET = process.env.UNTAPPD_CLIENT_SECRET;
-invariant(UNTAPPD_CLIENT_ID, "UNTAPPD_CLIENT_ID must be set in .env");
-invariant(UNTAPPD_CLIENT_SECRET, "UNTAPPD_CLIENT_SECRET must be set in .env");
-
-// The single redirect_url registered in Untappd's app settings — always the
-// production callback, in every environment. See untappd-strategy.server.ts
-// for how dev gets relayed through it.
-const UNTAPPD_REDIRECT_URL = process.env.UNTAPPD_REDIRECT_URL;
-invariant(UNTAPPD_REDIRECT_URL, "UNTAPPD_REDIRECT_URL must be set in .env");
+// UNTAPPD_REDIRECT_URL is the single redirect_url registered in Untappd's app
+// settings: always the production callback, in every environment. See
+// untappd-strategy.server.ts for how dev gets relayed through it.
 
 authenticator.use(
 	new UntappdStrategy<SessionUser>(
 		{
-			clientID: UNTAPPD_CLIENT_ID,
-			clientSecret: UNTAPPD_CLIENT_SECRET,
-			callbackURL: UNTAPPD_REDIRECT_URL,
-			appURL: APP_URL,
+			clientID: env.UNTAPPD_CLIENT_ID,
+			clientSecret: env.UNTAPPD_CLIENT_SECRET,
+			callbackURL: env.UNTAPPD_REDIRECT_URL,
+			appURL: env.APP_URL,
 		},
 		async ({ profile, accessToken, request }) => {
 			const { untappdId, email, firstName, lastName, userName, avatar } =

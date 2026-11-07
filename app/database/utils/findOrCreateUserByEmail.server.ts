@@ -1,5 +1,7 @@
 import { eq } from "drizzle-orm";
 
+import { env } from "~/utils/env.server";
+
 import { db } from "../config.server";
 import { users } from "../schema.server";
 
@@ -12,12 +14,7 @@ export const findOrCreateUserByEmail = async (
 ) => {
 	const userEmail = email.trim().toLowerCase();
 
-	// Set admin state based on list of emails in env var
-	const ADMIN_USER_EMAILS = process.env.ADMIN_USER_EMAILS || "";
-	const adminEmails = ADMIN_USER_EMAILS.split(",")
-		.map((e) => e.trim().toLowerCase())
-		.filter((e) => e.length > 0);
-	const isAdmin = adminEmails.includes(userEmail);
+	const isAdmin = env.ADMIN_USER_EMAILS.includes(userEmail);
 
 	const insertedUsers = await db
 		.insert(users)
