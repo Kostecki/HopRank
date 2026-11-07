@@ -1,12 +1,6 @@
 import { and, eq, inArray } from "drizzle-orm";
 
-import type { SessionProgressUser } from "~/types/session";
-import {
-	SessionBeerStatus,
-	SessionMode,
-	SessionStatus,
-	SessionUserExitReason,
-} from "~/types/session";
+import { SessionBeerStatus, SessionMode, SessionStatus } from "~/types/session";
 
 import { userSessionGet } from "~/auth/users.server";
 import { db } from "~/database/config.server";
@@ -21,71 +15,12 @@ import {
 	sessionUsers,
 	users,
 } from "~/database/schema.server";
-import type { SelectSessionUsers, SelectUsers } from "~/database/schema.types";
-import { getBeerInfo } from "~/utils/untappd";
 
-// Whether a user has had a beer, per Untappd. Keyed by user and beer, since
-// Untappd's user_count is relative to whoever's token made the request.
-// Module-level, single-process cache.
-const HAD_BEER_TTL_MS = 60 * 60 * 1000;
-const HAD_BEER_MAX_ENTRIES = 5_000;
-const hadBeerCache = new Map<string, { hadBeer: boolean; expiresAt: number }>();
+import { averageByCriterion, scoreBeer } from "./sessionProgress/scoring";
+import { getUserHadBeer } from "./sessionProgress/userHadBeer.server";
+import { toSessionProgressUser } from "./sessionProgress/users";
 
-// Exported for tests: this is the boundary that must never leak email/admin
-// to SessionProgress.users, since that shape is returned to unauthenticated
-// viewers on the public read-only results route.
-export const toSessionProgressUser = (
-	user: SelectUsers,
-	sessionUser: Pick<SelectSessionUsers, "active" | "exitReason"> | undefined,
-): SessionProgressUser => ({
-	id: user.id,
-	name: user.name,
-	untappdId: user.untappdId,
-	username: user.username,
-	avatarURL: user.avatarURL,
-	// Derived from exitReason alone (not the `active` flag): when a session
-	// finishes, closeInactiveSessions marks every participant inactive without
-	// setting exitReason, so relying on `active` here would make everyone who
-	// simply stayed until the end look like they'd left/been kicked.
-	status:
-		sessionUser?.exitReason === SessionUserExitReason.kicked
-			? "kicked"
-			: sessionUser?.exitReason === SessionUserExitReason.left
-				? "left"
-				: "active",
-});
-
-async function getUserHadBeer(
-	userId: number,
-	untappdBeerId: number,
-	accessToken: string,
-) {
-	const key = `${userId}:${untappdBeerId}`;
-	const now = Date.now();
-
-	const cached = hadBeerCache.get(key);
-	if (cached && cached.expiresAt > now) {
-		return cached.hadBeer;
-	}
-
-	const beerInfo = await getBeerInfo(untappdBeerId, accessToken);
-	if (!beerInfo) {
-		// Don't cache failures: the next request retries.
-		return false;
-	}
-
-	const hadBeer = beerInfo.stats?.user_count > 0;
-
-	if (hadBeerCache.size >= HAD_BEER_MAX_ENTRIES) {
-		// Maps iterate in insertion order, so this drops the oldest entry.
-		const oldest = hadBeerCache.keys().next().value;
-		if (oldest !== undefined) hadBeerCache.delete(oldest);
-	}
-	hadBeerCache.delete(key);
-	hadBeerCache.set(key, { hadBeer, expiresAt: now + HAD_BEER_TTL_MS });
-
-	return hadBeer;
-}
+export { toSessionProgressUser };
 
 export async function getSessionProgress({
 	request,
@@ -177,20 +112,10 @@ export async function getSessionProgress({
 			.filter((sb) => sb.status === SessionBeerStatus.rated)
 			.map((sb) => sb.beer.id),
 	);
-	const scoredCriteria = criteriaList.map((criterion) => {
-		const criterionRatings = allRatings.filter(
-			(r) => r.criterionId === criterion.id && ratedBeerIds.has(r.beerId ?? -1),
-		);
-		const avg =
-			criterionRatings.reduce((sum, r) => sum + r.score, 0) /
-			(criterionRatings.length || 1);
-		return {
-			criterionId: criterion.id,
-			name: criterion.name,
-			weight: criterion.weight,
-			averageScore: avg,
-		};
-	});
+	const scoredCriteria = averageByCriterion(
+		allRatings.filter((r) => ratedBeerIds.has(r.beerId ?? -1)),
+		criteriaList,
+	);
 
 	const currentBeerRow = sessionBeerRowsWithBeer.find(
 		(sb) =>
@@ -248,28 +173,10 @@ export async function getSessionProgress({
 				sb.beer.id !== state?.currentBeerId,
 		)
 		.map(({ beer, order, addedByUserId }) => {
-			let totalWeighted = 0;
-			let totalWeight = 0;
-
-			const criteriaBreakdown = criteriaList.map((criterion) => {
-				const scores = allRatings.filter(
-					(rating) =>
-						rating.beerId === beer.id && rating.criterionId === criterion.id,
-				);
-				const avg =
-					scores.reduce((sum, rating) => sum + rating.score, 0) /
-					(scores.length || 1);
-				totalWeighted += avg * criterion.weight;
-				totalWeight += criterion.weight;
-				return {
-					criterionId: criterion.id,
-					name: criterion.name,
-					weight: criterion.weight,
-					averageScore: avg,
-				};
-			});
-
-			const averageScore = totalWeight > 0 ? totalWeighted / totalWeight : 0;
+			const { criteriaBreakdown, averageScore } = scoreBeer(
+				allRatings.filter((rating) => rating.beerId === beer.id),
+				criteriaList,
+			);
 			const votesCount = new Set(
 				allRatings.filter((r) => r.beerId === beer.id).map((r) => r.userId),
 			).size;
@@ -320,28 +227,10 @@ export async function getSessionProgress({
 					(r) => r.beerId === currentBeerRow.beer.id,
 				);
 
-				let totalWeightedCurrent = 0;
-				let totalWeightCurrent = 0;
-				const criteriaBreakdown = criteriaList.map((criterion) => {
-					const scores = currentBeerRatings.filter(
-						(rating) => rating.criterionId === criterion.id,
-					);
-					const avg =
-						scores.reduce((sum, rating) => sum + rating.score, 0) /
-						(scores.length || 1);
-					totalWeightedCurrent += avg * criterion.weight;
-					totalWeightCurrent += criterion.weight;
-					return {
-						criterionId: criterion.id,
-						name: criterion.name,
-						weight: criterion.weight,
-						averageScore: avg,
-					};
-				});
-				const averageScore =
-					totalWeightCurrent > 0
-						? totalWeightedCurrent / totalWeightCurrent
-						: 0;
+				const { criteriaBreakdown, averageScore } = scoreBeer(
+					currentBeerRatings,
+					criteriaList,
+				);
 				return {
 					beerId: currentBeerRow.beer.id,
 					untappdBeerId: currentBeerRow.beer.untappdBeerId,
