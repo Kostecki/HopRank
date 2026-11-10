@@ -9,32 +9,38 @@ HopRank allows groups of people to create structured beer tasting sessions where
 ### Key Features
 
 🍺 **Collaborative Beer Sessions**
+
 - Create or join beer tasting sessions with friends
 - Real-time synchronization across all participants
 - Structured voting with customizable rating criteria
 
 🏆 **Smart Ranking System**
+
 - Multi-criteria scoring with weighted averages
 - Automatic leaderboard generation with podium visualization
 - Detailed breakdown of ratings by criteria
 
 🔗 **Untappd Integration**
+
 - OAuth authentication with Untappd
 - Automatic beer search and data fetching
 - Direct check-in to Untappd with your ratings
 - Venue detection and integration
 
 ⚡ **Real-time Experience**
+
 - WebSocket-powered live updates
 - Session progress tracking
 - Live voting status for all participants
 
 🍻 **One Beer Mode**
+
 - The same beer at different bars, for a pub crawl
 - Everyone ranks the bars on their own list instead of giving scores
 - The group result is based on the average position
 
 📱 **Mobile-First Design**
+
 - Responsive design built with Mantine UI
 - Touch-friendly rating sliders
 - Mobile app integration (Untappd deep links)
