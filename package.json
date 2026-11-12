@@ -24,7 +24,7 @@
 		"@mjackson/headers": "0.11.1",
 		"@react-router/node": "8.5.1",
 		"@react-router/serve": "8.5.1",
-		"@tabler/icons-react": "3.50.0",
+		"@tabler/icons-react": "3.51.0",
 		"animate.css": "4.1.1",
 		"better-sqlite3": "13.0.3",
 		"cheerio": "1.2.0",

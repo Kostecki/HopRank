@@ -31,7 +31,7 @@ services:
       - "nautical-backup.group=hop-rank"
 
   drizzle-gateway:
-    image: ghcr.io/drizzle-team/gateway:1.7.0
+    image: ghcr.io/drizzle-team/gateway:1.8.0
     container_name: hop-rank-drizzle-gateway
     hostname: hop-rank-drizzle-gateway
     restart: unless-stopped
