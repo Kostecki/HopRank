@@ -16,11 +16,11 @@
 		"db:studio": "drizzle-kit studio"
 	},
 	"dependencies": {
-		"@mantine/carousel": "9.7.5",
-		"@mantine/core": "9.7.5",
-		"@mantine/form": "9.7.5",
-		"@mantine/hooks": "9.7.5",
-		"@mantine/notifications": "9.7.5",
+		"@mantine/carousel": "9.8.0",
+		"@mantine/core": "9.8.0",
+		"@mantine/form": "9.8.0",
+		"@mantine/hooks": "9.8.0",
+		"@mantine/notifications": "9.8.0",
 		"@mjackson/headers": "0.11.1",
 		"@react-router/node": "8.5.1",
 		"@react-router/serve": "8.5.1",
@@ -33,10 +33,10 @@
 		"embla-carousel": "8.6.0",
 		"embla-carousel-autoplay": "8.6.0",
 		"embla-carousel-react": "8.6.0",
-		"isbot": "5.2.2",
+		"isbot": "5.2.3",
 		"mjml": "5.4.1",
 		"mnemonic-id": "4.1.0",
-		"motion": "14.10.1",
+		"motion": "14.11.1",
 		"node-cron": "4.6.0",
 		"nodemailer": "10.4.0",
 		"react": "19.3.1",
@@ -62,7 +62,7 @@
 		"postcss-preset-mantine": "1.18.0",
 		"postcss-simple-vars": "7.0.1",
 		"typescript": "7.0.2",
-		"vite": "8.3.6",
+		"vite": "8.3.7",
 		"vitest": "5.1.0"
 	}
 }
