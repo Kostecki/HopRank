@@ -1,7 +1,7 @@
 {
 	"name": "hop-rank",
 	"private": true,
-	"packageManager": "pnpm@12.21.0",
+	"packageManager": "pnpm@12.22.0",
 	"type": "module",
 	"scripts": {
 		"build": "react-router build",
@@ -16,11 +16,11 @@
 		"db:studio": "drizzle-kit studio"
 	},
 	"dependencies": {
-		"@mantine/carousel": "9.8.1",
-		"@mantine/core": "9.8.1",
-		"@mantine/form": "9.8.1",
-		"@mantine/hooks": "9.8.1",
-		"@mantine/notifications": "9.8.1",
+		"@mantine/carousel": "9.8.2",
+		"@mantine/core": "9.8.2",
+		"@mantine/form": "9.8.2",
+		"@mantine/hooks": "9.8.2",
+		"@mantine/notifications": "9.8.2",
 		"@mjackson/headers": "0.11.1",
 		"@react-router/node": "8.5.2",
 		"@react-router/serve": "8.5.2",
@@ -38,7 +38,7 @@
 		"mnemonic-id": "4.1.0",
 		"motion": "14.14.0",
 		"node-cron": "4.6.0",
-		"nodemailer": "10.6.0",
+		"nodemailer": "10.6.1",
 		"react": "19.3.1",
 		"react-dom": "19.3.1",
 		"react-router": "8.5.2",
