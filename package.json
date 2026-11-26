@@ -1,7 +1,7 @@
 {
 	"name": "hop-rank",
 	"private": true,
-	"packageManager": "pnpm@12.22.0",
+	"packageManager": "pnpm@12.23.0",
 	"type": "module",
 	"scripts": {
 		"build": "react-router build",
